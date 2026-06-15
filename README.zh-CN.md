@@ -1,44 +1,74 @@
 # Human Writing Skills
 
-这是一个面向 AI 写作代理的开源 `SKILLS` 项目，用来减少模板化、套路化、明显机器生成的文字痕迹，让输出更自然、连贯、有文体意识。
+> 让 AI 写作代理读取可复用的 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
-项目的核心不是欺骗检测器，而是把写作要求变成可复用的技能文件：文体怎么组织，句子怎么变化，长文本如何记住前文设定，哪些表达应该避免，生成后如何做一次编辑式修订。
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
 
-## 解决什么问题
+中文说明 | [English](README.md)
 
-- AI 写出来的文字容易空泛、对称、像模板
-- 不同文体常被写成同一种“通用润色腔”
-- 小说、网文等长文本容易忘记人物、剧情、伏笔、能力规则
-- 大段输出之间缺少自然衔接
-- 用户很难把“写得像人”拆成可执行的检查项
+Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。
+
+它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
+
+## 这个项目解决什么
+
+| 常见问题 | 项目提供的办法 |
+| --- | --- |
+| 文字空泛、对称、像模板 | 用具体的修订检查项压掉套话和泛泛表达 |
+| 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
+| 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
+| 提示词越写越乱 | 用 CLI 把文体、上下文、任务编译成清晰指令包 |
+| “像人写的”太抽象 | 把自然感拆成节奏、细节、转场、视角、证据等可执行规则 |
 
 ## 已内置的 SKILLS
 
-- `fiction`：小说/故事写作
-- `argumentative`：议论文
-- `news-report`：新闻报告
-- `self-media`：自媒体文章
-- `academic-paper`：科研论文
-- `webnovel`：网络小说/连载文
+| Skill | 适合场景 | 重点 |
+| --- | --- | --- |
+| `fiction` | 小说/故事 | 视角、人物行为、场景压力 |
+| `argumentative` | 议论文/观点文 | 论点、证据、反驳、逻辑推进 |
+| `news-report` | 新闻报告 | 事实顺序、消息来源、克制表达 |
+| `self-media` | 自媒体文章 | 有用、直接、有个人判断，但不空喊口号 |
+| `academic-paper` | 科研论文 | 谨慎表述、结构、术语一致性 |
+| `webnovel` | 网络小说/连载文 | 爽点、钩子、伏笔回收、战力和设定连续性 |
 
-## 快速使用
+## 快速开始
 
 ```powershell
+git clone https://github.com/YOUR_NAME/human-writing-skills.git
+cd human-writing-skills
+
 python -m humanwriting.cli list
 python -m humanwriting.cli build --style webnovel --context examples/story-ledger.md --task "续写第三章，保留冲突但揭示一个新线索。"
 ```
 
-输出内容是一份可以复制给 AI 的指令包，包含：
+`build` 命令会输出一份可以直接复制给 Codex、ChatGPT、Claude、本地大模型或其他写作代理的指令包。
 
-- 核心写作原则
-- 长上下文连续性协议
-- 选中的文体 SKILL
-- 项目上下文/剧情账本
-- 本次写作任务
+## 指令包长什么样
+
+```text
+# Core Directive
+# Continuity Protocol
+# Selected Skill: webnovel
+# Project Context
+# Task
+# Output Contract
+```
+
+它会把通用写作原则、长上下文协议、选中的文体技能、项目设定和本次任务放在一起，让 AI 不只是“知道主题”，还知道前文承诺了什么、哪些设定不能改、下一段必须从哪里接上。
 
 ## 长文本连续性方案
 
-项目使用轻量级 ledger 记录：
+长篇小说、网文、系列文章最容易出问题的地方，不是单句写不好，而是写着写着忘了：
+
+- 人物关系变过没有
+- 伤势、代价、能力限制还在不在
+- 某个伏笔是否已经揭示
+- 论证前后有没有自相矛盾
+- 上一段结束时人物到底在哪里
+
+因此项目使用轻量级 ledger 记录：
 
 - 固定事实：人物、时间线、地点、关系、规则
 - 活跃线索：未解决冲突、悬念、伏笔、论点
@@ -46,11 +76,53 @@ python -m humanwriting.cli build --style webnovel --context examples/story-ledge
 - 当前状态：上一段结束在哪里，下一段必须如何衔接
 - 新增事实：本次输出后哪些事情变成了真
 
-这样 AI 在生成大量文字时，不只是“记得大概主题”，而是能持续遵守前文承诺。
+示例见：[examples/story-ledger.md](examples/story-ledger.md)
+
+## 项目结构
+
+```text
+humanwriting/        Python 包和 CLI
+skills/              可复用 Markdown 写作 SKILLS
+examples/            剧情账本、文章 brief 示例
+tests/               标准库单元测试
+```
+
+## 常用命令
+
+列出所有文体：
+
+```powershell
+python -m humanwriting.cli list
+```
+
+生成指令包：
+
+```powershell
+python -m humanwriting.cli build `
+  --style fiction `
+  --context examples/story-ledger.md `
+  --task "写下一场戏，保持林乔的听觉代价设定，不要提前解决冲突。"
+```
+
+运行测试：
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+## 写作理念
+
+这个项目认为，“去 AI 味”不能只靠一句提示词。更可靠的做法是让模型持续遵守几类具体约束：
+
+- 有现场：知道谁在说话、发生了什么变化、这一段为什么存在
+- 有细节：用属于当前题材的具体材料，而不是万能句子
+- 有连续性：尊重前文事实、伤势、代价、伏笔、论点和情绪变化
+- 有文体：先理解小说、新闻、论文、自媒体的不同读者期待
+- 有修订：删除空话、套话、万能转场和不必要的拔高
 
 ## 贡献方向
 
-欢迎贡献更多中文和英文文体 SKILLS，例如：
+欢迎贡献更多中文和英文写作技能，例如：
 
 - 商业报告
 - 法律文书
@@ -59,5 +131,10 @@ python -m humanwriting.cli build --style webnovel --context examples/story-ledge
 - 产品文案
 - 人物传记
 - 悬疑、科幻、都市、玄幻等细分网文技能
+- 不同模型的适配器和示例
 
-请尽量写具体规则，不要只写“自然一点”“像人一点”。好的 SKILL 应该能告诉模型：删什么、保留什么、怎么衔接、如何检查。
+请尽量写具体规则，不要只写“自然一点”“像人一点”。好的 `SKILL` 应该告诉模型：做什么、避开什么、如何衔接、怎样检查。
+
+## 开源协议
+
+MIT. 见 [LICENSE](LICENSE)。

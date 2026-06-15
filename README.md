@@ -1,66 +1,99 @@
 # Human Writing Skills
 
-Human Writing Skills is an open-source skill pack and small CLI for making AI-assisted writing less formulaic, more context-aware, and easier to steer across genres.
+> Reusable writing `SKILLS` for AI agents that need natural prose, genre-aware style, and long-form continuity.
 
-The project focuses on three practical problems:
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
 
-- reducing repetitive, generic, "AI-shaped" prose habits
-- switching writing style through reusable `SKILLS`
-- keeping long-form writing aligned with previous plot, facts, tone, and constraints
+[中文说明](README.zh-CN.md) | English
 
-It does not try to hide authorship or encourage deception. The goal is better editing, stronger voice control, and more faithful continuity.
+Human Writing Skills is an open-source skill pack and lightweight prompt compiler for AI-assisted writing.
 
-## Features
+It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
-- Markdown-based writing skills for fiction, argumentative essays, news reports, self-media posts, academic papers, and web novels
-- a continuity ledger for characters, facts, plot promises, unresolved threads, and style decisions
-- a prompt compiler that combines the selected style skill with project context
-- a lightweight Python CLI with no required third-party dependencies
-- examples that can be copied into Codex, ChatGPT, Claude, local LLM tools, or other writing agents
+The goal is not deception. The goal is better writing: clearer instructions, stronger revision habits, and reusable style constraints that make AI-assisted drafts feel edited by a human.
+
+## Why This Exists
+
+AI writing often fails in predictable ways:
+
+| Problem | What this project adds |
+| --- | --- |
+| Generic "AI voice" | Concrete revision checks for rhythm, specificity, and empty phrasing |
+| One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
+| Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
+| Prompts become messy | A CLI that compiles style, context, and task into one clean instruction pack |
+| Advice stays abstract | Rules are written as observable editing actions |
+
+## Built-In Skills
+
+| Skill | Use it for | Main focus |
+| --- | --- | --- |
+| `fiction` | literary or commercial fiction | point of view, scene pressure, character behavior |
+| `argumentative` | essays and opinion pieces | thesis, evidence, counterargument, logical flow |
+| `news-report` | news-style reports | factual order, attribution, neutral wording |
+| `self-media` | social posts and creator essays | useful voice without empty hype |
+| `academic-paper` | research writing | cautious claims, structure, terminology |
+| `webnovel` | serialized genre fiction | hooks, payoffs, power rules, continuity |
 
 ## Quick Start
 
 ```powershell
+git clone https://github.com/YOUR_NAME/human-writing-skills.git
 cd human-writing-skills
+
 python -m humanwriting.cli list
 python -m humanwriting.cli build --style fiction --context examples/story-ledger.md --task "Write the next scene."
 ```
 
-The `build` command prints an instruction pack you can give to an AI writing assistant.
+The `build` command prints an instruction pack that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.
 
-## Available Skills
+## Example Output Shape
 
-- `fiction`: character-driven literary and commercial fiction
-- `argumentative`: essays with clear claims, evidence, and counterargument
-- `news-report`: concise news writing with source discipline
-- `self-media`: natural social/media-account posts without empty hype
-- `academic-paper`: formal research prose with cautious claims
-- `webnovel`: serialized genre fiction with continuity and hooks
+```text
+# Core Directive
+# Continuity Protocol
+# Selected Skill: fiction
+# Project Context
+# Task
+# Output Contract
+```
+
+This format keeps the model focused on the current task while still carrying the previous facts, style decisions, and unresolved threads.
+
+## Long-Form Continuity
+
+For longer works, this project recommends a small ledger instead of relying only on a large context window.
+
+The ledger tracks:
+
+- fixed facts: names, dates, locations, relationships, rules, timeline
+- active threads: unresolved conflicts, clues, promises, open arguments
+- voice anchors: point of view, diction, pacing, formality, taboo phrases
+- current state: where the previous passage ended and what must connect next
+- change log: what became newly true in the latest output
+
+See [examples/story-ledger.md](examples/story-ledger.md) for a fiction example.
 
 ## Project Layout
 
 ```text
 humanwriting/        Python package and CLI
 skills/              reusable writing SKILLS in Markdown
-examples/            sample continuity ledgers and tasks
-tests/               focused unit tests
+examples/            sample continuity ledgers and article briefs
+tests/               standard-library unit tests
 ```
 
-## Design Principles
+## CLI Usage
 
-1. Voice before decoration.
-   Good prose is shaped by intention, audience, rhythm, and specificity.
+List styles:
 
-2. Context before output.
-   Long writing needs a ledger of facts, promises, relationships, and tone decisions.
+```powershell
+python -m humanwriting.cli list
+```
 
-3. Revision before disguise.
-   The system asks the model to revise for concrete human qualities: varied sentence movement, grounded detail, clean transitions, and less canned phrasing.
-
-4. Genre as constraints.
-   A style skill is not a costume. It is a set of choices about evidence, pacing, diction, structure, and reader expectation.
-
-## Example
+Build a prompt pack:
 
 ```powershell
 python -m humanwriting.cli build `
@@ -69,18 +102,34 @@ python -m humanwriting.cli build `
   --task "Continue chapter 3. Keep the confrontation unresolved but reveal one new clue."
 ```
 
+Run tests:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+## Writing Philosophy
+
+Good AI-assisted prose should be:
+
+- situated: it knows who is speaking, what changed, and why this passage exists
+- specific: it uses details that belong to this topic, not any topic
+- continuous: it respects previous facts, costs, injuries, claims, and promises
+- shaped: it understands the genre before choosing structure and diction
+- revised: it removes filler, canned transitions, and decorative certainty
+
 ## Contributing
 
-Contributions are welcome:
+Contributions are welcome. Useful additions include:
 
-- new writing skills
-- better continuity ledger formats
-- examples in more languages
+- new Markdown skills
+- Chinese and multilingual style packs
 - model-specific adapters
+- stronger continuity ledger examples
 - tests for prompt compilation and context preservation
 
-Please keep skills concrete. Avoid generic rules like "write naturally" unless they are paired with observable editing checks.
+Please keep each skill practical. A good rule should tell the model what to do, what to avoid, and how to check the result.
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
