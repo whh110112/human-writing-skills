@@ -5,11 +5,22 @@ from pathlib import Path
 from typing import Iterable
 
 
+STYLE_SKILLS = {
+    "academic-paper",
+    "argumentative",
+    "fiction",
+    "news-report",
+    "self-media",
+    "webnovel",
+}
+
+
 @dataclass(frozen=True)
 class Skill:
     name: str
     path: Path
     content: str
+    kind: str
 
 
 def default_skills_dir() -> Path:
@@ -21,13 +32,22 @@ def list_skills(skills_dir: Path | None = None) -> list[str]:
     return sorted(path.stem for path in root.glob("*.md"))
 
 
+def list_style_skills(skills_dir: Path | None = None) -> list[str]:
+    return [name for name in list_skills(skills_dir) if name in STYLE_SKILLS]
+
+
+def list_module_skills(skills_dir: Path | None = None) -> list[str]:
+    return [name for name in list_skills(skills_dir) if name not in STYLE_SKILLS]
+
+
 def load_skill(name: str, skills_dir: Path | None = None) -> Skill:
     root = skills_dir or default_skills_dir()
     path = root / f"{name}.md"
     if not path.exists():
         available = ", ".join(list_skills(root)) or "none"
-        raise FileNotFoundError(f"Unknown style '{name}'. Available styles: {available}")
-    return Skill(name=name, path=path, content=path.read_text(encoding="utf-8").strip())
+        raise FileNotFoundError(f"Unknown skill '{name}'. Available skills: {available}")
+    kind = "style" if name in STYLE_SKILLS else "module"
+    return Skill(name=name, path=path, content=path.read_text(encoding="utf-8").strip(), kind=kind)
 
 
 def load_many(names: Iterable[str], skills_dir: Path | None = None) -> list[Skill]:

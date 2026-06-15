@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .skills import load_skill
+from .skills import load_many, load_skill
 
 
 CORE_DIRECTIVE = """# Core Directive
@@ -38,14 +38,29 @@ def read_optional(path: str | None) -> str:
     return Path(path).read_text(encoding="utf-8").strip()
 
 
-def compile_prompt(style: str, task: str, context_path: str | None = None) -> str:
+def compile_prompt(
+    style: str,
+    task: str,
+    context_path: str | None = None,
+    modules: list[str] | None = None,
+    review: bool = False,
+) -> str:
     skill = load_skill(style)
+    if skill.kind != "style":
+        raise ValueError(f"'{style}' is a module, not a primary style skill.")
+    selected_modules = load_many(modules or [])
+    if review and "editor-loop" not in [module.name for module in selected_modules]:
+        selected_modules.append(load_skill("editor-loop"))
+    if review and "ai-trace-rubric" not in [module.name for module in selected_modules]:
+        selected_modules.append(load_skill("ai-trace-rubric"))
     context = read_optional(context_path)
     blocks = [
         CORE_DIRECTIVE.strip(),
         CONTINUITY_DIRECTIVE.strip(),
         f"# Selected Skill: {skill.name}\n\n{skill.content}",
     ]
+    for module in selected_modules:
+        blocks.append(f"# Technique Module: {module.name}\n\n{module.content}")
     if context:
         blocks.append(f"# Project Context\n\n{context}")
     blocks.append(f"# Task\n\n{task.strip()}")

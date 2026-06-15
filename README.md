@@ -26,7 +26,7 @@ AI writing often fails in predictable ways:
 | Prompts become messy | A CLI that compiles style, context, and task into one clean instruction pack |
 | Advice stays abstract | Rules are written as observable editing actions |
 
-## Built-In Skills
+## Built-In Style Skills
 
 | Skill | Use it for | Main focus |
 | --- | --- | --- |
@@ -37,13 +37,29 @@ AI writing often fails in predictable ways:
 | `academic-paper` | research writing | cautious claims, structure, terminology |
 | `webnovel` | serialized genre fiction | hooks, payoffs, power rules, continuity |
 
+## Deep Human-Trace Modules
+
+These modules target deeper AI-writing artifacts, not only surface phrases.
+
+| Module | What it repairs |
+| --- | --- |
+| `controlled-drift` | overly smooth logic, no associative movement, no unfinished thought |
+| `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
+| `vocal-rhythm` | flat cadence and missing read-aloud breath points |
+| `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
+| `cultural-anchors` | vacuum prose with no era, place, community, or material detail |
+| `style-matrix` | the mistake of applying one generic "human voice" to every genre |
+| `editor-loop` | one-shot drafting without a critical human-editor pass |
+| `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
+
 ## Quick Start
 
 ```powershell
 git clone https://github.com/whh110112/human-writing-skills.git
 cd human-writing-skills
 
-python -m humanwriting.cli list
+python -m humanwriting.cli list --kind style
+python -m humanwriting.cli list --kind module
 python -m humanwriting.cli build --style fiction --context examples/story-ledger.md --task "Write the next scene."
 ```
 
@@ -98,9 +114,17 @@ Build a prompt pack:
 ```powershell
 python -m humanwriting.cli build `
   --style webnovel `
+  --module embodied-emotion `
+  --module vocal-rhythm `
+  --review `
   --context examples/story-ledger.md `
   --task "Continue chapter 3. Keep the confrontation unresolved but reveal one new clue."
 ```
+
+The `--review` flag adds two modules automatically:
+
+- `editor-loop`: draft, diagnose, locally rewrite, then finalize
+- `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, cultural vacuum, over-clean prose, and closure addiction
 
 Run tests:
 
@@ -117,6 +141,12 @@ Good AI-assisted prose should be:
 - continuous: it respects previous facts, costs, injuries, claims, and promises
 - shaped: it understands the genre before choosing structure and diction
 - revised: it removes filler, canned transitions, and decorative certainty
+
+## Editorial Guardrails
+
+This project avoids claiming that any tool can perfectly hide authorship or beat detectors. It focuses on craft: voice, context, genre, revision, and continuity.
+
+When studying published work, use short analysis, public-domain sources, licensed material, or your own examples. Do not copy protected passages into skills.
 
 ## Contributing
 
