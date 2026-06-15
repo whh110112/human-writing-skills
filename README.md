@@ -40,7 +40,7 @@ AI writing often fails in predictable ways:
 ## Quick Start
 
 ```powershell
-git clone https://github.com/YOUR_NAME/human-writing-skills.git
+git clone https://github.com/whh110112/human-writing-skills.git
 cd human-writing-skills
 
 python -m humanwriting.cli list
