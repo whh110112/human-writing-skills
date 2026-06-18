@@ -94,6 +94,14 @@ python -m humanwriting.cli build --style webnovel --context examples/story-ledge
 
 示例见：[examples/story-ledger.md](examples/story-ledger.md)
 
+## Chatbox 使用
+
+可以在 Chatbox 里用。这个项目生成的是纯文本指令包，不需要插件。长篇写作时，把 continuity ledger 当成上下文来源，并把编译后的指令包粘贴到 Chatbox 的 system prompt 或新会话第一条消息。
+
+- 中文指南：[docs/chatbox.zh-CN.md](docs/chatbox.zh-CN.md)
+- 英文指南：[docs/chatbox.md](docs/chatbox.md)
+- 账本模板：[examples/chatbox-ledger-template.md](examples/chatbox-ledger-template.md)
+
 ## 项目结构
 
 ```text

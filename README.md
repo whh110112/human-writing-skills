@@ -92,6 +92,14 @@ The ledger tracks:
 
 See [examples/story-ledger.md](examples/story-ledger.md) for a fiction example.
 
+## Chatbox
+
+Yes, this project works in Chatbox because it outputs plain text prompt packs. For long writing sessions, use the continuity ledger as the source of truth and paste the compiled prompt pack into Chatbox's system prompt or first message.
+
+- English guide: [docs/chatbox.md](docs/chatbox.md)
+- Chinese guide: [docs/chatbox.zh-CN.md](docs/chatbox.zh-CN.md)
+- Ledger template: [examples/chatbox-ledger-template.md](examples/chatbox-ledger-template.md)
+
 ## Project Layout
 
 ```text
