@@ -9,11 +9,14 @@ CORE_DIRECTIVE = """# Core Directive
 
 Write with a human editor's priorities: intention, specificity, continuity, and rhythm.
 Avoid generic filler, repetitive sentence frames, inflated transitions, empty certainty,
-and summary paragraphs that merely restate the prompt.
+summary paragraphs that merely restate the prompt, and precision that does not fit
+the genre or narrator.
 
 Before drafting, identify the active context, genre promise, reader expectation, and
 the one thing this passage must change. During drafting, preserve established facts.
 After drafting, revise once for cadence, concrete detail, and continuity.
+Use exact measurements, counts, and numbers when the context earns them; otherwise
+prefer felt, relational, or scene-specific scale.
 """
 
 

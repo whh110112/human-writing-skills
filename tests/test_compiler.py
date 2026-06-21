@@ -15,6 +15,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("embodied-emotion", list_module_skills())
         self.assertIn("narrative-bridges", list_module_skills())
         self.assertIn("relationship-state", list_module_skills())
+        self.assertIn("natural-measurement", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -34,11 +35,18 @@ class CompilerTests(unittest.TestCase):
         prompt = compile_prompt(
             "fiction",
             "Write the next scene.",
-            modules=["narrative-bridges", "relationship-state", "embodied-emotion", "vocal-rhythm"],
+            modules=[
+                "narrative-bridges",
+                "relationship-state",
+                "natural-measurement",
+                "embodied-emotion",
+                "vocal-rhythm",
+            ],
             review=True,
         )
         self.assertIn("Technique Module: narrative-bridges", prompt)
         self.assertIn("Technique Module: relationship-state", prompt)
+        self.assertIn("Technique Module: natural-measurement", prompt)
         self.assertIn("Technique Module: embodied-emotion", prompt)
         self.assertIn("Technique Module: vocal-rhythm", prompt)
         self.assertIn("Technique Module: editor-loop", prompt)

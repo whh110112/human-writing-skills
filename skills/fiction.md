@@ -12,6 +12,9 @@ Create prose that feels observed rather than generated. Let character desire, sc
   withheld answers, promises, and small status shifts.
 - Vary sentence length according to pressure in the scene.
 - Use specific nouns and verbs before adjectives.
+- Avoid false precision in ordinary action, emotion, body, and dialogue beats. Use exact
+  small measurements only when a character would really measure them or the number
+  changes plot, clue, setting, or characterization.
 - Keep exposition attached to what the character notices or needs.
 - Make each scene inherit residue from the prior beat: an object, unanswered line,
   bodily state, risk, promise, or misread intention.

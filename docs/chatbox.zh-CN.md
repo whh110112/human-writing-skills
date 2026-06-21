@@ -36,6 +36,7 @@ python -m humanwriting.cli build `
   --module controlled-drift `
   --module narrative-bridges `
   --module relationship-state `
+  --module natural-measurement `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
@@ -101,6 +102,7 @@ python -m humanwriting.cli build `
   --module controlled-drift `
   --module narrative-bridges `
   --module relationship-state `
+  --module natural-measurement `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

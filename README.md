@@ -46,6 +46,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `controlled-drift` | overly smooth logic, no associative movement, no unfinished thought |
 | `narrative-bridges` | weak scene turns, generic transitions, paragraphs that do not cause each other |
 | `relationship-state` | relationships that reset, dialogue without leverage, forgotten secrets or boundaries |
+| `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -128,6 +129,7 @@ python -m humanwriting.cli build `
   --style webnovel `
   --module narrative-bridges `
   --module relationship-state `
+  --module natural-measurement `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `
@@ -138,7 +140,7 @@ python -m humanwriting.cli build `
 The `--review` flag adds two modules automatically:
 
 - `editor-loop`: draft, diagnose, locally rewrite, then finalize
-- `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, cultural vacuum, over-clean prose, and closure addiction
+- `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, weak beat bridges, relationship resets, false precision, cultural vacuum, over-clean prose, and closure addiction
 
 Run tests:
 

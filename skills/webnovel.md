@@ -20,6 +20,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 
 - Use clean, fast prose during action.
 - Give important reveals a short beat before reaction.
+- Avoid instrument-like micro-measurements in intimate, emotional, comic, or dialogue
+  beats unless the number is a rule, clue, stat, rank, distance, cost, or payoff.
 - Keep names, titles, and factions consistent.
 - Balance inner thought with visible pressure.
 - End with a hook that follows from the scene, not a random shock.
