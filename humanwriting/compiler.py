@@ -25,10 +25,14 @@ Maintain a running ledger while generating long text:
 - Active threads: unresolved conflicts, questions, clues, promises, arguments
 - Voice anchors: diction, point of view, formality, humor, pacing, taboo phrases
 - Scene or section state: where the previous output ended and what must connect next
+- Beat bridge: what residue from the previous beat enters the next beat, what changes,
+  and what pressure or question remains open
 - Change log: what became newly true in the current passage
 
 If context is missing, make the smallest possible assumption and mark it as an assumption.
 Do not overwrite established facts for convenience.
+Scene and paragraph transitions should be earned by cause, perception, object continuity,
+or changed character state rather than generic connective phrasing.
 """
 
 

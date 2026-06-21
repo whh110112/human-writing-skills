@@ -11,6 +11,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - Keep chapter endings linked to active tension.
 - Reuse prior details as payoff.
 - Let each scene change status, knowledge, danger, intimacy, or leverage.
+- Carry one bridge element across scene breaks: an injury, object, threat, promise,
+  secret, unanswered question, or altered relationship temperature.
 
 ## Style Controls
 
@@ -19,6 +21,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - Keep names, titles, and factions consistent.
 - Balance inner thought with visible pressure.
 - End with a hook that follows from the scene, not a random shock.
+- Use short scene blocks when pressure turns quickly, but make every block inherit a
+  residue and leave a new complication.
 
 ## Avoid
 

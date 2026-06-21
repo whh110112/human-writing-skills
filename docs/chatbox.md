@@ -31,6 +31,7 @@ Fiction example:
 python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
+  --module narrative-bridges `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
@@ -68,6 +69,7 @@ Keep:
 - Active threads
 - Voice anchors
 - Current scene or section state
+- Beat bridge: previous residue, entry pressure, micro-turn, exit pressure
 - Newly true facts from the latest output
 - Open questions and unresolved pressure
 
@@ -92,6 +94,7 @@ my-novel-ledger.md
 python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
+  --module narrative-bridges `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

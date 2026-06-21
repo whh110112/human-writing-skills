@@ -34,6 +34,7 @@ Chatbox 的上下文通常包含：
 python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
+  --module narrative-bridges `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
@@ -71,6 +72,7 @@ python -m humanwriting.cli build `
 - 活跃线索
 - 声音锚点
 - 当前场景或章节状态
+- 节拍桥：上一拍残留、进入压力、下一步微转折、结尾压力
 - 最近输出后新增为真的事实
 - 未解决问题和悬而未决的压力
 
@@ -95,6 +97,7 @@ my-novel-ledger.md
 python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
+  --module narrative-bridges `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

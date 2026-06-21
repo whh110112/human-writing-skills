@@ -14,6 +14,16 @@
 - Captain Wei knows more than he admits, but he has protected Lin Qiao twice.
 - The next scene begins outside the shuttered customs hall at dawn.
 
+## Beat Bridge
+
+- Previous residue: the burned page left ash under Lin Qiao's fingernails and one
+  incomplete ferry clue.
+- Entry pressure: dawn workers will arrive soon, so she cannot search the customs hall
+  slowly.
+- Required micro-turn: Lin Qiao should gain one fragile inference, not certainty.
+- Exit pressure: the scene should leave Captain Wei's protection feeling useful and
+  suspicious at the same time.
+
 ## Voice Anchors
 
 - Third person limited, close to Lin Qiao.

@@ -43,6 +43,13 @@ Use this file as the source of truth for a long Chatbox writing session.
 - Current emotional pressure:
 - Next required connection:
 
+## Beat Bridge
+
+- Previous residue:
+- Entry pressure:
+- Micro-turn required next:
+- Exit pressure to preserve:
+
 ## Newly True
 
 - 

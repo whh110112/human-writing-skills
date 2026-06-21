@@ -44,6 +44,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | Module | What it repairs |
 | --- | --- |
 | `controlled-drift` | overly smooth logic, no associative movement, no unfinished thought |
+| `narrative-bridges` | weak scene turns, generic transitions, paragraphs that do not cause each other |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -88,6 +89,7 @@ The ledger tracks:
 - active threads: unresolved conflicts, clues, promises, open arguments
 - voice anchors: point of view, diction, pacing, formality, taboo phrases
 - current state: where the previous passage ended and what must connect next
+- beat bridge: previous residue, entry pressure, micro-turn, and exit hook
 - change log: what became newly true in the latest output
 
 See [examples/story-ledger.md](examples/story-ledger.md) for a fiction example.
@@ -122,6 +124,7 @@ Build a prompt pack:
 ```powershell
 python -m humanwriting.cli build `
   --style webnovel `
+  --module narrative-bridges `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

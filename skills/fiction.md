@@ -11,6 +11,10 @@ Create prose that feels observed rather than generated. Let character desire, sc
 - Vary sentence length according to pressure in the scene.
 - Use specific nouns and verbs before adjectives.
 - Keep exposition attached to what the character notices or needs.
+- Make each scene inherit residue from the prior beat: an object, unanswered line,
+  bodily state, risk, promise, or misread intention.
+- Move scenes by changed pressure, not by neutral summary. A scene should alter what a
+  character knows, wants, can risk, or can no longer pretend.
 
 ## Avoid
 

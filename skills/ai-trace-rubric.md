@@ -20,6 +20,7 @@ Score each dimension from 0 to 3:
 | Emotional flatness | Emotion is named but not embodied | Add action, body signal, sensory distortion, contradiction |
 | Rhythm monotony | Sentences move at one speed | Add breath variation, short brakes, altered cadence |
 | Context drift | Facts, stakes, or timeline blur | Update and obey the continuity ledger |
+| Weak beat bridge | Paragraphs or scenes sit beside each other instead of causing each other | Reconnect residue, micro-turn, proof detail, and exit pressure |
 | Cultural vacuum | No era, place, class, or community signal | Add one precise cultural anchor |
 | Over-clean prose | No hesitation, revision, roughness, or pressure | Add genre-appropriate imperfection |
 | Closure addiction | Every thought resolves neatly | Leave one productive open question or unresolved pressure |
