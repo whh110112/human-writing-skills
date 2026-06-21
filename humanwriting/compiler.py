@@ -23,6 +23,8 @@ Maintain a running ledger while generating long text:
 
 - Fixed facts: names, dates, locations, relationships, rules, timeline
 - Active threads: unresolved conflicts, questions, clues, promises, arguments
+- Relationship state: what each important person knows, wants, hides, owes, refuses,
+  and can use as leverage
 - Voice anchors: diction, point of view, formality, humor, pacing, taboo phrases
 - Scene or section state: where the previous output ended and what must connect next
 - Beat bridge: what residue from the previous beat enters the next beat, what changes,

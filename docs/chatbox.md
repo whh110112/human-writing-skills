@@ -32,6 +32,7 @@ python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
   --module narrative-bridges `
+  --module relationship-state `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
@@ -67,6 +68,7 @@ Update the continuity ledger only. Do not continue the draft.
 Keep:
 - Fixed facts
 - Active threads
+- Relationship state
 - Voice anchors
 - Current scene or section state
 - Beat bridge: previous residue, entry pressure, micro-turn, exit pressure
@@ -95,6 +97,7 @@ python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
   --module narrative-bridges `
+  --module relationship-state `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

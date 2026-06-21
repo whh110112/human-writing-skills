@@ -35,6 +35,7 @@ python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
   --module narrative-bridges `
+  --module relationship-state `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
@@ -70,6 +71,7 @@ python -m humanwriting.cli build `
 保留：
 - 固定事实
 - 活跃线索
+- 关系状态
 - 声音锚点
 - 当前场景或章节状态
 - 节拍桥：上一拍残留、进入压力、下一步微转折、结尾压力
@@ -98,6 +100,7 @@ python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
   --module narrative-bridges `
+  --module relationship-state `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

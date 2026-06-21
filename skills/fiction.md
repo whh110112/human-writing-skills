@@ -8,6 +8,8 @@ Create prose that feels observed rather than generated. Let character desire, sc
 
 - Choose a stable point of view and protect it.
 - Let emotion appear through action, hesitation, perception, and dialogue.
+- Let relationship changes appear through altered distance, permission, trust,
+  withheld answers, promises, and small status shifts.
 - Vary sentence length according to pressure in the scene.
 - Use specific nouns and verbs before adjectives.
 - Keep exposition attached to what the character notices or needs.

@@ -14,6 +14,14 @@
 - Captain Wei knows more than he admits, but he has protected Lin Qiao twice.
 - The next scene begins outside the shuttered customs hall at dawn.
 
+## Relationship State
+
+- Lin Qiao trusts Captain Wei's interventions more than his explanations.
+- Captain Wei has leverage because he knows the Salt Office patrol routes, but using
+  that knowledge would reveal how close he is to the cover-up.
+- Their last exchange ended politely, which is part of the problem: neither said the
+  accusation directly.
+
 ## Beat Bridge
 
 - Previous residue: the burned page left ash under Lin Qiao's fingernails and one

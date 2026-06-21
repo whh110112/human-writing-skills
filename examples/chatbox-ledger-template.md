@@ -28,6 +28,12 @@ Use this file as the source of truth for a long Chatbox writing session.
 
 - 
 
+## Relationship State
+
+| Person | Knows or suspects | Wants or hides | Boundary, promise, or leverage |
+| --- | --- | --- | --- |
+|  |  |  |  |
+
 ## Voice Anchors
 
 - Point of view:

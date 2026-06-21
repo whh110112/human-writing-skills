@@ -45,6 +45,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | --- | --- |
 | `controlled-drift` | overly smooth logic, no associative movement, no unfinished thought |
 | `narrative-bridges` | weak scene turns, generic transitions, paragraphs that do not cause each other |
+| `relationship-state` | relationships that reset, dialogue without leverage, forgotten secrets or boundaries |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -87,6 +88,7 @@ The ledger tracks:
 
 - fixed facts: names, dates, locations, relationships, rules, timeline
 - active threads: unresolved conflicts, clues, promises, open arguments
+- relationship state: who knows, wants, hides, owes, refuses, or holds leverage
 - voice anchors: point of view, diction, pacing, formality, taboo phrases
 - current state: where the previous passage ended and what must connect next
 - beat bridge: previous residue, entry pressure, micro-turn, and exit hook
@@ -125,6 +127,7 @@ Build a prompt pack:
 python -m humanwriting.cli build `
   --style webnovel `
   --module narrative-bridges `
+  --module relationship-state `
   --module embodied-emotion `
   --module vocal-rhythm `
   --review `

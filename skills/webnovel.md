@@ -7,6 +7,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 ## Continuity Priorities
 
 - Track power levels, abilities, resources, injuries, secrets, promises, and relationship shifts.
+- Track relationship leverage: who owes whom, who can reveal what, who is avoiding
+  which question, and whose public posture differs from private pressure.
 - Do not solve a conflict by inventing an unseeded ability.
 - Keep chapter endings linked to active tension.
 - Reuse prior details as payoff.

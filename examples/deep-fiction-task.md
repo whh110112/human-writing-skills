@@ -7,6 +7,7 @@ python -m humanwriting.cli build `
   --style fiction `
   --module controlled-drift `
   --module narrative-bridges `
+  --module relationship-state `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
@@ -23,6 +24,7 @@ The passage should not sound perfectly engineered. It should feel like a close t
 
 - one short associative detour tied to the river quarantine
 - one bridge element carried from the previous scene into the new scene
+- one relationship leverage point between Lin Qiao and Captain Wei
 - one bodily sign of fear that Lin Qiao tries to hide
 - one cultural anchor from Yanxi's port bureaucracy
 - one sentence that corrects itself without becoming melodramatic
