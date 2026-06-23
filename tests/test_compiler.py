@@ -1,6 +1,8 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from humanwriting.compiler import compile_prompt
+from humanwriting.compiler import compile_audit_prompt, compile_prompt
 from humanwriting.skills import list_module_skills, list_skills, list_style_skills, load_skill
 
 
@@ -16,6 +18,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("narrative-bridges", list_module_skills())
         self.assertIn("relationship-state", list_module_skills())
         self.assertIn("natural-measurement", list_module_skills())
+        self.assertIn("forensic-physical-audit", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -61,6 +64,22 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: spatial-blocking", prompt)
         self.assertIn("Technique Module: appearance-prop-continuity", prompt)
         self.assertIn("Technique Module: physical-continuity-audit", prompt)
+
+    def test_compile_audit_prompt_extracts_draft_and_modules(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text(
+                "Lao Gao looked from the front row toward Yanzi behind the glass. "
+                "Later, he touched Yanzi in the rear seat. Yanzi wore flats, then heels.",
+                encoding="utf-8",
+            )
+            prompt = compile_audit_prompt(str(draft))
+        self.assertIn("Audit Directive", prompt)
+        self.assertIn("Audit Module: forensic-physical-audit", prompt)
+        self.assertIn("Audit Module: spatial-blocking", prompt)
+        self.assertIn("Draft To Audit", prompt)
+        self.assertIn("behind the glass", prompt)
+        self.assertIn("flats, then heels", prompt)
 
 
 if __name__ == "__main__":

@@ -124,6 +124,18 @@ python -m humanwriting.cli build `
 
 新会话第一条消息粘贴最新指令包即可。
 
+## 在 Chatbox 中审查已有稿件
+
+如果不是续写，而是检查已经写好的章节，先用本项目生成审稿指令：
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft my-chapter.md `
+  --context my-novel-ledger.md
+```
+
+把输出粘贴到 Chatbox。它会要求模型先抽取证据表，再检查座位、隔板、触达、服装、鞋子、道具和伤口是否矛盾。
+
 ## 可直接复制的 Chatbox 开场消息
 
 ```text

@@ -12,6 +12,8 @@ AI 长文写作常见的问题不是剧情忘了，而是物理状态忘了：
 
 ## 推荐使用
 
+生成前约束：
+
 ```powershell
 python -m humanwriting.cli build `
   --style fiction `
@@ -19,6 +21,14 @@ python -m humanwriting.cli build `
   --review `
   --context examples/vehicle-scene-ledger.md `
   --task "续写车内争执。任何座位变化都必须写出动作过渡，保持服装和道具状态一致。"
+```
+
+成稿后审查：
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft examples/problem-car-scene-draft.zh-CN.md `
+  --context examples/vehicle-scene-ledger.md
 ```
 
 `--strict-continuity` 会自动加入：
@@ -62,3 +72,15 @@ python -m humanwriting.cli build `
 
 输出矛盾列表和最小修复建议。
 ```
+
+## 为什么要用 `audit`
+
+`build --strict-continuity` 适合生成前约束，但它不能保证模型会主动回头逐句查错。`audit` 会生成“法医式审稿指令包”，强制模型先抽证据表，再判断矛盾。
+
+它会重点抓：
+
+- 前排/后排位置漂移
+- 隔音玻璃、隔板、座椅、安全带造成的触达限制
+- 明明没有停车/开门/换座，却发生近身接触
+- 平底鞋变高跟鞋、短裙变长裙、外套凭空消失
+- 手机、包、信封、钥匙等道具位置变化

@@ -123,6 +123,15 @@ python -m humanwriting.cli build `
 
 - Guide: [docs/physical-continuity.md](docs/physical-continuity.md)
 - Vehicle ledger example: [examples/vehicle-scene-ledger.md](examples/vehicle-scene-ledger.md)
+- Draft audit example: [examples/problem-car-scene-draft.md](examples/problem-car-scene-draft.md)
+
+If the draft already exists, use `audit`:
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft examples/problem-car-scene-draft.md `
+  --context examples/vehicle-scene-ledger.md
+```
 
 ## Project Layout
 
