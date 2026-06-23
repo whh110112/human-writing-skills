@@ -51,6 +51,9 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
 | `cultural-anchors` | vacuum prose with no era, place, community, or material detail |
+| `spatial-blocking` | character teleportation and confused front/back/left/right blocking |
+| `appearance-prop-continuity` | clothing, shoes, props, injuries, and daily-detail drift |
+| `physical-continuity-audit` | final checks for position, movement gates, wardrobe, and props |
 | `style-matrix` | the mistake of applying one generic "human voice" to every genre |
 | `editor-loop` | one-shot drafting without a critical human-editor pass |
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
@@ -105,6 +108,22 @@ Yes, this project works in Chatbox because it outputs plain text prompt packs. F
 - Chinese guide: [docs/chatbox.zh-CN.md](docs/chatbox.zh-CN.md)
 - Ledger template: [examples/chatbox-ledger-template.md](examples/chatbox-ledger-template.md)
 
+## Physical Continuity
+
+For scenes where space matters, such as cars, elevators, hospital rooms, dining tables, and bedrooms, use `--strict-continuity`. It automatically adds spatial blocking, appearance/prop continuity, and physical audit modules.
+
+```powershell
+python -m humanwriting.cli build `
+  --style fiction `
+  --strict-continuity `
+  --review `
+  --context examples/vehicle-scene-ledger.md `
+  --task "Continue the car argument. Every seat change must have an on-page transition. Keep clothing and props consistent."
+```
+
+- Guide: [docs/physical-continuity.md](docs/physical-continuity.md)
+- Vehicle ledger example: [examples/vehicle-scene-ledger.md](examples/vehicle-scene-ledger.md)
+
 ## Project Layout
 
 ```text
@@ -132,6 +151,7 @@ python -m humanwriting.cli build `
   --module natural-measurement `
   --module embodied-emotion `
   --module vocal-rhythm `
+  --strict-continuity `
   --review `
   --context examples/story-ledger.md `
   --task "Continue chapter 3. Keep the confrontation unresolved but reveal one new clue."
@@ -141,6 +161,12 @@ The `--review` flag adds two modules automatically:
 
 - `editor-loop`: draft, diagnose, locally rewrite, then finalize
 - `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, weak beat bridges, relationship resets, false precision, cultural vacuum, over-clean prose, and closure addiction
+
+The `--strict-continuity` flag adds:
+
+- `spatial-blocking`: position and movement checks
+- `appearance-prop-continuity`: clothing, shoes, props, and body-state checks
+- `physical-continuity-audit`: final physical-state contradiction pass
 
 Run tests:
 

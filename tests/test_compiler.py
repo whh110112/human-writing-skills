@@ -52,6 +52,16 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: editor-loop", prompt)
         self.assertIn("Technique Module: ai-trace-rubric", prompt)
 
+    def test_compile_prompt_can_add_strict_continuity_modules(self):
+        prompt = compile_prompt(
+            "fiction",
+            "Write a car scene.",
+            strict_continuity=True,
+        )
+        self.assertIn("Technique Module: spatial-blocking", prompt)
+        self.assertIn("Technique Module: appearance-prop-continuity", prompt)
+        self.assertIn("Technique Module: physical-continuity-audit", prompt)
+
 
 if __name__ == "__main__":
     unittest.main()

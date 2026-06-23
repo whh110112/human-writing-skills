@@ -14,7 +14,7 @@ the genre or narrator.
 
 Before drafting, identify the active context, genre promise, reader expectation, and
 the one thing this passage must change. During drafting, preserve established facts.
-After drafting, revise once for cadence, concrete detail, and continuity.
+After drafting, revise once for cadence, concrete detail, physical state, and continuity.
 Use exact measurements, counts, and numbers when the context earns them; otherwise
 prefer felt, relational, or scene-specific scale.
 """
@@ -32,6 +32,7 @@ Maintain a running ledger while generating long text:
 - Scene or section state: where the previous output ended and what must connect next
 - Beat bridge: what residue from the previous beat enters the next beat, what changes,
   and what pressure or question remains open
+- Physical state: positions, movement gates, clothing, props, injuries, reachable objects
 - Change log: what became newly true in the current passage
 
 If context is missing, make the smallest possible assumption and mark it as an assumption.
@@ -53,11 +54,17 @@ def compile_prompt(
     context_path: str | None = None,
     modules: list[str] | None = None,
     review: bool = False,
+    strict_continuity: bool = False,
 ) -> str:
     skill = load_skill(style)
     if skill.kind != "style":
         raise ValueError(f"'{style}' is a module, not a primary style skill.")
     selected_modules = load_many(modules or [])
+    if strict_continuity:
+        selected_names = [module.name for module in selected_modules]
+        for name in ["spatial-blocking", "appearance-prop-continuity", "physical-continuity-audit"]:
+            if name not in selected_names:
+                selected_modules.append(load_skill(name))
     if review and "editor-loop" not in [module.name for module in selected_modules]:
         selected_modules.append(load_skill("editor-loop"))
     if review and "ai-trace-rubric" not in [module.name for module in selected_modules]:

@@ -20,6 +20,28 @@ Use this file as the source of truth for a long Chatbox writing session.
 | --- | --- | --- | --- |
 |  |  |  |  |
 
+## Spatial Blocking
+
+Use named positions. In vehicles, prefer exact seats: driver seat, front passenger seat, rear-left seat, rear-center seat, rear-right seat.
+
+| Character | Position | Facing | Can see/reach | Blocked by | Last confirmed |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+
+## Appearance and Props
+
+| Character | Clothing | Shoes | Hair/makeup | Injuries/body state | Carried items | Last confirmed |
+| --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |
+
+## Movement Log
+
+Only add a movement if it appears on-page.
+
+| Beat | Character | From | To | Transition shown |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
+
 ## Timeline
 
 - 
