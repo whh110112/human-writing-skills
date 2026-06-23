@@ -22,7 +22,13 @@ Use this file as the source of truth for a long Chatbox writing session.
 
 ## Spatial Blocking
 
-Use named positions. In vehicles, prefer exact seats: driver seat, front passenger seat, rear-left seat, rear-center seat, rear-right seat.
+Use named positions derived from the scene. For vehicles, tables, rooms, beds, stools, aircraft, motorcycles, or improvised spaces, define the physical resources first.
+
+## Occupancy and Capacity
+
+| Resource | Mode | Capacity rule | Current occupants/items | Access path | Last confirmed |
+| --- | --- | --- | --- | --- | --- |
+|  | seat / bench / bed / floor / aisle / stool / lap / storage |  |  |  |  |
 
 | Character | Position | Facing | Can see/reach | Blocked by | Last confirmed |
 | --- | --- | --- | --- | --- | --- |

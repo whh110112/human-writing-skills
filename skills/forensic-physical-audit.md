@@ -28,10 +28,14 @@ Claim types:
 - clothing/shoes: short skirt, long skirt, flats, heels, coat on/off
 - prop: phone, bag, envelope, keys, weapon, cup, cigarette
 - body state: injury, restraint, wet/dry, makeup, blood, fatigue
+- occupancy/capacity: who or what is on/in the same resource, how many, in what mode
 
 ## Contradiction Gates
 
 Flag a contradiction when any of these appear:
+
+0. Occupancy/capacity conflict
+   - A physical resource holds more occupants/items than its established mode permits, or a broad zone receives multiple occupants without clarifying whether it is a shared surface, separate sub-slots, lap, bed, floor, aisle, or transformed resource.
 
 1. Position drift
    - A character moves from front to rear, rear to front, outside to inside, or one side to another without an on-page movement beat.
@@ -54,6 +58,9 @@ Flag a contradiction when any of these appear:
 7. Body-state reset
    - Injury, fatigue, restraint, wetness, dirt, makeup, or physical limitation vanishes without a recovery/change beat.
 
+8. Unsupported transformation
+   - A seat, table, stool, bed, aisle, or surface changes function without an on-page transformation beat.
+
 ## Severity
 
 - Critical: impossible action changes the scene outcome.
@@ -72,6 +79,7 @@ Physical Continuity Forensic Audit
 | Severity | Type | Earlier state | Later conflict | Why impossible | Minimal fix |
 
 3. State Ledger After Audit
+- Occupancy/capacity:
 - Character positions:
 - Clothing/shoes:
 - Props:
@@ -90,10 +98,18 @@ In vehicle scenes, explicitly check:
 - Who is in the driver seat?
 - Who is in the front passenger seat?
 - Who is rear-left, rear-center, rear-right?
+- Are rear-left/rear-right separate one-person slots, a bench, a bed, a folded surface, or an unclear zone?
 - Is there a partition or soundproof glass?
 - Can the touching/contact action happen from those positions?
 - Did anyone unbuckle, stop the car, climb over, exit, or re-enter?
 - Did clothing and shoes stay the same?
+
+In non-vehicle scenes, explicitly check the equivalent resources:
+
+- What is the support or container: chair, stool, bench, bed, table, floor, aisle, motorcycle saddle, airplane seat?
+- What mode is it in: sitting, standing, lying, storage, folded, collapsed, shared, blocked?
+- How many occupants/items can that mode plausibly hold?
+- Was sharing or transformation established?
 
 ## Avoid
 

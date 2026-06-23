@@ -18,6 +18,16 @@ Use this ledger with `--strict-continuity` for scenes inside cars, vans, trains,
 | Xu Bei | rear-left passenger | left wrist bandaged | injury limits grip |
 | Mei | rear-right passenger | wearing short skirt and flat shoes | outfit cannot become long skirt or heels without change beat |
 
+## Occupancy and Capacity
+
+| Resource | Mode | Capacity rule | Current occupants/items | Access path | Last confirmed |
+| --- | --- | --- | --- | --- | --- |
+| driver seat | one-person seat | one driver | Chen Yi | driver door | scene start |
+| front passenger seat | one-person seat | one passenger | Luo Nan, paper envelope in lap | front passenger door | scene start |
+| rear-left seat | one-person seat unless changed on-page | one passenger | Xu Bei | rear-left door | scene start |
+| rear-right seat | one-person seat unless changed on-page | one passenger | Mei, small shoulder bag | rear-right door | scene start |
+| rear bench as whole | separated seats, not bed | three seated passengers if rear-center is open | Xu Bei, Mei; rear-center empty | rear doors | scene start |
+
 ## Spatial Blocking
 
 | Character | Position | Facing | Can see/reach | Blocked by | Last confirmed |

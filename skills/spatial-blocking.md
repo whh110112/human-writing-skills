@@ -12,16 +12,27 @@ Before drafting a scene in a physical location, maintain a blocking table:
 | --- | --- | --- | --- | --- |
 |  |  |  |  |  |
 
-For vehicles, use named seats instead of vague positions:
+For constrained spaces, derive named positions from the scene instead of forcing a fixed layout. Use exact labels when the text gives them, and mark unknown capacity as unknown.
+
+Examples of possible labels:
 
 - driver seat
 - front passenger seat
 - rear-left seat
 - rear-center seat
 - rear-right seat
+- rear bench
+- folded rear seats
+- aisle
+- booth bench
+- stool
+- bed edge
+- floor area
 - cargo/trunk area
 - outside-left door
 - outside-right door
+
+These are examples, not a fixed inventory. A motorcycle, airplane, dining table, elevator, bed, stool, or improvised platform needs its own scene-derived map.
 
 ## Movement Gate
 
@@ -37,6 +48,7 @@ If no movement beat is written, the previous position remains true.
 ## Narrow-Space Rules
 
 - In a car, front-seat and rear-seat characters cannot casually touch, whisper, exchange objects, or look at each other unless body angle, reach, mirror, or handoff path is described.
+- In any constrained space, a resource cannot receive extra occupants unless its mode and capacity support sharing or the text adds a transformation/access beat.
 - In a small room, door, window, table, bed, wall, and exit positions should remain stable.
 - If someone blocks a doorway, others cannot pass through without a negotiation, shove, sidestep, or wait.
 - A character cannot face two incompatible directions at the same time.

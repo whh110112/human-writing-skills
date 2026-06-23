@@ -19,6 +19,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("relationship-state", list_module_skills())
         self.assertIn("natural-measurement", list_module_skills())
         self.assertIn("forensic-physical-audit", list_module_skills())
+        self.assertIn("occupancy-capacity", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -61,6 +62,7 @@ class CompilerTests(unittest.TestCase):
             "Write a car scene.",
             strict_continuity=True,
         )
+        self.assertIn("Technique Module: occupancy-capacity", prompt)
         self.assertIn("Technique Module: spatial-blocking", prompt)
         self.assertIn("Technique Module: appearance-prop-continuity", prompt)
         self.assertIn("Technique Module: physical-continuity-audit", prompt)
@@ -76,6 +78,7 @@ class CompilerTests(unittest.TestCase):
             prompt = compile_audit_prompt(str(draft))
         self.assertIn("Audit Directive", prompt)
         self.assertIn("Audit Module: forensic-physical-audit", prompt)
+        self.assertIn("Audit Module: occupancy-capacity", prompt)
         self.assertIn("Audit Module: spatial-blocking", prompt)
         self.assertIn("Draft To Audit", prompt)
         self.assertIn("behind the glass", prompt)

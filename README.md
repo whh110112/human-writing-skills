@@ -52,6 +52,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
 | `cultural-anchors` | vacuum prose with no era, place, community, or material detail |
 | `spatial-blocking` | character teleportation and confused front/back/left/right blocking |
+| `occupancy-capacity` | over-occupied or mode-ambiguous seats, benches, beds, stools, aisles, and surfaces |
 | `appearance-prop-continuity` | clothing, shoes, props, injuries, and daily-detail drift |
 | `physical-continuity-audit` | final checks for position, movement gates, wardrobe, and props |
 | `style-matrix` | the mistake of applying one generic "human voice" to every genre |
@@ -123,6 +124,8 @@ python -m humanwriting.cli build `
 
 - Guide: [docs/physical-continuity.md](docs/physical-continuity.md)
 - Vehicle ledger example: [examples/vehicle-scene-ledger.md](examples/vehicle-scene-ledger.md)
+- Capacity ledger template: [examples/capacity-ledger-template.md](examples/capacity-ledger-template.md)
+- Capacity conflict example: [examples/capacity-conflict-draft.zh-CN.md](examples/capacity-conflict-draft.zh-CN.md)
 - Draft audit example: [examples/problem-car-scene-draft.md](examples/problem-car-scene-draft.md)
 
 If the draft already exists, use `audit`:
@@ -174,6 +177,7 @@ The `--review` flag adds two modules automatically:
 The `--strict-continuity` flag adds:
 
 - `spatial-blocking`: position and movement checks
+- `occupancy-capacity`: physical resource mode, capacity, occupancy, and transformation checks
 - `appearance-prop-continuity`: clothing, shoes, props, and body-state checks
 - `physical-continuity-audit`: final physical-state contradiction pass
 

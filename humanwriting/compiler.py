@@ -32,7 +32,8 @@ Maintain a running ledger while generating long text:
 - Scene or section state: where the previous output ended and what must connect next
 - Beat bridge: what residue from the previous beat enters the next beat, what changes,
   and what pressure or question remains open
-- Physical state: positions, movement gates, clothing, props, injuries, reachable objects
+- Physical state: positions, resource modes/capacity, occupancy, movement gates,
+  transformation gates, clothing, props, injuries, reachable objects
 - Change log: what became newly true in the current passage
 
 If context is missing, make the smallest possible assumption and mark it as an assumption.
@@ -62,9 +63,15 @@ def compile_prompt(
     selected_modules = load_many(modules or [])
     if strict_continuity:
         selected_names = [module.name for module in selected_modules]
-        for name in ["spatial-blocking", "appearance-prop-continuity", "physical-continuity-audit"]:
+        for name in [
+            "occupancy-capacity",
+            "spatial-blocking",
+            "appearance-prop-continuity",
+            "physical-continuity-audit",
+        ]:
             if name not in selected_names:
                 selected_modules.append(load_skill(name))
+                selected_names.append(name)
     if review and "editor-loop" not in [module.name for module in selected_modules]:
         selected_modules.append(load_skill("editor-loop"))
     if review and "ai-trace-rubric" not in [module.name for module in selected_modules]:
@@ -101,6 +108,7 @@ def compile_audit_prompt(
     if strict_continuity:
         required_modules.extend(
             [
+                "occupancy-capacity",
                 "spatial-blocking",
                 "appearance-prop-continuity",
                 "physical-continuity-audit",
@@ -117,9 +125,9 @@ def compile_audit_prompt(
         "# Audit Directive\n\n"
         "You are auditing an existing draft, not generating new prose. "
         "Do not assume continuity is correct. Extract physical evidence first, "
-        "then flag contradictions. Pay special attention to vehicle seats, front/rear "
-        "relationships, barriers, reach/contact feasibility, clothing, shoes, props, "
-        "and body-state drift.",
+        "then flag contradictions. Pay special attention to occupancy and capacity, "
+        "front/rear/left/right relationships, barriers, reach/contact feasibility, "
+        "clothing, shoes, props, and body-state drift.",
         CONTINUITY_DIRECTIVE.strip(),
     ]
     for module in selected_modules:
@@ -131,7 +139,8 @@ def compile_audit_prompt(
         "# Audit Task\n\n"
         "Return a forensic physical continuity audit. First output an evidence table, "
         "then contradictions, then the corrected state ledger and minimal repair plan. "
-        "If a character changes seat, crosses a barrier, touches someone, changes shoes, "
-        "or changes clothing, require explicit text evidence for the transition."
+        "If a character changes seat, shares a physical resource, changes the mode of a "
+        "supporting surface, crosses a barrier, touches someone, changes shoes, or changes "
+        "clothing, require explicit text evidence for the transition."
     )
     return "\n\n---\n\n".join(blocks) + "\n"
