@@ -6,12 +6,12 @@ Prevent "one human voice" from being applied to every genre. Each style has its 
 
 | Style | Human Signal | Useful Modules | Risk |
 | --- | --- | --- | --- |
-| Fiction | pressure, action, subtext, sensory specificity | embodied-emotion, vocal-rhythm, controlled-drift, natural-measurement, spatial-blocking | overexplaining feelings or losing blocking |
+| Fiction | pressure, action, subtext, sensory specificity | embodied-emotion, vocal-rhythm, controlled-drift, natural-measurement, spatial-blocking, occupancy-capacity | overexplaining feelings or losing blocking |
 | Essay | stance, doubt, concrete examples, fair concessions | controlled-drift, imperfect-prose, ai-trace-rubric | generic balance and safe conclusion |
 | News report | verified order, attribution, compression | ai-trace-rubric | too much personality |
 | Self-media | judgment, anecdote, usefulness, spoken rhythm | imperfect-prose, cultural-anchors, vocal-rhythm | clickbait and fake intimacy |
 | Academic paper | cautious claim, method clarity, term stability | ai-trace-rubric | decorative prose or unsupported novelty |
-| Web novel | continuity, payoff, cliffhanger, status change | embodied-emotion, vocal-rhythm, cultural-anchors, relationship-state, physical-continuity-audit | invented convenience, relationship reset, forgotten costs, seat/prop drift |
+| Web novel | continuity, payoff, cliffhanger, status change | embodied-emotion, vocal-rhythm, cultural-anchors, relationship-state, occupancy-capacity, physical-continuity-audit | invented convenience, relationship reset, forgotten costs, capacity/prop drift |
 | Memoir/Essay | memory, contradiction, voice, reflective gaps | controlled-drift, imperfect-prose, embodied-emotion | sentimentality |
 | Commercial copy | pain point, proof, case detail, low-friction offer | cultural-anchors, vocal-rhythm, ai-trace-rubric | hard-sell adjectives |
 

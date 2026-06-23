@@ -2,7 +2,7 @@
 
 This guide prevents character teleportation, seat drift, clothing drift, and prop inconsistency in long scenes.
 
-Use it for cars, trains, elevators, booths, bedrooms, hospital rooms, offices, and any narrow space where position matters.
+Use it for cars, trains, elevators, booths, bedrooms, hospital rooms, offices, motorcycles, airplanes, dining rooms, stools, beds, floors, and any physical scene where position or capacity matters.
 
 ## Recommended Command
 
@@ -28,6 +28,7 @@ python -m humanwriting.cli audit `
 `--strict-continuity` automatically adds:
 
 - `spatial-blocking`
+- `occupancy-capacity`
 - `appearance-prop-continuity`
 - `physical-continuity-audit`
 
@@ -36,6 +37,9 @@ python -m humanwriting.cli audit `
 | Category | Examples |
 | --- | --- |
 | Position | driver seat, front passenger seat, rear-left, rear-right |
+| Physical resource | seat, bench, bed, stool, table, aisle, floor, motorcycle saddle |
+| Mode | one-person seat, shared bench, folded bed, standing surface, storage, blocked |
+| Capacity rule | one adult, shared surface, unknown, temporary standing, load-limited |
 | Facing | forward, toward window, through mirror |
 | Reach | wheel, glove box, door handle, nearby person |
 | Obstacles | seat belt, console, table, doorway, front seat back |
@@ -47,7 +51,9 @@ python -m humanwriting.cli audit `
 
 If no transition is written, the previous physical state remains true.
 
-That single rule prevents most seat drift, clothing drift, and object drift.
+If no transformation is written, the resource keeps its previous mode and capacity.
+
+Those two rules prevent most seat drift, over-occupancy, clothing drift, and object drift.
 
 ## Why Use `audit`
 
@@ -56,7 +62,9 @@ That single rule prevents most seat drift, clothing drift, and object drift.
 The `audit` command creates a forensic review prompt. It forces evidence extraction before judgment, then checks:
 
 - front/rear seat drift
+- occupancy and capacity conflicts
 - barriers such as soundproof glass or partitions
 - impossible reach, touch, handoff, or direct whispering
 - shoes, skirt length, coat, injury, and prop drift
 - missing movement gates such as stopping, unbuckling, opening a door, or changing seats
+- missing transformation gates such as folding seats into a bed, clearing a table, or turning a stool into a standing platform

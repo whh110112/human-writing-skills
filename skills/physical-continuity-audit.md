@@ -17,15 +17,18 @@ For already-written drafts, prefer `forensic-physical-audit`. This skill is stil
    - doors, seats, exits, furniture, vehicle layout
    - barriers such as soundproof glass, partitions, locked doors, seat backs, seat belts
    - reach/contact actions such as touching, grabbing, passing objects, whispering directly, or close physical contact
+   - occupancy/capacity claims about who or what shares a physical resource
 
 2. Compare them against the ledger:
    - fixed physical facts
+   - occupancy and capacity table
    - current blocking table
    - appearance and prop table
    - movement log
 
 3. Flag contradictions:
    - unexplained seat change
+   - over-occupied or mode-ambiguous physical resource
    - impossible reach or eye contact
    - contact across a barrier without a workaround
    - clothing or footwear drift
