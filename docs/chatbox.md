@@ -71,6 +71,9 @@ Keep:
 - Active threads
 - Relationship state
 - Voice anchors
+- Spatial positions and seat/standing locations
+- Clothing, shoes, injuries, and prop state
+- Movement transitions already shown on-page
 - Current scene or section state
 - Beat bridge: previous residue, entry pressure, micro-turn, exit pressure
 - Newly true facts from the latest output
@@ -126,6 +129,7 @@ Treat the following as standing instructions for this writing session.
 Rules:
 - Keep the continuity ledger active.
 - Before every draft, check fixed facts, active threads, voice anchors, and current state.
+- In cars, rooms, elevators, or other narrow spaces, check positions, reach, clothing, props, and movement gates before drafting.
 - Do not overwrite established facts for convenience.
 - If context is missing, make the smallest possible assumption and mark it.
 - After each long draft, output a short "Ledger Update" section only when I ask for it.

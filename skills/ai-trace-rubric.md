@@ -23,6 +23,7 @@ Score each dimension from 0 to 3:
 | Weak beat bridge | Paragraphs or scenes sit beside each other instead of causing each other | Reconnect residue, micro-turn, proof detail, and exit pressure |
 | Relationship reset | Trust, boundaries, secrets, or leverage reset after charged scenes | Track who knows, wants, hides, owes, refuses, and can withdraw |
 | False precision | Tiny exact measures or counted micro-actions appear where no person would measure | Keep useful facts; soften decorative numbers into felt, relational, or plot-relevant detail |
+| Physical drift | Position, clothing, props, or injuries change without transition | Add spatial blocking, appearance/prop state, or movement gate |
 | Cultural vacuum | No era, place, class, or community signal | Add one precise cultural anchor |
 | Over-clean prose | No hesitation, revision, roughness, or pressure | Add genre-appropriate imperfection |
 | Closure addiction | Every thought resolves neatly | Leave one productive open question or unresolved pressure |

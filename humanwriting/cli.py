@@ -35,6 +35,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Add the editor loop and AI trace rubric modules.",
     )
+    build.add_argument(
+        "--strict-continuity",
+        action="store_true",
+        help="Add spatial blocking, appearance/prop continuity, and physical audit modules.",
+    )
     build.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
     build.add_argument("--task", required=True, help="Writing task to perform.")
     return parser
@@ -56,7 +61,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "build":
-        print(compile_prompt(args.style, args.task, args.context, args.module, args.review), end="")
+        print(
+            compile_prompt(
+                args.style,
+                args.task,
+                args.context,
+                args.module,
+                args.review,
+                args.strict_continuity,
+            ),
+            end="",
+        )
         return 0
 
     parser.error(f"Unknown command: {args.command}")
