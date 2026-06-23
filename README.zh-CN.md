@@ -125,6 +125,15 @@ python -m humanwriting.cli build `
 
 - 说明：[docs/physical-continuity.zh-CN.md](docs/physical-continuity.zh-CN.md)
 - 车辆场景账本：[examples/vehicle-scene-ledger.md](examples/vehicle-scene-ledger.md)
+- 成稿审查示例：[examples/problem-car-scene-draft.zh-CN.md](examples/problem-car-scene-draft.zh-CN.md)
+
+如果已经有一段文本需要审稿，使用 `audit`：
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft examples/problem-car-scene-draft.zh-CN.md `
+  --context examples/vehicle-scene-ledger.md
+```
 
 ## 项目结构
 

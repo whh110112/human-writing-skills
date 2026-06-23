@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from .compiler import compile_prompt
+from .compiler import compile_audit_prompt, compile_prompt
 from .skills import list_module_skills, list_skills, list_style_skills
 
 
@@ -42,6 +42,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     build.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
     build.add_argument("--task", required=True, help="Writing task to perform.")
+
+    audit = subparsers.add_parser("audit", help="Build a forensic audit pack for an existing draft.")
+    audit.add_argument("--draft", required=True, help="Markdown/text file containing the draft to audit.")
+    audit.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
+    audit.add_argument(
+        "--module",
+        action="append",
+        default=[],
+        help="Optional extra audit module. Can be provided multiple times.",
+    )
+    audit.add_argument(
+        "--strict-continuity",
+        default=True,
+        action="store_true",
+        help="Add strict physical continuity audit modules. Enabled by default.",
+    )
+    audit.add_argument(
+        "--no-strict-continuity",
+        dest="strict_continuity",
+        action="store_false",
+        help="Disable strict physical continuity audit modules.",
+    )
     return parser
 
 
@@ -68,6 +90,18 @@ def main(argv: list[str] | None = None) -> int:
                 args.context,
                 args.module,
                 args.review,
+                args.strict_continuity,
+            ),
+            end="",
+        )
+        return 0
+
+    if args.command == "audit":
+        print(
+            compile_audit_prompt(
+                args.draft,
+                args.context,
+                args.module,
                 args.strict_continuity,
             ),
             end="",

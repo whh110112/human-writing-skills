@@ -121,6 +121,18 @@ Start a new Chatbox conversation when:
 
 Paste the rebuilt prompt pack at the start of the new conversation.
 
+## Auditing an Existing Draft in Chatbox
+
+When you need to review an already-written chapter, generate an audit pack:
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft my-chapter.md `
+  --context my-novel-ledger.md
+```
+
+Paste the output into Chatbox. It instructs the model to extract evidence first, then check seats, barriers, reach/contact, clothing, shoes, props, and injuries.
+
 ## Copyable Chatbox Opening Message
 
 ```text

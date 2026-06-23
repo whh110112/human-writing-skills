@@ -87,3 +87,51 @@ def compile_prompt(
         "and specific to the genre rather than broadly polished."
     )
     return "\n\n---\n\n".join(blocks) + "\n"
+
+
+def compile_audit_prompt(
+    draft_path: str,
+    context_path: str | None = None,
+    modules: list[str] | None = None,
+    strict_continuity: bool = True,
+) -> str:
+    selected_modules = load_many(modules or [])
+    selected_names = [module.name for module in selected_modules]
+    required_modules = ["forensic-physical-audit"]
+    if strict_continuity:
+        required_modules.extend(
+            [
+                "spatial-blocking",
+                "appearance-prop-continuity",
+                "physical-continuity-audit",
+            ]
+        )
+    for name in required_modules:
+        if name not in selected_names:
+            selected_modules.append(load_skill(name))
+            selected_names.append(name)
+
+    context = read_optional(context_path)
+    draft = read_optional(draft_path)
+    blocks = [
+        "# Audit Directive\n\n"
+        "You are auditing an existing draft, not generating new prose. "
+        "Do not assume continuity is correct. Extract physical evidence first, "
+        "then flag contradictions. Pay special attention to vehicle seats, front/rear "
+        "relationships, barriers, reach/contact feasibility, clothing, shoes, props, "
+        "and body-state drift.",
+        CONTINUITY_DIRECTIVE.strip(),
+    ]
+    for module in selected_modules:
+        blocks.append(f"# Audit Module: {module.name}\n\n{module.content}")
+    if context:
+        blocks.append(f"# Continuity Ledger\n\n{context}")
+    blocks.append(f"# Draft To Audit\n\n{draft}")
+    blocks.append(
+        "# Audit Task\n\n"
+        "Return a forensic physical continuity audit. First output an evidence table, "
+        "then contradictions, then the corrected state ledger and minimal repair plan. "
+        "If a character changes seat, crosses a barrier, touches someone, changes shoes, "
+        "or changes clothing, require explicit text evidence for the transition."
+    )
+    return "\n\n---\n\n".join(blocks) + "\n"
