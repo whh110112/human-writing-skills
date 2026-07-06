@@ -40,6 +40,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Add spatial blocking, appearance/prop continuity, and physical audit modules.",
     )
+    build.add_argument(
+        "--number-sense",
+        action="store_true",
+        help="Add dynamic number necessity review for false precision.",
+    )
     build.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
     build.add_argument("--task", required=True, help="Writing task to perform.")
 
@@ -63,6 +68,11 @@ def build_parser() -> argparse.ArgumentParser:
         dest="strict_continuity",
         action="store_false",
         help="Disable strict physical continuity audit modules.",
+    )
+    audit.add_argument(
+        "--numbers",
+        action="store_true",
+        help="Add number necessity audit for false precision.",
     )
     return parser
 
@@ -91,6 +101,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.module,
                 args.review,
                 args.strict_continuity,
+                args.number_sense,
             ),
             end="",
         )
@@ -103,6 +114,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.context,
                 args.module,
                 args.strict_continuity,
+                args.numbers,
             ),
             end="",
         )

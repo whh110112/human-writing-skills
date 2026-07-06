@@ -56,6 +56,16 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: editor-loop", prompt)
         self.assertIn("Technique Module: ai-trace-rubric", prompt)
 
+    def test_review_adds_number_sense_for_narrative_styles(self):
+        fiction_prompt = compile_prompt("fiction", "Write the next scene.", review=True)
+        news_prompt = compile_prompt("news-report", "Write the report.", review=True)
+        self.assertIn("Technique Module: natural-measurement", fiction_prompt)
+        self.assertNotIn("Technique Module: natural-measurement", news_prompt)
+
+    def test_number_sense_can_be_explicitly_added(self):
+        prompt = compile_prompt("news-report", "Write the report.", number_sense=True)
+        self.assertIn("Technique Module: natural-measurement", prompt)
+
     def test_compile_prompt_can_add_strict_continuity_modules(self):
         prompt = compile_prompt(
             "fiction",
@@ -75,11 +85,12 @@ class CompilerTests(unittest.TestCase):
                 "Later, he touched Yanzi in the rear seat. Yanzi wore flats, then heels.",
                 encoding="utf-8",
             )
-            prompt = compile_audit_prompt(str(draft))
+            prompt = compile_audit_prompt(str(draft), number_sense=True)
         self.assertIn("Audit Directive", prompt)
         self.assertIn("Audit Module: forensic-physical-audit", prompt)
         self.assertIn("Audit Module: occupancy-capacity", prompt)
         self.assertIn("Audit Module: spatial-blocking", prompt)
+        self.assertIn("Audit Module: natural-measurement", prompt)
         self.assertIn("Draft To Audit", prompt)
         self.assertIn("behind the glass", prompt)
         self.assertIn("flats, then heels", prompt)

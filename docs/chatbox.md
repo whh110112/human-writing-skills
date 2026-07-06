@@ -135,6 +135,17 @@ python -m humanwriting.cli audit `
 
 Paste the output into Chatbox. It instructs the model to extract evidence first, then check seats, barriers, reach/contact, clothing, shoes, props, and injuries.
 
+For false precision review:
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft my-chapter.md `
+  --numbers `
+  --no-strict-continuity
+```
+
+It asks the model to list each exact number and decide whether to keep, soften, or delete it.
+
 ## Copyable Chatbox Opening Message
 
 ```text

@@ -149,6 +149,20 @@ tests/               标准库单元测试
 
 ## 常用命令
 
+### 数字必要性审查
+
+用于处理“人物动作和情绪里不自然的 1 厘米、3 厘米、7 秒”等假精确感，同时保留建筑高度、伤口鉴定、工程参数、新闻事实等必要数字。
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft examples/false-precision-draft.zh-CN.md `
+  --numbers `
+  --no-strict-continuity
+```
+
+- 说明：[docs/number-sense.zh-CN.md](docs/number-sense.zh-CN.md)
+- 示例：[examples/false-precision-draft.zh-CN.md](examples/false-precision-draft.zh-CN.md)
+
 列出所有文体：
 
 ```powershell
