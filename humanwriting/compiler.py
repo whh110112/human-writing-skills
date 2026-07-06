@@ -4,6 +4,8 @@ from pathlib import Path
 
 from .skills import load_many, load_skill
 
+NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
+
 
 CORE_DIRECTIVE = """# Core Directive
 
@@ -56,6 +58,7 @@ def compile_prompt(
     modules: list[str] | None = None,
     review: bool = False,
     strict_continuity: bool = False,
+    number_sense: bool = False,
 ) -> str:
     skill = load_skill(style)
     if skill.kind != "style":
@@ -76,6 +79,10 @@ def compile_prompt(
         selected_modules.append(load_skill("editor-loop"))
     if review and "ai-trace-rubric" not in [module.name for module in selected_modules]:
         selected_modules.append(load_skill("ai-trace-rubric"))
+    if (number_sense or (review and style in NUMBER_SENSE_REVIEW_STYLES)) and "natural-measurement" not in [
+        module.name for module in selected_modules
+    ]:
+        selected_modules.append(load_skill("natural-measurement"))
     context = read_optional(context_path)
     blocks = [
         CORE_DIRECTIVE.strip(),
@@ -101,6 +108,7 @@ def compile_audit_prompt(
     context_path: str | None = None,
     modules: list[str] | None = None,
     strict_continuity: bool = True,
+    number_sense: bool = False,
 ) -> str:
     selected_modules = load_many(modules or [])
     selected_names = [module.name for module in selected_modules]
@@ -114,6 +122,8 @@ def compile_audit_prompt(
                 "physical-continuity-audit",
             ]
         )
+    if number_sense:
+        required_modules.append("natural-measurement")
     for name in required_modules:
         if name not in selected_names:
             selected_modules.append(load_skill(name))
@@ -127,7 +137,8 @@ def compile_audit_prompt(
         "Do not assume continuity is correct. Extract physical evidence first, "
         "then flag contradictions. Pay special attention to occupancy and capacity, "
         "front/rear/left/right relationships, barriers, reach/contact feasibility, "
-        "clothing, shoes, props, and body-state drift.",
+        "clothing, shoes, props, body-state drift, and false precision when number "
+        "sense review is enabled.",
         CONTINUITY_DIRECTIVE.strip(),
     ]
     for module in selected_modules:
@@ -141,6 +152,7 @@ def compile_audit_prompt(
         "then contradictions, then the corrected state ledger and minimal repair plan. "
         "If a character changes seat, shares a physical resource, changes the mode of a "
         "supporting surface, crosses a barrier, touches someone, changes shoes, or changes "
-        "clothing, require explicit text evidence for the transition."
+        "clothing, require explicit text evidence for the transition. If number-sense review "
+        "is enabled, classify every exact number before deciding whether to keep or soften it."
     )
     return "\n\n---\n\n".join(blocks) + "\n"

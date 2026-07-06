@@ -2,73 +2,92 @@
 
 ## Aim
 
-Remove false precision from prose. In many narrative scenes, tiny exact quantities
-make the writing feel measured by a model instead of observed by a person. Use exact
-numbers only when the narrator, genre, object, or task has a real reason to measure.
+Remove false precision while preserving necessary precision.
 
-## Use When
+AI prose often uses exact numbers to imitate concreteness: a hand moves three centimeters, a pause lasts seven seconds, a character blinks twice for no reason, or a room is described with instrument-like dimensions during an emotional beat. Human narration usually measures only when the situation, speaker, genre, or plot has a reason to measure.
 
-- fiction, webnovel, memoir, or self-media prose contains suspiciously exact small
-  measures
-- body movement, dialogue, emotion, distance, or hesitation is described with numbers
-  that no character would naturally count
-- a draft uses precision to simulate concreteness instead of choosing a meaningful
-  detail
+## Core Rule
+
+Do not delete all numbers. Audit why each number exists.
+
+Every exact number should earn its place through at least one of these:
+
+- genre requirement
+- measurement source
+- narrator habit or profession
+- plot constraint
+- evidence, clue, proof, danger, cost, or payoff
+- public/fixed fact
+- operational use
+
+If none apply, soften the number into felt, relational, embodied, or approximate scale.
+
+## Number Necessity Classes
+
+| Class | Keep? | Meaning | Examples |
+| --- | --- | --- | --- |
+| A. Required exactness | Keep | Exact number is factual, technical, evidentiary, or plot-critical | "476 meters tall", "2.3 cm wound", "Room 1209", "8:15 train" |
+| B. Character-earned precision | Usually keep | The viewpoint character would measure or count it | surgeon, engineer, sniper, accountant, obsessive narrator |
+| C. Useful approximate scale | Soften | Scale matters, but exactness does not | "about three meters", "a few steps", "roughly waist-high" |
+| D. False precision | Rewrite | Number exists only to simulate detail | "her finger moved up three centimeters", "he was silent for seven seconds" |
+| E. Rhythmic/counting effect | Case-by-case | Count creates voice, ritual, joke, suspense, or pattern | "one knock, then another"; "three rules, all broken" |
 
 ## Suspicious Patterns
 
-Treat these as warning signs in narrative prose:
+Treat these as warning signs in narrative, webnovel, memoir, romance, suspense, or self-media prose:
 
-- tiny distances: "three centimeters," "five millimeters," "half an inch"
-- counted micro-actions: "three taps," "four breaths," "blinked twice" when the count
-  has no plot function
-- exact durations for felt moments: "after seven seconds," "for three and a half
-  minutes" when the character would only feel a pause, wait, or drag
-- exact angles, speeds, weights, temperatures, percentages, or sizes in emotional,
-  bodily, domestic, romantic, or conversational beats
-- repeated numeral + unit phrasing that makes the narrator sound like an instrument
+- exact tiny distances in body movement: "one centimeter", "three centimeters", "five millimeters"
+- exact durations for felt emotion: "after seven seconds", "for 2.5 seconds"
+- counted micro-actions with no consequence: "blinked twice", "breathed three times", "tapped four times"
+- exact angles, speeds, temperatures, weights, or percentages during ordinary emotion, dialogue, domestic action, intimacy, fear, or hesitation
+- repeated numeral + unit phrasing that makes the narrator sound like a measuring device
 
 ## Keep Exact Numbers When
 
-- the genre requires precision: academic, technical, legal, medical, scientific, data,
-  finance, engineering, recipes, logistics, sport records, or news reporting
-- the number is a fixed public fact or worldbuilding fact: a building height, weapon
-  range, address, date, price, dosage, deadline, age, room number, train time, score,
-  case number, or measured clue
-- a character is the kind of person who would measure it, and the measurement reveals
-  profession, obsession, panic, training, or unreliability
-- the number becomes a plot constraint, proof, alibi, clue, rule, cost, or payoff
+Keep the number if it belongs to the task:
 
-## Repair Moves
+- architecture or public fact: "the tower is 476 meters tall"
+- medicine, forensics, injury, autopsy, lab, diagnosis: "the wound is 2.3 cm"
+- engineering, construction, logistics, recipes, finance, sport records, law, science, news, academic writing
+- dates, ages, prices, addresses, room numbers, train times, case numbers, ranks, scores, dosage, deadlines
+- a measured clue, alibi, rule, constraint, cost, weapon range, map distance, countdown, or payoff
+- a character explicitly measures, estimates, counts, photographs, records, compares, or reports it
 
-- Replace tiny exact measures with embodied or relational scale: "a thumb's width,"
-  "close enough to lower his voice," "barely a step," "almost touching," "a little
-  too long."
-- Replace counted micro-actions with effect: "she tapped until he looked up," "he
-  knocked once, then lost courage," "her breathing would not settle."
-- Replace exact duration with felt duration: "after a long pause," "before she could
-  answer," "long enough for the room to notice."
-- If precision matters, attach it to context: who measured it, why it matters, and what
-  changes because the number is exact.
-- Vary scale. Let some details stay approximate, some sensory, some relational, and
-  only a few genuinely measured.
+## Rewrite Moves
+
+| False Precision | Better Narrative Scale |
+| --- | --- |
+| "Her finger moved up three centimeters." | "Her finger edged higher." / "Her finger moved a little higher." |
+| "He stood two meters away." | "He stayed just out of reach." / "He kept a few steps between them." |
+| "She was silent for seven seconds." | "She was quiet long enough for him to look up." |
+| "The room was three meters long." | "The room was barely longer than the bed." |
+| "He blinked twice." | "He blinked, as if the answer had arrived too late." |
+
+## Context Questions
+
+For every exact number or measurement, ask:
+
+- Who knows this number in the moment?
+- Did anyone measure it, count it, read it, record it, or infer it?
+- Does the genre require exactness?
+- Does exactness change evidence, danger, plot, timing, setting, or characterization?
+- Would the viewpoint character more naturally describe it by touch, distance, effort, comparison, or effect?
+- Would softening the number damage meaning?
+
+## Required Audit Output
+
+```text
+Number Necessity Audit
+| Evidence | Number | Context | Class | Keep/Soften/Delete | Reason | Suggested rewrite |
+```
 
 ## Avoid
 
-- deleting all numbers from prose
-- replacing useful facts such as dates, ages, addresses, prices, ranks, room numbers,
-  or engineered dimensions
-- making technical, academic, journalistic, or clue-driven writing vague
-- turning every approximate phrase into a cliche such as "a bit" or "a little"
+- removing dates, ages, addresses, prices, room numbers, medical measurements, or engineered dimensions by reflex
+- making technical, forensic, medical, academic, or journalistic writing vague
+- replacing every number with "a little", "some", or "a few"
+- preserving exact micro-measurements just because they look concrete
 
-## Revision Check
+## Final Standard
 
-For each exact number or measurement, ask:
-
-- Who would know this number in the moment?
-- Why would this narrator choose this precision?
-- Does the number change plot, evidence, risk, timing, or characterization?
-- Would a person in this scene more likely describe it by feel, relation, or effect?
-
-If the number only exists to make the line seem concrete, soften it or replace it with
-a detail that belongs to the scene.
+Exact numbers should feel either measured, remembered, reported, constrained, or character-revealing. If they only make the prose look precise, they are probably false precision.

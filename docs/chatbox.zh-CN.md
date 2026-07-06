@@ -138,6 +138,17 @@ python -m humanwriting.cli audit `
 
 把输出粘贴到 Chatbox。它会要求模型先抽取证据表，再检查座位、隔板、触达、服装、鞋子、道具和伤口是否矛盾。
 
+如果要审查假精确数字：
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft my-chapter.md `
+  --numbers `
+  --no-strict-continuity
+```
+
+它会要求模型列出每个精确数字，判断是必须保留、可保留、应弱化还是应删除。
+
 ## 可直接复制的 Chatbox 开场消息
 
 ```text

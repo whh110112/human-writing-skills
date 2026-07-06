@@ -147,6 +147,20 @@ tests/               standard-library unit tests
 
 ## CLI Usage
 
+### Number Sense
+
+Use this to catch false precision such as unnecessary exact centimeters, seconds, or micro-counts in emotional and bodily action, while preserving necessary numbers in medicine, forensics, engineering, architecture, news, and technical writing.
+
+```powershell
+python -m humanwriting.cli audit `
+  --draft examples/false-precision-draft.zh-CN.md `
+  --numbers `
+  --no-strict-continuity
+```
+
+- Guide: [docs/number-sense.md](docs/number-sense.md)
+- Example: [examples/false-precision-draft.zh-CN.md](examples/false-precision-draft.zh-CN.md)
+
 List styles:
 
 ```powershell
