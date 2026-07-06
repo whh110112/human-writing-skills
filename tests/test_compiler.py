@@ -20,6 +20,9 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("natural-measurement", list_module_skills())
         self.assertIn("forensic-physical-audit", list_module_skills())
         self.assertIn("occupancy-capacity", list_module_skills())
+        self.assertIn("cliche-phrase-audit", list_module_skills())
+        self.assertIn("formulaic-structure-audit", list_module_skills())
+        self.assertIn("prose-progress-audit", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -55,6 +58,9 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: vocal-rhythm", prompt)
         self.assertIn("Technique Module: editor-loop", prompt)
         self.assertIn("Technique Module: ai-trace-rubric", prompt)
+        self.assertIn("Technique Module: cliche-phrase-audit", prompt)
+        self.assertIn("Technique Module: formulaic-structure-audit", prompt)
+        self.assertIn("Technique Module: prose-progress-audit", prompt)
 
     def test_review_adds_number_sense_for_narrative_styles(self):
         fiction_prompt = compile_prompt("fiction", "Write the next scene.", review=True)
@@ -90,6 +96,9 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: forensic-physical-audit", prompt)
         self.assertIn("Audit Module: occupancy-capacity", prompt)
         self.assertIn("Audit Module: spatial-blocking", prompt)
+        self.assertIn("Audit Module: cliche-phrase-audit", prompt)
+        self.assertIn("Audit Module: formulaic-structure-audit", prompt)
+        self.assertIn("Audit Module: prose-progress-audit", prompt)
         self.assertIn("Audit Module: natural-measurement", prompt)
         self.assertIn("Draft To Audit", prompt)
         self.assertIn("behind the glass", prompt)

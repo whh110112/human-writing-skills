@@ -47,6 +47,9 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `narrative-bridges` | weak scene turns, generic transitions, paragraphs that do not cause each other |
 | `relationship-state` | relationships that reset, dialogue without leverage, forgotten secrets or boundaries |
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
+| `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
+| `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
+| `prose-progress-audit` | polished paragraphs that do not add a new fact, action, proof, or pressure |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -161,6 +164,12 @@ python -m humanwriting.cli audit `
 - Guide: [docs/number-sense.md](docs/number-sense.md)
 - Example: [examples/false-precision-draft.zh-CN.md](examples/false-precision-draft.zh-CN.md)
 
+### Forum Complaint Research
+
+The project converts recurring public complaints about AI writing into executable checks: stock phrasing, plastic prose, triplet structures, over-smooth transitions, static paragraphs, hollow emotion, cultural vacuum, and long-form drift.
+
+- Research map: [docs/forum-complaint-research.md](docs/forum-complaint-research.md)
+
 List styles:
 
 ```powershell
@@ -183,10 +192,13 @@ python -m humanwriting.cli build `
   --task "Continue chapter 3. Keep the confrontation unresolved but reveal one new clue."
 ```
 
-The `--review` flag adds two modules automatically:
+The `--review` flag adds these modules automatically:
 
 - `editor-loop`: draft, diagnose, locally rewrite, then finalize
 - `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, weak beat bridges, relationship resets, false precision, cultural vacuum, over-clean prose, and closure addiction
+- `cliche-phrase-audit`: check stock phrases, generic body cues, empty emotion labels, and dead transitions
+- `formulaic-structure-audit`: check triplets, symmetrical frames, and paragraphs that close too neatly
+- `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure
 
 The `--strict-continuity` flag adds:
 
