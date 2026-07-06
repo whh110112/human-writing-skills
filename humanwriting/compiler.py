@@ -8,6 +8,7 @@ NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
 REVIEW_TRACE_MODULES = [
     "editor-loop",
     "ai-trace-rubric",
+    "relationship-stance-audit",
     "cliche-phrase-audit",
     "formulaic-structure-audit",
     "prose-progress-audit",
@@ -37,6 +38,8 @@ Maintain a running ledger while generating long text:
 - Active threads: unresolved conflicts, questions, clues, promises, arguments
 - Relationship state: what each important person knows, wants, hides, owes, refuses,
   and can use as leverage
+- Relationship stance: who may safely mention, praise, criticize, compare, expose,
+  or conceal whom in the current audience
 - Voice anchors: diction, point of view, formality, humor, pacing, taboo phrases
 - Scene or section state: where the previous output ended and what must connect next
 - Beat bridge: what residue from the previous beat enters the next beat, what changes,
@@ -125,6 +128,7 @@ def compile_audit_prompt(
     required_modules.extend(
         [
             "ai-trace-rubric",
+            "relationship-stance-audit",
             "cliche-phrase-audit",
             "formulaic-structure-audit",
             "prose-progress-audit",
@@ -154,8 +158,9 @@ def compile_audit_prompt(
         "Do not assume continuity is correct. Extract physical evidence first, "
         "then flag contradictions. Pay special attention to occupancy and capacity, "
         "front/rear/left/right relationships, barriers, reach/contact feasibility, "
-        "clothing, shoes, props, body-state drift, and false precision when number "
-        "sense review is enabled.",
+        "clothing, shoes, props, body-state drift, relationship stance, audience-specific "
+        "mention permissions, secret leaks, and false precision when number sense review "
+        "is enabled.",
         CONTINUITY_DIRECTIVE.strip(),
     ]
     for module in selected_modules:
@@ -170,6 +175,8 @@ def compile_audit_prompt(
         "If a character changes seat, shares a physical resource, changes the mode of a "
         "supporting surface, crosses a barrier, touches someone, changes shoes, or changes "
         "clothing, require explicit text evidence for the transition. If number-sense review "
-        "is enabled, classify every exact number before deciding whether to keep or soften it."
+        "is enabled, classify every exact number before deciding whether to keep or soften it. "
+        "For dialogue, extract speaker -> listener -> referenced party and flag any stance, "
+        "audience, rank, or secrecy contradiction without an on-page motive."
     )
     return "\n\n---\n\n".join(blocks) + "\n"

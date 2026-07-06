@@ -46,6 +46,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `controlled-drift` | overly smooth logic, no associative movement, no unfinished thought |
 | `narrative-bridges` | weak scene turns, generic transitions, paragraphs that do not cause each other |
 | `relationship-state` | relationships that reset, dialogue without leverage, forgotten secrets or boundaries |
+| `relationship-stance-audit` | audience-specific stance checks for rivalries, affairs, factions, hierarchy, sects, and family politics |
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
@@ -131,6 +132,17 @@ python -m humanwriting.cli build `
 - Capacity conflict example: [examples/capacity-conflict-draft.zh-CN.md](examples/capacity-conflict-draft.zh-CN.md)
 - Draft audit example: [examples/problem-car-scene-draft.md](examples/problem-car-scene-draft.md)
 
+## Relationship Stance Continuity
+
+For scenes with rival factions, secret relationships, hierarchy, family politics,
+office politics, or sect leaders, use `--review` or add `relationship-stance-audit`.
+It extracts each dialogue line as `speaker -> listener/audience -> referenced party`
+and checks whether praise, criticism, comparison, naming, secrecy, and rank fit
+the established relationship graph.
+
+- Guide: [docs/relationship-stance-continuity.md](docs/relationship-stance-continuity.md)
+- Ledger template: [examples/relationship-stance-ledger.zh-CN.md](examples/relationship-stance-ledger.zh-CN.md)
+
 If the draft already exists, use `audit`:
 
 ```powershell
@@ -196,6 +208,7 @@ The `--review` flag adds these modules automatically:
 
 - `editor-loop`: draft, diagnose, locally rewrite, then finalize
 - `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, weak beat bridges, relationship resets, false precision, cultural vacuum, over-clean prose, and closure addiction
+- `relationship-stance-audit`: check speaker, listener, referenced party, secrecy, stance, rank, and audience permissions
 - `cliche-phrase-audit`: check stock phrases, generic body cues, empty emotion labels, and dead transitions
 - `formulaic-structure-audit`: check triplets, symmetrical frames, and paragraphs that close too neatly
 - `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure

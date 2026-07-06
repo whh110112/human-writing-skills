@@ -23,6 +23,8 @@ Before drafting or revising a scene, name the current state:
 - Private pressure: what each person wants but cannot say cleanly.
 - Boundary or promise: what has been allowed, forbidden, delayed, owed, or broken.
 - Leverage: who can end the moment, change the terms, expose a secret, or withdraw.
+- Mention policy: whose names, alliances, scandals, favors, debts, or comparisons
+  are safe, risky, forbidden, or useful in this audience.
 - Residue: the last line, object, gesture, message, silence, or physical distance that
   should still affect the next beat.
 
@@ -34,6 +36,13 @@ Before drafting or revising a scene, name the current state:
   evade, joke, lie, delay, or counterattack.
 - Preserve asymmetry. One character may know more, want more, risk more, or recover
   faster than the other.
+- Treat dialogue as a triangle, not only a pair. Every mention of an absent person
+  should fit the speaker, listener, and referenced person's relationship graph.
+- Track information permissions. A secret, affair, alliance, debt, betrayal, or
+  faction tie should not become common knowledge unless the scene explicitly exposes it.
+- Make social breaches legible. If a character praises an enemy, names a hidden lover,
+  insults an ally, or reports on a rival, show whether it is strategy, panic, ignorance,
+  provocation, bargaining, or a mistake.
 - Track the aftertaste of consent, refusal, apology, exposure, praise, humiliation,
   or secrecy without replaying the whole event.
 - Change scene through a relationship residue: an unread message, a changed nickname,
@@ -51,13 +60,19 @@ Before drafting or revising a scene, name the current state:
 - turning every silence into a neat interpretation
 - replacing boundary, consequence, or cost with vague intensity
 - making jealousy, desire, shame, fear, or loyalty interchangeable
+- letting a character mention the wrong rival, lover, superior, ally, or enemy as if
+  all relationships were socially interchangeable
+- leaking hidden relationships through casual exposition
+- ignoring rank, titles, honorifics, taboos, and public/private posture in dialogue
 
 ## Revision Check
 
 For every two-person or group scene, answer:
 
 - What does each person know or believe at the start?
+- Who is present, listening, or likely to hear?
 - What does each person want the other person to do, admit, miss, or remember?
+- Which absent person or group is safe, risky, or forbidden to mention here?
 - Which boundary, promise, secret, or leverage point changes?
 - What visible detail proves the relationship is different at the end?
 
