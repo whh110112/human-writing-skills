@@ -5,6 +5,13 @@ from pathlib import Path
 from .skills import load_many, load_skill
 
 NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
+REVIEW_TRACE_MODULES = [
+    "editor-loop",
+    "ai-trace-rubric",
+    "cliche-phrase-audit",
+    "formulaic-structure-audit",
+    "prose-progress-audit",
+]
 
 
 CORE_DIRECTIVE = """# Core Directive
@@ -75,10 +82,12 @@ def compile_prompt(
             if name not in selected_names:
                 selected_modules.append(load_skill(name))
                 selected_names.append(name)
-    if review and "editor-loop" not in [module.name for module in selected_modules]:
-        selected_modules.append(load_skill("editor-loop"))
-    if review and "ai-trace-rubric" not in [module.name for module in selected_modules]:
-        selected_modules.append(load_skill("ai-trace-rubric"))
+    if review:
+        selected_names = [module.name for module in selected_modules]
+        for name in REVIEW_TRACE_MODULES:
+            if name not in selected_names:
+                selected_modules.append(load_skill(name))
+                selected_names.append(name)
     if (number_sense or (review and style in NUMBER_SENSE_REVIEW_STYLES)) and "natural-measurement" not in [
         module.name for module in selected_modules
     ]:
@@ -113,6 +122,14 @@ def compile_audit_prompt(
     selected_modules = load_many(modules or [])
     selected_names = [module.name for module in selected_modules]
     required_modules = ["forensic-physical-audit"]
+    required_modules.extend(
+        [
+            "ai-trace-rubric",
+            "cliche-phrase-audit",
+            "formulaic-structure-audit",
+            "prose-progress-audit",
+        ]
+    )
     if strict_continuity:
         required_modules.extend(
             [

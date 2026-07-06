@@ -17,6 +17,9 @@ Score each dimension from 0 to 3:
 | --- | --- | --- |
 | Cognitive smoothness | Every transition is complete and safe | Add controlled drift, doubt, or fragile inference |
 | Generic diction | Sentences could fit any topic | Replace with object, place, action, or speaker-specific detail |
+| Cliche phrase cluster | Stock turns of phrase, body cues, fate inflation, or dead transitions recur | Replace with scene evidence, character-specific action, or a plain sentence |
+| Formulaic structure | Paragraphs arrive in neat threes, symmetrical contrasts, or identical cadence | Break the frame, vary paragraph function, and add purposeful asymmetry |
+| Polished stagnation | The prose sounds finished while the same premise is restated | Summarize each paragraph; cut, merge, or add a real state change |
 | Emotional flatness | Emotion is named but not embodied | Add action, body signal, sensory distortion, contradiction |
 | Rhythm monotony | Sentences move at one speed | Add breath variation, short brakes, altered cadence |
 | Context drift | Facts, stakes, or timeline blur | Update and obey the continuity ledger |
