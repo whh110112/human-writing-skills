@@ -68,13 +68,14 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 ```powershell
 git clone https://github.com/whh110112/human-writing-skills.git
 cd human-writing-skills
+python -m pip install .
 
-python -m humanwriting.cli list --kind style
-python -m humanwriting.cli list --kind module
-python -m humanwriting.cli build --style fiction --context examples/story-ledger.md --task "Write the next scene."
+human-writing-skills list --kind style
+human-writing-skills list --kind module
+human-writing-skills build --style fiction --context examples/story-ledger.md --task "Write the next scene."
 ```
 
-The `build` command prints an instruction pack that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.
+You can also run directly from the source checkout with `python -m humanwriting.cli ...`. The `build` command prints an instruction pack that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.
 
 ## Example Output Shape
 

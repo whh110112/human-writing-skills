@@ -3,7 +3,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from humanwriting.compiler import compile_audit_prompt, compile_prompt
-from humanwriting.skills import list_module_skills, list_skills, list_style_skills, load_skill
+from humanwriting.skills import (
+    default_skills_dir,
+    list_module_skills,
+    list_skills,
+    list_style_skills,
+    load_skill,
+)
 
 
 class CompilerTests(unittest.TestCase):
@@ -11,6 +17,11 @@ class CompilerTests(unittest.TestCase):
         skills = list_skills()
         self.assertIn("fiction", skills)
         self.assertIn("webnovel", skills)
+
+    def test_default_skills_resource_contains_core_files(self):
+        root = default_skills_dir()
+        self.assertTrue(root.joinpath("fiction.md").is_file())
+        self.assertTrue(root.joinpath("relationship-stance-audit.md").is_file())
 
     def test_lists_style_and_module_skills(self):
         self.assertIn("fiction", list_style_skills())

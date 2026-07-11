@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from importlib.abc import Traversable
+from importlib.resources import files
 from pathlib import Path
 from typing import Iterable
 
@@ -18,18 +20,25 @@ STYLE_SKILLS = {
 @dataclass(frozen=True)
 class Skill:
     name: str
-    path: Path
+    path: Traversable
     content: str
     kind: str
 
 
-def default_skills_dir() -> Path:
-    return Path(__file__).resolve().parent.parent / "skills"
+def default_skills_dir() -> Traversable:
+    try:
+        return files("humanwriting_skill_data")
+    except ModuleNotFoundError:
+        return Path(__file__).resolve().parent.parent / "skills"
 
 
 def list_skills(skills_dir: Path | None = None) -> list[str]:
     root = skills_dir or default_skills_dir()
-    return sorted(path.stem for path in root.glob("*.md"))
+    return sorted(
+        path.name.removesuffix(".md")
+        for path in root.iterdir()
+        if path.is_file() and path.name.endswith(".md")
+    )
 
 
 def list_style_skills(skills_dir: Path | None = None) -> list[str]:
