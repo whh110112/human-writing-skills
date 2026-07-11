@@ -152,6 +152,18 @@ python -m humanwriting.cli audit `
 
 它会要求模型列出每个精确数字，判断是必须保留、可保留、应弱化还是应删除。
 
+### 在 Chatbox 中运行多阶段审稿
+
+```powershell
+human-writing-skills pipeline `
+  --draft my-chapter.md `
+  --context my-novel-ledger.md `
+  --auto `
+  --output-dir chapter-audit
+```
+
+为输出目录中的每个阶段分别新建 Chatbox 会话，再粘贴对应 Markdown。不要在同一个会话里连续运行全部阶段，否则上一阶段的判断会影响下一阶段。全部完成后，再根据清单合并重复问题和修复顺序。
+
 ## 可直接复制的 Chatbox 开场消息
 
 ```text

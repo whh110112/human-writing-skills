@@ -47,6 +47,8 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `narrative-bridges` | weak scene turns, generic transitions, paragraphs that do not cause each other |
 | `relationship-state` | relationships that reset, dialogue without leverage, forgotten secrets or boundaries |
 | `relationship-stance-audit` | audience-specific stance checks for rivalries, affairs, factions, hierarchy, sects, and family politics |
+| `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
+| `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
@@ -59,6 +61,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `occupancy-capacity` | over-occupied or mode-ambiguous seats, benches, beds, stools, aisles, and surfaces |
 | `appearance-prop-continuity` | clothing, shoes, props, injuries, and daily-detail drift |
 | `physical-continuity-audit` | final checks for position, movement gates, wardrobe, and props |
+| `proofreading-audit` | final typo, punctuation, naming, repetition, layout, and formatting checks |
 | `style-matrix` | the mistake of applying one generic "human voice" to every genre |
 | `editor-loop` | one-shot drafting without a critical human-editor pass |
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
@@ -171,12 +174,31 @@ tests/               standard-library unit tests
 | Profile | Purpose |
 | --- | --- |
 | `full` | Default complete audit; `--no-strict-continuity` removes physical checks |
+| `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
+| `character` | Character goal, voice, competence, boundaries, and change gates |
 | `physical` | Position, capacity, reach, clothing, props, and injuries |
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
 | `numbers` | False precision in action and emotion |
+| `proofread` | Typos, punctuation, naming, layout, and mechanical errors |
 
 Profiles can be combined, for example `--profile relationship --profile ai-trace`.
+
+### Multi-Stage Pipeline
+
+For high-precision review, generate independent single-purpose passes instead of asking one model to check everything at once:
+
+```powershell
+human-writing-skills pipeline `
+  --draft my-chapter.md `
+  --context my-novel-ledger.md `
+  --auto `
+  --output-dir chapter-audit
+```
+
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, and number stages when the chapter contains matching cues. The manifest explains every selection and skip.
+
+- Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 
 ### Number Sense
 

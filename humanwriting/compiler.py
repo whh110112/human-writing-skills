@@ -34,7 +34,19 @@ PHYSICAL_AUDIT_MODULES = [
     "appearance-prop-continuity",
     "physical-continuity-audit",
 ]
-AUDIT_PROFILES = {"full", "physical", "relationship", "ai-trace", "numbers"}
+LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
+CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
+PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
+AUDIT_PROFILES = {
+    "full",
+    "logic",
+    "character",
+    "physical",
+    "relationship",
+    "ai-trace",
+    "numbers",
+    "proofread",
+}
 
 
 CORE_DIRECTIVE = """# Core Directive
@@ -163,8 +175,15 @@ def compile_audit_prompt(
     )
     relationship_enabled = bool(requested_profiles & {"full", "relationship"})
     ai_trace_enabled = bool(requested_profiles & {"full", "ai-trace"})
-    numbers_enabled = "numbers" in requested_profiles
+    numbers_enabled = bool(requested_profiles & {"full", "numbers"})
+    logic_enabled = bool(requested_profiles & {"full", "logic"})
+    character_enabled = bool(requested_profiles & {"full", "character"})
+    proofread_enabled = bool(requested_profiles & {"full", "proofread"})
 
+    if logic_enabled:
+        append_missing(selected_modules, LOGIC_AUDIT_MODULES)
+    if character_enabled:
+        append_missing(selected_modules, CHARACTER_AUDIT_MODULES)
     if physical_enabled:
         append_missing(selected_modules, PHYSICAL_AUDIT_MODULES)
     if relationship_enabled:
@@ -173,6 +192,8 @@ def compile_audit_prompt(
         append_missing(selected_modules, AI_TRACE_AUDIT_MODULES)
     if numbers_enabled:
         append_missing(selected_modules, ["natural-measurement"])
+    if proofread_enabled:
+        append_missing(selected_modules, PROOFREAD_AUDIT_MODULES)
 
     context = read_optional(context_path)
     draft = read_optional(draft_path)
@@ -200,6 +221,16 @@ def compile_audit_prompt(
             "For physical continuity, require on-page evidence for movement, occupancy, "
             "resource-mode changes, barriers, reach, clothing, props, and body-state changes."
         )
+    if logic_enabled:
+        task_lines.append(
+            "For logic, map trigger -> action or inference -> result -> consequence and check "
+            "time, knowledge, motive, rules, resources, and unresolved costs."
+        )
+    if character_enabled:
+        task_lines.append(
+            "For character consistency, compare goals, voice, knowledge, competence, boundaries, "
+            "status, and recent change gates before calling a deviation an error."
+        )
     if relationship_enabled:
         task_lines.append(
             "For relationship continuity, extract speaker -> listener/audience -> referenced "
@@ -214,6 +245,11 @@ def compile_audit_prompt(
         task_lines.append(
             "For number sense, classify every exact number before deciding whether to keep, "
             "soften, generalize, or remove it."
+        )
+    if proofread_enabled:
+        task_lines.append(
+            "For proofreading, separate definite mechanical errors from house-style choices and "
+            "intentional voice; do not rewrite plot or characterization."
         )
     blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"

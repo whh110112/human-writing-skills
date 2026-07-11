@@ -6,6 +6,8 @@ from tempfile import TemporaryDirectory
 
 from humanwriting.cli import main
 from humanwriting.compiler import compile_audit_prompt, compile_prompt
+from humanwriting.detection import detect_audit_profiles
+from humanwriting.pipeline import write_audit_pipeline
 from humanwriting.skills import (
     default_skills_dir,
     list_module_skills,
@@ -38,6 +40,9 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("cliche-phrase-audit", list_module_skills())
         self.assertIn("formulaic-structure-audit", list_module_skills())
         self.assertIn("prose-progress-audit", list_module_skills())
+        self.assertIn("logic-causality-audit", list_module_skills())
+        self.assertIn("character-consistency-audit", list_module_skills())
+        self.assertIn("proofreading-audit", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -148,6 +153,9 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: formulaic-structure-audit", prompt)
         self.assertIn("Audit Module: prose-progress-audit", prompt)
         self.assertIn("Audit Module: natural-measurement", prompt)
+        self.assertIn("Audit Module: logic-causality-audit", prompt)
+        self.assertIn("Audit Module: character-consistency-audit", prompt)
+        self.assertIn("Audit Module: proofreading-audit", prompt)
         self.assertIn("Draft To Audit", prompt)
         self.assertIn("behind the glass", prompt)
         self.assertIn("flats, then heels", prompt)
@@ -181,6 +189,54 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: natural-measurement", prompt)
         self.assertNotIn("Audit Module: forensic-physical-audit", prompt)
         self.assertNotIn("Audit Module: ai-trace-rubric", prompt)
+
+    def test_logic_character_and_proofread_profiles_are_isolated(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("A decision caused a later consequence.", encoding="utf-8")
+            logic = compile_audit_prompt(str(draft), profiles=["logic"])
+            character = compile_audit_prompt(str(draft), profiles=["character"])
+            proofread = compile_audit_prompt(str(draft), profiles=["proofread"])
+        self.assertIn("Audit Module: logic-causality-audit", logic)
+        self.assertNotIn("Audit Module: character-consistency-audit", logic)
+        self.assertIn("Audit Module: character-consistency-audit", character)
+        self.assertNotIn("Audit Module: logic-causality-audit", character)
+        self.assertIn("Audit Module: proofreading-audit", proofread)
+        self.assertNotIn("Audit Module: ai-trace-rubric", proofread)
+
+    def test_auto_detection_keeps_core_and_skips_irrelevant_optional_stages(self):
+        decisions = detect_audit_profiles(
+            "This report evaluates policy outcomes and presents a cautious conclusion."
+        )
+        selected = {decision.profile for decision in decisions if decision.selected}
+        self.assertEqual(selected, {"logic", "ai-trace", "proofread"})
+
+    def test_auto_detection_selects_scene_specific_stages(self):
+        decisions = detect_audit_profiles("她坐在后排说：董事长已经等了七秒。")
+        selected = {decision.profile for decision in decisions if decision.selected}
+        self.assertEqual(
+            selected,
+            {"logic", "character", "relationship", "physical", "ai-trace", "numbers", "proofread"},
+        )
+
+    def test_pipeline_writes_independent_stage_prompts_and_manifest(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            output = root / "pipeline"
+            draft.write_text("她坐在后排说：董事长已经等了七秒。", encoding="utf-8")
+            written, stages = write_audit_pipeline(
+                str(draft),
+                str(output),
+                auto=True,
+            )
+            logic_prompt = (written / "01-logic.md").read_text(encoding="utf-8")
+            manifest = (written / "README.md").read_text(encoding="utf-8")
+        self.assertEqual(len(stages), 7)
+        self.assertIn("Audit Module: logic-causality-audit", logic_prompt)
+        self.assertNotIn("Audit Module: character-consistency-audit", logic_prompt)
+        self.assertIn("fresh model conversation", manifest)
+        self.assertIn("Detected exact-number cue", manifest)
 
     def test_cli_reports_missing_draft_without_traceback(self):
         stderr = StringIO()

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 from .compiler import compile_audit_prompt, compile_prompt
+from .detection import PIPELINE_PROFILES
+from .pipeline import write_audit_pipeline
 from .skills import list_module_skills, list_skills, list_style_skills
 
 
@@ -65,7 +68,16 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument(
         "--profile",
         action="append",
-        choices=["full", "physical", "relationship", "ai-trace", "numbers"],
+        choices=[
+            "full",
+            "logic",
+            "character",
+            "physical",
+            "relationship",
+            "ai-trace",
+            "numbers",
+            "proofread",
+        ],
         help="Audit profile. Can be repeated. Defaults to full.",
     )
     audit.add_argument(
@@ -84,6 +96,29 @@ def build_parser() -> argparse.ArgumentParser:
         "--numbers",
         action="store_true",
         help="Legacy alias that adds the numbers profile to the selected audit.",
+    )
+
+    pipeline = subparsers.add_parser(
+        "pipeline",
+        help="Write independent multi-stage audit prompt files for a draft.",
+    )
+    pipeline.add_argument("--draft", required=True, help="Markdown/text draft to audit.")
+    pipeline.add_argument("--context", help="Optional continuity ledger or source notes.")
+    pipeline.add_argument(
+        "--output-dir",
+        help="Output directory. Defaults to <draft-name>-audit-pipeline.",
+    )
+    selection = pipeline.add_mutually_exclusive_group()
+    selection.add_argument(
+        "--auto",
+        action="store_true",
+        help="Keep core stages and add optional stages only when the draft contains matching cues.",
+    )
+    selection.add_argument(
+        "--stage",
+        action="append",
+        choices=PIPELINE_PROFILES,
+        help="Explicit stage. Can be repeated. Without --auto or --stage, all stages are written.",
     )
     return parser
 
@@ -133,6 +168,23 @@ def main(argv: list[str] | None = None) -> int:
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
         print(prompt, end="")
+        return 0
+
+    if args.command == "pipeline":
+        output_dir = args.output_dir or f"{Path(args.draft).stem}-audit-pipeline"
+        try:
+            output, stages = write_audit_pipeline(
+                args.draft,
+                output_dir,
+                context_path=args.context,
+                stages=args.stage,
+                auto=args.auto,
+            )
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(f"Wrote {len(stages)} independent audit stages to {output.resolve()}")
+        for stage in stages:
+            print(f"{stage.order:02d} {stage.profile}: {stage.reason}")
         return 0
 
     parser.error(f"Unknown command: {args.command}")

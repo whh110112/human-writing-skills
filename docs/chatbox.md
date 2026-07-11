@@ -149,6 +149,18 @@ python -m humanwriting.cli audit `
 
 It asks the model to list each exact number and decide whether to keep, soften, or delete it.
 
+### Running the Multi-Stage Pipeline in Chatbox
+
+```powershell
+human-writing-skills pipeline `
+  --draft my-chapter.md `
+  --context my-novel-ledger.md `
+  --auto `
+  --output-dir chapter-audit
+```
+
+Open a fresh Chatbox conversation for every generated stage and paste that stage's Markdown prompt. Do not run all stages in one conversation, because earlier judgments can bias later passes. Reconcile duplicate findings and repair order only after every stage finishes.
+
 ## Copyable Chatbox Opening Message
 
 ```text
