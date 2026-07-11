@@ -22,7 +22,8 @@ After a draft already exists:
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/problem-car-scene-draft.md `
-  --context examples/vehicle-scene-ledger.md
+  --context examples/vehicle-scene-ledger.md `
+  --profile physical
 ```
 
 `--strict-continuity` automatically adds:
@@ -30,7 +31,8 @@ python -m humanwriting.cli audit `
 - `spatial-blocking`
 - `occupancy-capacity`
 - `appearance-prop-continuity`
-- `physical-continuity-audit`
+
+`physical-continuity-audit` and the stricter evidence-first `forensic-physical-audit` load under `audit --profile physical`, keeping generation prompts smaller.
 
 ## What To Track
 
@@ -59,7 +61,7 @@ Those two rules prevent most seat drift, over-occupancy, clothing drift, and obj
 
 `build --strict-continuity` is a generation guard. It helps before drafting, but a model may still miss contradictions when reviewing an existing passage.
 
-The `audit` command creates a forensic review prompt. It forces evidence extraction before judgment, then checks:
+The `audit --profile physical` command creates a forensic review prompt. It forces evidence extraction before judgment, then checks:
 
 - front/rear seat drift
 - occupancy and capacity conflicts

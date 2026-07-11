@@ -33,15 +33,14 @@ python -m humanwriting.cli build `
   --task "Write a tense dialogue scene without unnecessary exact micro-measurements."
 ```
 
-Fiction, webnovel, and self-media automatically include `natural-measurement` under `--review`. News, academic, and technical styles do not, because they often require exact numbers.
+Fiction, webnovel, and self-media automatically include `natural-measurement` under `--deep-review`. Compact `--review` omits the full number module to preserve long-form context. It can also be selected explicitly with `--number-sense`.
 
 After a draft exists:
 
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/false-precision-draft.zh-CN.md `
-  --numbers `
-  --no-strict-continuity
+  --profile numbers
 ```
 
 ## Audit Standard

@@ -33,12 +33,17 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--review",
         action="store_true",
-        help="Add the editor loop and AI trace rubric modules.",
+        help="Add a compact editor loop and AI-trace rubric.",
+    )
+    build.add_argument(
+        "--deep-review",
+        action="store_true",
+        help="Add compact review plus relationship, cliche, structure, progress, and narrative number audits.",
     )
     build.add_argument(
         "--strict-continuity",
         action="store_true",
-        help="Add spatial blocking, appearance/prop continuity, and physical audit modules.",
+        help="Add occupancy, spatial blocking, and appearance/prop generation guards.",
     )
     build.add_argument(
         "--number-sense",
@@ -58,21 +63,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional extra audit module. Can be provided multiple times.",
     )
     audit.add_argument(
+        "--profile",
+        action="append",
+        choices=["full", "physical", "relationship", "ai-trace", "numbers"],
+        help="Audit profile. Can be repeated. Defaults to full.",
+    )
+    audit.add_argument(
         "--strict-continuity",
         default=True,
         action="store_true",
-        help="Add strict physical continuity audit modules. Enabled by default.",
+        help="Include physical checks in the default full profile. Enabled by default.",
     )
     audit.add_argument(
         "--no-strict-continuity",
         dest="strict_continuity",
         action="store_false",
-        help="Disable strict physical continuity audit modules.",
+        help="Remove physical checks from the default full profile.",
     )
     audit.add_argument(
         "--numbers",
         action="store_true",
-        help="Add number necessity audit for false precision.",
+        help="Legacy alias that adds the numbers profile to the selected audit.",
     )
     return parser
 
@@ -93,8 +104,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "build":
-        print(
-            compile_prompt(
+        try:
+            prompt = compile_prompt(
                 args.style,
                 args.task,
                 args.context,
@@ -102,22 +113,26 @@ def main(argv: list[str] | None = None) -> int:
                 args.review,
                 args.strict_continuity,
                 args.number_sense,
-            ),
-            end="",
-        )
+                args.deep_review,
+            )
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(prompt, end="")
         return 0
 
     if args.command == "audit":
-        print(
-            compile_audit_prompt(
+        try:
+            prompt = compile_audit_prompt(
                 args.draft,
                 args.context,
                 args.module,
                 args.strict_continuity,
                 args.numbers,
-            ),
-            end="",
-        )
+                args.profile,
+            )
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(prompt, end="")
         return 0
 
     parser.error(f"Unknown command: {args.command}")

@@ -79,12 +79,12 @@
 
 ## 推荐命令
 
-`--review` 已默认包含 `relationship-stance-audit`：
+`--deep-review` 会包含 `relationship-stance-audit`；也可以单独用 `--module relationship-stance-audit`：
 
 ```powershell
 python -m humanwriting.cli build `
   --style webnovel `
-  --review `
+  --deep-review `
   --context examples/relationship-stance-ledger.zh-CN.md `
   --task "续写宴会对话。任何人提到敌对阵营或隐藏关系时，都必须符合在场听众和信息权限。"
 ```
@@ -94,7 +94,8 @@ python -m humanwriting.cli build `
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/problem-car-scene-draft.zh-CN.md `
-  --context examples/relationship-stance-ledger.zh-CN.md
+  --context examples/relationship-stance-ledger.zh-CN.md `
+  --profile relationship
 ```
 
 ## 最小修复原则

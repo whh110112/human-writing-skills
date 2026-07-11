@@ -64,12 +64,12 @@ any group with hierarchy or faction pressure.
 
 ## Recommended Commands
 
-`--review` now includes `relationship-stance-audit` automatically:
+`--deep-review` includes `relationship-stance-audit`; it can also be selected directly with `--module relationship-stance-audit`:
 
 ```powershell
 python -m humanwriting.cli build `
   --style fiction `
-  --review `
+  --deep-review `
   --context examples/relationship-stance-ledger.zh-CN.md `
   --task "Continue the banquet scene. Mentions of rival factions and hidden relationships must respect the audience."
 ```
@@ -79,7 +79,8 @@ Audit an existing draft:
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/problem-car-scene-draft.md `
-  --context examples/relationship-stance-ledger.zh-CN.md
+  --context examples/relationship-stance-ledger.zh-CN.md `
+  --profile relationship
 ```
 
 ## Minimal Repairs

@@ -70,6 +70,9 @@ Keep:
 - Fixed facts
 - Active threads
 - Relationship state
+- Current audience, possible overhearers, and public/private setting
+- Public stance, private stance, and information permissions
+- Who may mention whom, allowed tone, forbidden leaks, and exception motives
 - Voice anchors
 - Spatial positions and seat/standing locations
 - Physical resource modes, capacity, and occupants
@@ -79,6 +82,7 @@ Keep:
 - Current scene or section state
 - Beat bridge: previous residue, entry pressure, micro-turn, exit pressure
 - Newly true facts from the latest output
+- Newly exposed secrets, suspicions, alliance changes, and mention-policy changes
 - Open questions and unresolved pressure
 
 Remove:
@@ -140,8 +144,7 @@ For false precision review:
 ```powershell
 python -m humanwriting.cli audit `
   --draft my-chapter.md `
-  --numbers `
-  --no-strict-continuity
+  --profile numbers
 ```
 
 It asks the model to list each exact number and decide whether to keep, soften, or delete it.
@@ -154,6 +157,7 @@ Treat the following as standing instructions for this writing session.
 Rules:
 - Keep the continuity ledger active.
 - Before every draft, check fixed facts, active threads, voice anchors, and current state.
+- Before dialogue, check speaker -> listener/audience -> referenced party, mention policy, and information permissions.
 - In cars, rooms, elevators, dining areas, beds, stools, aircraft, motorcycles, or other physical spaces, check positions, resource capacity, transformations, reach, clothing, props, and movement gates before drafting.
 - Do not overwrite established facts for convenience.
 - If context is missing, make the smallest possible assumption and mark it.

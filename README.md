@@ -99,6 +99,7 @@ The ledger tracks:
 - fixed facts: names, dates, locations, relationships, rules, timeline
 - active threads: unresolved conflicts, clues, promises, open arguments
 - relationship state: who knows, wants, hides, owes, refuses, or holds leverage
+- relationship stance: public/private posture, current audience, mention policy, forbidden leaks, and exception motives
 - voice anchors: point of view, diction, pacing, formality, taboo phrases
 - current state: where the previous passage ended and what must connect next
 - beat bridge: previous residue, entry pressure, micro-turn, and exit hook
@@ -116,7 +117,7 @@ Yes, this project works in Chatbox because it outputs plain text prompt packs. F
 
 ## Physical Continuity
 
-For scenes where space matters, such as cars, elevators, hospital rooms, dining tables, and bedrooms, use `--strict-continuity`. It automatically adds spatial blocking, appearance/prop continuity, and physical audit modules.
+For scenes where space matters, such as cars, elevators, hospital rooms, dining tables, and bedrooms, use `--strict-continuity`. It adds occupancy, spatial blocking, and appearance/prop generation guards. Use `audit --profile physical` for a forensic pass on an existing draft.
 
 ```powershell
 python -m humanwriting.cli build `
@@ -136,7 +137,7 @@ python -m humanwriting.cli build `
 ## Relationship Stance Continuity
 
 For scenes with rival factions, secret relationships, hierarchy, family politics,
-office politics, or sect leaders, use `--review` or add `relationship-stance-audit`.
+office politics, or sect leaders, use `--deep-review` or add `relationship-stance-audit`.
 It extracts each dialogue line as `speaker -> listener/audience -> referenced party`
 and checks whether praise, criticism, comparison, naming, secrecy, and rank fit
 the established relationship graph.
@@ -163,6 +164,20 @@ tests/               standard-library unit tests
 
 ## CLI Usage
 
+### Audit Profiles
+
+`audit` can load only the checks needed for the current pass:
+
+| Profile | Purpose |
+| --- | --- |
+| `full` | Default complete audit; `--no-strict-continuity` removes physical checks |
+| `physical` | Position, capacity, reach, clothing, props, and injuries |
+| `relationship` | Audience, stance, information permissions, rank, and secret leaks |
+| `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
+| `numbers` | False precision in action and emotion |
+
+Profiles can be combined, for example `--profile relationship --profile ai-trace`.
+
 ### Number Sense
 
 Use this to catch false precision such as unnecessary exact centimeters, seconds, or micro-counts in emotional and bodily action, while preserving necessary numbers in medicine, forensics, engineering, architecture, news, and technical writing.
@@ -170,8 +185,7 @@ Use this to catch false precision such as unnecessary exact centimeters, seconds
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/false-precision-draft.zh-CN.md `
-  --numbers `
-  --no-strict-continuity
+  --profile numbers
 ```
 
 - Guide: [docs/number-sense.md](docs/number-sense.md)
@@ -205,21 +219,26 @@ python -m humanwriting.cli build `
   --task "Continue chapter 3. Keep the confrontation unresolved but reveal one new clue."
 ```
 
-The `--review` flag adds these modules automatically:
+The compact `--review` flag adds only:
 
 - `editor-loop`: draft, diagnose, locally rewrite, then finalize
 - `ai-trace-rubric`: score cognitive smoothness, generic diction, emotional flatness, rhythm monotony, context drift, weak beat bridges, relationship resets, false precision, cultural vacuum, over-clean prose, and closure addiction
+
+The `--deep-review` flag adds the compact review plus:
+
 - `relationship-stance-audit`: check speaker, listener, referenced party, secrecy, stance, rank, and audience permissions
 - `cliche-phrase-audit`: check stock phrases, generic body cues, empty emotion labels, and dead transitions
 - `formulaic-structure-audit`: check triplets, symmetrical frames, and paragraphs that close too neatly
 - `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure
+- `natural-measurement`: check false precision in fiction, webnovels, and self-media
 
 The `--strict-continuity` flag adds:
 
 - `spatial-blocking`: position and movement checks
 - `occupancy-capacity`: physical resource mode, capacity, occupancy, and transformation checks
 - `appearance-prop-continuity`: clothing, shoes, props, and body-state checks
-- `physical-continuity-audit`: final physical-state contradiction pass
+
+Use `audit --profile physical` for the final physical-state contradiction pass.
 
 Run tests:
 

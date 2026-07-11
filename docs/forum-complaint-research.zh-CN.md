@@ -60,12 +60,12 @@
 
 ## 推荐命令
 
-`--review` 已默认加入这些模块：
+使用 `--deep-review` 加入完整论坛吐槽审查模块；长文续写可继续使用精简的 `--review`：
 
 ```powershell
 python -m humanwriting.cli build `
   --style webnovel `
-  --review `
+  --deep-review `
   --strict-continuity `
   --context examples/story-ledger.md `
   --task "续写下一章，避免套话和公式段落，每段必须推进状态。"
@@ -77,7 +77,8 @@ python -m humanwriting.cli build `
 python -m humanwriting.cli audit `
   --draft examples/problem-car-scene-draft.zh-CN.md `
   --context examples/vehicle-scene-ledger.md `
-  --numbers
+  --profile full `
+  --profile numbers
 ```
 
 ## 参考来源

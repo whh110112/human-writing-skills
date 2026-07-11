@@ -101,6 +101,7 @@ human-writing-skills build --style webnovel --context examples/story-ledger.md -
 - 固定事实：人物、时间线、地点、关系、规则
 - 活跃线索：未解决冲突、悬念、伏笔、论点
 - 关系状态：谁知道、想要、隐瞒、亏欠、拒绝了什么，谁握有主动权
+- 关系立场：公开/私下态度、当前听众、谁能在谁面前提谁、禁泄秘密和例外动机
 - 声音锚点：叙述视角、语气、节奏、禁用表达
 - 当前状态：上一段结束在哪里，下一段必须如何衔接
 - 节拍桥：上一拍留下什么、下一拍为什么开始、中间发生什么微转折、结尾留下什么压力
@@ -118,7 +119,7 @@ human-writing-skills build --style webnovel --context examples/story-ledger.md -
 
 ## 物理连续性
 
-如果写车内、房间、电梯、餐桌、病房等空间关系很重要的场景，使用 `--strict-continuity`。它会自动加入空间调度、服装道具连续性和物理审查模块。
+如果写车内、房间、电梯、餐桌、病房等空间关系很重要的场景，使用 `--strict-continuity`。它会自动加入容量、空间调度、服装道具等生成约束；成稿法医式物理审查由 `audit --profile physical` 负责。
 
 ```powershell
 python -m humanwriting.cli build `
@@ -137,7 +138,7 @@ python -m humanwriting.cli build `
 
 ## 关系立场连续性
 
-如果对话涉及敌对关系、多角关系、门派/家族/公司阵营、上下级或秘密关系，使用 `--review` 或显式加入 `relationship-stance-audit`。它会把每句对话抽成“说话人 -> 听话人/在场观众 -> 被提及第三方”，检查是否存在无动机的夸敌人、骂盟友、泄露隐藏关系、称谓错位或信息权限错误。
+如果对话涉及敌对关系、多角关系、门派/家族/公司阵营、上下级或秘密关系，使用 `--deep-review` 或显式加入 `relationship-stance-audit`。它会把每句对话抽成“说话人 -> 听话人/在场观众 -> 被提及第三方”，检查是否存在无动机的夸敌人、骂盟友、泄露隐藏关系、称谓错位或信息权限错误。
 
 - 说明：[docs/relationship-stance-continuity.zh-CN.md](docs/relationship-stance-continuity.zh-CN.md)
 - 关系账本模板：[examples/relationship-stance-ledger.zh-CN.md](examples/relationship-stance-ledger.zh-CN.md)
@@ -161,6 +162,20 @@ tests/               标准库单元测试
 
 ## 常用命令
 
+### 审稿 Profile
+
+`audit` 可以只加载当前需要的审查规则，避免无关模块干扰结果：
+
+| Profile | 用途 |
+| --- | --- |
+| `full` | 默认完整审稿；可用 `--no-strict-continuity` 排除物理审查 |
+| `physical` | 座位、空间、容量、触达、服装、道具和伤势 |
+| `relationship` | 关系立场、当前听众、信息权限、称谓和秘密泄露 |
+| `ai-trace` | 套话、公式结构、段落无推进和其他 AI 痕迹 |
+| `numbers` | 动作与情绪中的假精确数字 |
+
+Profile 可以重复组合，例如 `--profile relationship --profile ai-trace`。
+
 ### 数字必要性审查
 
 用于处理“人物动作和情绪里不自然的 1 厘米、3 厘米、7 秒”等假精确感，同时保留建筑高度、伤口鉴定、工程参数、新闻事实等必要数字。
@@ -168,8 +183,7 @@ tests/               标准库单元测试
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/false-precision-draft.zh-CN.md `
-  --numbers `
-  --no-strict-continuity
+  --profile numbers
 ```
 
 - 说明：[docs/number-sense.zh-CN.md](docs/number-sense.zh-CN.md)
@@ -204,21 +218,26 @@ python -m humanwriting.cli build `
   --task "写下一场戏，保持林乔的听觉代价设定，不要提前解决冲突。"
 ```
 
-`--review` 会自动加入这些模块：
+`--review` 是长文友好的精简审查，只自动加入：
 
 - `editor-loop`：先生成，再以挑剔编辑视角诊断，局部重写，最后定稿
 - `ai-trace-rubric`：从认知平滑、表达泛化、情感平面、节奏单调、上下文漂移、节拍桥薄弱、关系重置、虚假精确、文化真空、过度干净、结论成瘾等维度评分
+
+`--deep-review` 会在精简审查上加入：
+
 - `relationship-stance-audit`：检查说话人、听话人、被提及第三方之间的关系立场、秘密和信息权限
 - `cliche-phrase-audit`：检查高频套话、塑料身体动作、空洞情绪标签和万能转场
 - `formulaic-structure-audit`：检查三连式、过度对称、每段都收束得太完整的公式结构
 - `prose-progress-audit`：检查每段是否真的推进了事实、关系、证据、动作或压力
+- `natural-measurement`：小说、网文和自媒体中检查不合语境的假精确数字
 
 `--strict-continuity` 会自动加入：
 
 - `spatial-blocking`：座位、站位、前后左右、移动过渡检查
 - `occupancy-capacity`：物理资源容量、形态、占用者和转换过渡检查
 - `appearance-prop-continuity`：服装、鞋子、道具、伤口和身体状态检查
-- `physical-continuity-audit`：输出前做物理状态矛盾审查
+
+需要成稿物理状态矛盾审查时使用 `audit --profile physical`。
 
 运行测试：
 

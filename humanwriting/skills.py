@@ -60,4 +60,10 @@ def load_skill(name: str, skills_dir: Path | None = None) -> Skill:
 
 
 def load_many(names: Iterable[str], skills_dir: Path | None = None) -> list[Skill]:
-    return [load_skill(name, skills_dir) for name in names]
+    loaded: list[Skill] = []
+    seen: set[str] = set()
+    for name in names:
+        if name not in seen:
+            loaded.append(load_skill(name, skills_dir))
+            seen.add(name)
+    return loaded

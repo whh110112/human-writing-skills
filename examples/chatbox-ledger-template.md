@@ -62,6 +62,20 @@ Only add a movement if it appears on-page.
 | --- | --- | --- | --- |
 |  |  |  |  |
 
+## Relationship Stance and Information Permissions
+
+- Current audience:
+- People likely to overhear:
+- Public or private setting:
+
+| From | To | Public stance | Private stance | Knowledge | Mention policy | Exposure risk | Leverage |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  | knows / suspects / misreads / must not know | avoid / coded / praise / criticize / report only | low / medium / high |  |
+
+| Speaker | Audience | Referenced person/group | Allowed tone | Forbidden leak | Exception motive |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  | provoke / test / bargain / report / cover / mistake |
+
 ## Voice Anchors
 
 - Point of view:
@@ -87,6 +101,13 @@ Only add a movement if it appears on-page.
 ## Newly True
 
 - 
+
+## Relationship Changes
+
+- Newly exposed secrets:
+- Newly suspected relationships:
+- Changed alliances:
+- Changed mention policies:
 
 ## Open Questions
 

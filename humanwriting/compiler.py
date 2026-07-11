@@ -5,14 +5,36 @@ from pathlib import Path
 from .skills import load_many, load_skill
 
 NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
-REVIEW_TRACE_MODULES = [
+CORE_REVIEW_MODULES = [
     "editor-loop",
     "ai-trace-rubric",
+]
+NARRATIVE_REVIEW_MODULES = [
     "relationship-stance-audit",
+]
+DEEP_REVIEW_MODULES = [
     "cliche-phrase-audit",
     "formulaic-structure-audit",
     "prose-progress-audit",
 ]
+AI_TRACE_AUDIT_MODULES = [
+    "ai-trace-rubric",
+    "cliche-phrase-audit",
+    "formulaic-structure-audit",
+    "prose-progress-audit",
+]
+RELATIONSHIP_AUDIT_MODULES = [
+    "relationship-state",
+    "relationship-stance-audit",
+]
+PHYSICAL_AUDIT_MODULES = [
+    "forensic-physical-audit",
+    "occupancy-capacity",
+    "spatial-blocking",
+    "appearance-prop-continuity",
+    "physical-continuity-audit",
+]
+AUDIT_PROFILES = {"full", "physical", "relationship", "ai-trace", "numbers"}
 
 
 CORE_DIRECTIVE = """# Core Directive
@@ -61,6 +83,14 @@ def read_optional(path: str | None) -> str:
     return Path(path).read_text(encoding="utf-8").strip()
 
 
+def append_missing(selected_modules: list, names: list[str]) -> None:
+    selected_names = {module.name for module in selected_modules}
+    for name in names:
+        if name not in selected_names:
+            selected_modules.append(load_skill(name))
+            selected_names.add(name)
+
+
 def compile_prompt(
     style: str,
     task: str,
@@ -69,29 +99,27 @@ def compile_prompt(
     review: bool = False,
     strict_continuity: bool = False,
     number_sense: bool = False,
+    deep_review: bool = False,
 ) -> str:
     skill = load_skill(style)
     if skill.kind != "style":
         raise ValueError(f"'{style}' is a module, not a primary style skill.")
     selected_modules = load_many(modules or [])
     if strict_continuity:
-        selected_names = [module.name for module in selected_modules]
-        for name in [
-            "occupancy-capacity",
-            "spatial-blocking",
-            "appearance-prop-continuity",
-            "physical-continuity-audit",
-        ]:
-            if name not in selected_names:
-                selected_modules.append(load_skill(name))
-                selected_names.append(name)
-    if review:
-        selected_names = [module.name for module in selected_modules]
-        for name in REVIEW_TRACE_MODULES:
-            if name not in selected_names:
-                selected_modules.append(load_skill(name))
-                selected_names.append(name)
-    if (number_sense or (review and style in NUMBER_SENSE_REVIEW_STYLES)) and "natural-measurement" not in [
+        append_missing(
+            selected_modules,
+            [
+                "occupancy-capacity",
+                "spatial-blocking",
+                "appearance-prop-continuity",
+            ],
+        )
+    if review or deep_review:
+        append_missing(selected_modules, CORE_REVIEW_MODULES)
+    if deep_review:
+        append_missing(selected_modules, NARRATIVE_REVIEW_MODULES)
+        append_missing(selected_modules, DEEP_REVIEW_MODULES)
+    if (number_sense or (deep_review and style in NUMBER_SENSE_REVIEW_STYLES)) and "natural-measurement" not in [
         module.name for module in selected_modules
     ]:
         selected_modules.append(load_skill("natural-measurement"))
@@ -121,46 +149,40 @@ def compile_audit_prompt(
     modules: list[str] | None = None,
     strict_continuity: bool = True,
     number_sense: bool = False,
+    profiles: list[str] | None = None,
 ) -> str:
     selected_modules = load_many(modules or [])
-    selected_names = [module.name for module in selected_modules]
-    required_modules = ["forensic-physical-audit"]
-    required_modules.extend(
-        [
-            "ai-trace-rubric",
-            "relationship-stance-audit",
-            "cliche-phrase-audit",
-            "formulaic-structure-audit",
-            "prose-progress-audit",
-        ]
-    )
-    if strict_continuity:
-        required_modules.extend(
-            [
-                "occupancy-capacity",
-                "spatial-blocking",
-                "appearance-prop-continuity",
-                "physical-continuity-audit",
-            ]
-        )
+    requested_profiles = set(profiles or ["full"])
     if number_sense:
-        required_modules.append("natural-measurement")
-    for name in required_modules:
-        if name not in selected_names:
-            selected_modules.append(load_skill(name))
-            selected_names.append(name)
+        requested_profiles.add("numbers")
+    unknown_profiles = requested_profiles - AUDIT_PROFILES
+    if unknown_profiles:
+        raise ValueError(f"Unknown audit profile: {', '.join(sorted(unknown_profiles))}")
+    physical_enabled = "physical" in requested_profiles or (
+        "full" in requested_profiles and strict_continuity
+    )
+    relationship_enabled = bool(requested_profiles & {"full", "relationship"})
+    ai_trace_enabled = bool(requested_profiles & {"full", "ai-trace"})
+    numbers_enabled = "numbers" in requested_profiles
+
+    if physical_enabled:
+        append_missing(selected_modules, PHYSICAL_AUDIT_MODULES)
+    if relationship_enabled:
+        append_missing(selected_modules, RELATIONSHIP_AUDIT_MODULES)
+    if ai_trace_enabled:
+        append_missing(selected_modules, AI_TRACE_AUDIT_MODULES)
+    if numbers_enabled:
+        append_missing(selected_modules, ["natural-measurement"])
 
     context = read_optional(context_path)
     draft = read_optional(draft_path)
     blocks = [
         "# Audit Directive\n\n"
         "You are auditing an existing draft, not generating new prose. "
-        "Do not assume continuity is correct. Extract physical evidence first, "
-        "then flag contradictions. Pay special attention to occupancy and capacity, "
-        "front/rear/left/right relationships, barriers, reach/contact feasibility, "
-        "clothing, shoes, props, body-state drift, relationship stance, audience-specific "
-        "mention permissions, secret leaks, and false precision when number sense review "
-        "is enabled.",
+        "Do not assume the draft is correct. Audit only the selected profiles, extract "
+        "evidence before judging, distinguish contradictions from intentional exceptions, "
+        "and propose the smallest repair that preserves the author's intent. "
+        f"Selected profiles: {', '.join(sorted(requested_profiles))}.",
         CONTINUITY_DIRECTIVE.strip(),
     ]
     for module in selected_modules:
@@ -168,15 +190,30 @@ def compile_audit_prompt(
     if context:
         blocks.append(f"# Continuity Ledger\n\n{context}")
     blocks.append(f"# Draft To Audit\n\n{draft}")
-    blocks.append(
-        "# Audit Task\n\n"
-        "Return a forensic physical continuity audit. First output an evidence table, "
-        "then contradictions, then the corrected state ledger and minimal repair plan. "
-        "If a character changes seat, shares a physical resource, changes the mode of a "
-        "supporting surface, crosses a barrier, touches someone, changes shoes, or changes "
-        "clothing, require explicit text evidence for the transition. If number-sense review "
-        "is enabled, classify every exact number before deciding whether to keep or soften it. "
-        "For dialogue, extract speaker -> listener -> referenced party and flag any stance, "
-        "audience, rank, or secrecy contradiction without an on-page motive."
-    )
+    task_lines = [
+        "# Audit Task",
+        "",
+        "Return evidence first, then confirmed contradictions, uncertain cases, and a minimal repair plan.",
+    ]
+    if physical_enabled:
+        task_lines.append(
+            "For physical continuity, require on-page evidence for movement, occupancy, "
+            "resource-mode changes, barriers, reach, clothing, props, and body-state changes."
+        )
+    if relationship_enabled:
+        task_lines.append(
+            "For relationship continuity, extract speaker -> listener/audience -> referenced "
+            "party and check stance, knowledge, rank, mention policy, secrecy, motive, and consequence."
+        )
+    if ai_trace_enabled:
+        task_lines.append(
+            "For AI-trace review, identify exact phrases or paragraph structures before scoring; "
+            "do not flag a pattern without quoting or locating its evidence."
+        )
+    if numbers_enabled:
+        task_lines.append(
+            "For number sense, classify every exact number before deciding whether to keep, "
+            "soften, generalize, or remove it."
+        )
+    blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"

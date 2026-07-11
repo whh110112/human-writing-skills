@@ -12,7 +12,7 @@ python -m humanwriting.cli build `
   --module embodied-emotion `
   --module vocal-rhythm `
   --module cultural-anchors `
-  --review `
+  --deep-review `
   --context examples/story-ledger.md `
   --task "Write the next 900 words. Begin outside the shuttered customs hall at dawn. Lin Qiao must use one fragile inference instead of certainty, and the scene should end with one unresolved pressure."
 ```

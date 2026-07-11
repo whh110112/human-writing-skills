@@ -51,12 +51,12 @@ evidence, or convert explanation into action.
 
 ## Recommended Commands
 
-`--review` now includes these modules automatically:
+Use `--deep-review` for the complete forum-informed audit set; use compact `--review` for long-form continuation:
 
 ```powershell
 python -m humanwriting.cli build `
   --style fiction `
-  --review `
+  --deep-review `
   --strict-continuity `
   --context examples/story-ledger.md `
   --task "Write the next scene. Avoid stock phrases and formulaic paragraph shapes."
@@ -68,7 +68,8 @@ Audit an existing draft:
 python -m humanwriting.cli audit `
   --draft examples/problem-car-scene-draft.md `
   --context examples/vehicle-scene-ledger.md `
-  --numbers
+  --profile full `
+  --profile numbers
 ```
 
 ## Sources

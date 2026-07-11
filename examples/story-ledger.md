@@ -22,6 +22,20 @@
 - Their last exchange ended politely, which is part of the problem: neither said the
   accusation directly.
 
+## Relationship Stance and Information Permissions
+
+- Current audience: Lin Qiao and Captain Wei are alone outside the customs hall;
+  dock workers may arrive and overhear them.
+
+| From | To | Public stance | Private stance | Knowledge | Mention policy | Exposure risk | Leverage |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Lin Qiao | Captain Wei | cautious cooperation | suspicious dependence | suspects he knows the cover-up | may question him indirectly; do not accuse without proof | medium | her burned-page clue |
+| Captain Wei | Salt Office | official compliance | concealed conflict | knows patrol routes and missing records | avoid direct disclosure in public; coded warning only | high | access and patrol knowledge |
+
+| Speaker | Audience | Referenced person/group | Allowed tone | Forbidden leak | Exception motive |
+| --- | --- | --- | --- | --- | --- |
+| Captain Wei | Lin Qiao, with workers nearby | Salt Office | neutral or coded warning | his source inside the office | emergency warning or deliberate trust test |
+
 ## Beat Bridge
 
 - Previous residue: the burned page left ash under Lin Qiao's fingernails and one

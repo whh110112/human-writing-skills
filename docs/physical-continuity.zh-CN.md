@@ -30,7 +30,8 @@ python -m humanwriting.cli build `
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/problem-car-scene-draft.zh-CN.md `
-  --context examples/vehicle-scene-ledger.md
+  --context examples/vehicle-scene-ledger.md `
+  --profile physical
 ```
 
 `--strict-continuity` 会自动加入：
@@ -38,7 +39,8 @@ python -m humanwriting.cli audit `
 - `spatial-blocking`
 - `occupancy-capacity`
 - `appearance-prop-continuity`
-- `physical-continuity-audit`
+
+`physical-continuity-audit` 和证据表更严格的 `forensic-physical-audit` 只在 `audit --profile physical` 中加载，避免挤占正文生成的上下文。
 
 ## 必须记录什么
 
@@ -83,7 +85,7 @@ python -m humanwriting.cli audit `
 
 ## 为什么要用 `audit`
 
-`build --strict-continuity` 适合生成前约束，但它不能保证模型会主动回头逐句查错。`audit` 会生成“法医式审稿指令包”，强制模型先抽证据表，再判断矛盾。
+`build --strict-continuity` 适合生成前约束，但它不能保证模型会主动回头逐句查错。`audit --profile physical` 会生成“法医式审稿指令包”，强制模型先抽证据表，再判断矛盾。
 
 它会重点抓：
 

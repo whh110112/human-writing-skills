@@ -33,15 +33,14 @@ python -m humanwriting.cli build `
   --task "写一段人物情绪紧张的对话，避免不必要的精确数字。"
 ```
 
-小说、网文、自媒体在 `--review` 时会默认加入 `natural-measurement`。新闻、科研、技术报告不会默认加入，以免把必要数字弱化。
+小说、网文、自媒体在 `--deep-review` 时会默认加入 `natural-measurement`。精简的 `--review` 不加载完整数字模块，以节省长文上下文；也可以显式使用 `--number-sense`。
 
 审稿时：
 
 ```powershell
 python -m humanwriting.cli audit `
   --draft examples/false-precision-draft.zh-CN.md `
-  --numbers `
-  --no-strict-continuity
+  --profile numbers
 ```
 
 ## 审查标准
