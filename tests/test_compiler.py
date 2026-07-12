@@ -43,6 +43,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("logic-causality-audit", list_module_skills())
         self.assertIn("character-consistency-audit", list_module_skills())
         self.assertIn("proofreading-audit", list_module_skills())
+        self.assertIn("reference-style-alignment", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -57,6 +58,68 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Relationship state", prompt)
         self.assertIn("Fiction Skill", prompt)
         self.assertIn("Write the next scene.", prompt)
+        self.assertNotIn("Technique Module: reference-style-alignment", prompt)
+
+    def test_reference_style_does_not_activate_without_explicit_signal(self):
+        prompt = compile_prompt("fiction", "Write a quiet scene by the river.")
+        self.assertNotIn("Technique Module: reference-style-alignment", prompt)
+        self.assertNotIn("Reference Style Material", prompt)
+
+    def test_explicit_task_style_request_activates_reference_module(self):
+        prompt = compile_prompt("fiction", "参考冷峻克制的文风写下一场戏。")
+        self.assertIn("Technique Module: reference-style-alignment", prompt)
+        self.assertIn("Reference Style Material", prompt)
+        self.assertIn("参考冷峻克制的文风", prompt)
+
+    def test_reference_file_activates_and_respects_sampling_budget(self):
+        with TemporaryDirectory() as directory:
+            reference = Path(directory) / "reference.md"
+            reference.write_text("甲" * 6000 + "中段标记" + "乙" * 6000, encoding="utf-8")
+            prompt = compile_prompt(
+                "fiction",
+                "Write the next scene.",
+                reference_paths=[str(reference)],
+                reference_budget=1200,
+            )
+        self.assertIn("Technique Module: reference-style-alignment", prompt)
+        self.assertIn("Reference: reference.md", prompt)
+        self.assertIn("middle sample", prompt)
+        self.assertLess(prompt.count("甲") + prompt.count("乙"), 1400)
+
+    def test_many_reference_files_share_one_global_budget(self):
+        with TemporaryDirectory() as directory:
+            paths = []
+            for index in range(12):
+                path = Path(directory) / f"reference-{index}.md"
+                path.write_text(str(index) * 2000, encoding="utf-8")
+                paths.append(str(path))
+            from humanwriting.reference import build_reference_pack
+
+            pack = build_reference_pack(paths=paths, budget=1000)
+        self.assertLessEqual(pack.sampled_characters, 1000)
+
+    def test_audit_reference_automatically_adds_style_match(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            reference = root / "reference.md"
+            draft.write_text("她推开门，没有回头。", encoding="utf-8")
+            reference.write_text("雨落得很慢。灯没有亮。", encoding="utf-8")
+            prompt = compile_audit_prompt(
+                str(draft),
+                profiles=["character"],
+                reference_paths=[str(reference)],
+            )
+        self.assertIn("Selected profiles: character, style-match", prompt)
+        self.assertIn("Audit Module: reference-style-alignment", prompt)
+        self.assertIn("Reference: reference.md", prompt)
+
+    def test_style_match_profile_requires_explicit_reference(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("A short draft.", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "requires --reference"):
+                compile_audit_prompt(str(draft), profiles=["style-match"])
 
     def test_compile_prompt_can_add_modules(self):
         prompt = compile_prompt(
@@ -232,11 +295,38 @@ class CompilerTests(unittest.TestCase):
             )
             logic_prompt = (written / "01-logic.md").read_text(encoding="utf-8")
             manifest = (written / "README.md").read_text(encoding="utf-8")
+            lint_report = (written / "00-pattern-lint.json").read_text(encoding="utf-8")
         self.assertEqual(len(stages), 7)
         self.assertIn("Audit Module: logic-causality-audit", logic_prompt)
         self.assertNotIn("Audit Module: character-consistency-audit", logic_prompt)
         self.assertIn("fresh model conversation", manifest)
         self.assertIn("Detected exact-number cue", manifest)
+        self.assertIn("Pattern lint style", manifest)
+        self.assertIn('"disclaimer"', lint_report)
+
+    def test_pipeline_adds_style_match_only_with_reference(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            reference = root / "reference.md"
+            draft.write_text("一份没有人物动作的说明文本。", encoding="utf-8")
+            reference.write_text("句子很短。偶尔很长，但不解释。", encoding="utf-8")
+            without_reference, _ = write_audit_pipeline(
+                str(draft),
+                str(root / "without-reference"),
+                auto=True,
+            )
+            with_reference, stages = write_audit_pipeline(
+                str(draft),
+                str(root / "with-reference"),
+                auto=True,
+                reference_paths=[str(reference)],
+            )
+            without_manifest = (without_reference / "README.md").read_text(encoding="utf-8")
+            with_manifest = (with_reference / "README.md").read_text(encoding="utf-8")
+        self.assertNotIn("| `style-match` | yes |", without_manifest)
+        self.assertIn("| `style-match` | yes |", with_manifest)
+        self.assertIn("style-match", [stage.profile for stage in stages])
 
     def test_cli_reports_missing_draft_without_traceback(self):
         stderr = StringIO()

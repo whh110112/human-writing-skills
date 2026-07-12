@@ -4,18 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "human-writing-skills"
-version = "0.3.0"
+version = "0.4.0"
 description = "Markdown writing skills and a prompt compiler for natural, context-aware AI-assisted writing."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Human Writing Skills contributors" }]
 keywords = ["writing", "skills", "prompting", "ai-writing", "long-context"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Education",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Topic :: Text Processing",
 ]

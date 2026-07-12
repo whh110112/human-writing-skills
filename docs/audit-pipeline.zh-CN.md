@@ -31,6 +31,9 @@ human-writing-skills pipeline `
 
 输出目录里的每个 Markdown 都是一份完整但单一职责的提示词。应在新的 Chatbox 会话、独立 API 请求或没有上一阶段聊天记忆的模型会话中分别运行。
 
+目录还会生成确定性预检 `00-pattern-lint.md` 和 JSON，包含命中位置和透明分数，
+但不据此判断作者身份。
+
 ## 动态按需加载
 
 ```powershell
@@ -53,6 +56,7 @@ human-writing-skills pipeline `
 - 有对话、等级、阵营、亲密或秘密线索：`relationship`
 - 有位置、移动、服装、道具或空间线索：`physical`
 - 有带单位的精确数字：`numbers`
+- 明确传入 `--reference` 或 `--reference-style`：`style-match`
 
 `README.md` 清单会记录每个阶段为什么被选择或跳过。自动判断是保守的文本启发式，不理解完整剧情；重要章节应显式指定阶段。
 
@@ -69,12 +73,15 @@ human-writing-skills pipeline `
 
 `--auto` 和 `--stage` 不能同时使用。
 
+显式选择 `--stage style-match` 时必须同时提供参考资料或明确文风方向。只有这个
+阶段会收到参考原文，其他专项审查不会被范文内容干扰。
+
 ## 推荐执行顺序
 
 先改结构，后改文字：
 
 ```text
-逻辑 -> 人物/关系 -> 物理 -> AI 痕迹 -> 数字 -> 校对
+确定性扫描 -> 逻辑 -> 人物/关系 -> 物理 -> AI 痕迹 -> 文风对齐 -> 数字 -> 校对
 ```
 
 逻辑或剧情结构发生重写后，应重新运行受影响的后续阶段。不要先校对一段随后会被整体删除的文字。

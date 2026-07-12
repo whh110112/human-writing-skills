@@ -65,6 +65,8 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `style-matrix` | the mistake of applying one generic "human voice" to every genre |
 | `editor-loop` | one-shot drafting without a critical human-editor pass |
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
+| `reference-style-alignment` | explicit reference material into transferable voice features without copying content |
+| `protected-content` | accidental changes to numbers, citations, equations, URLs, code, quotes, and required terms |
 
 ## Quick Start
 
@@ -92,6 +94,30 @@ You can also run directly from the source checkout with `python -m humanwriting.
 ```
 
 This format keeps the model focused on the current task while still carrying the previous facts, style decisions, and unresolved threads.
+
+## Explicit Reference Style
+
+Reference matching is opt-in. It activates only with `--reference`,
+`--reference-style`, or explicit task wording such as "match this voice." A
+continuity ledger by itself never activates it.
+
+```powershell
+human-writing-skills build `
+  --style fiction `
+  --context examples/story-ledger.md `
+  --reference examples/reference-style-source.zh-CN.md `
+  --task "Continue the scene while matching the reference's restrained rhythm."
+
+human-writing-skills audit `
+  --draft my-chapter.md `
+  --reference examples/reference-style-source.zh-CN.md `
+  --profile style-match
+```
+
+The compiler extracts point of view, rhythm, register, imagery, description,
+dialogue cadence, emotion handling, and transitions. Plot facts still come from
+`--context`; names, events, and distinctive phrases must not be copied from the
+reference. See [docs/reference-style.md](docs/reference-style.md).
 
 ## Long-Form Continuity
 
@@ -181,6 +207,7 @@ tests/               standard-library unit tests
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
 | `numbers` | False precision in action and emotion |
 | `proofread` | Typos, punctuation, naming, layout, and mechanical errors |
+| `style-match` | Drift from explicitly supplied reference material; unavailable without a reference signal |
 
 Profiles can be combined, for example `--profile relationship --profile ai-trace`.
 
@@ -199,6 +226,20 @@ human-writing-skills pipeline `
 Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, and number stages when the chapter contains matching cues. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
+
+### Deterministic Safeguards
+
+Use `lint` for evidence-located pattern checks and `verify` to catch protected
+facts changed during rewriting. The lint score is an editing heuristic, not
+authorship proof.
+
+```powershell
+human-writing-skills lint --draft my-chapter.md --style fiction
+human-writing-skills verify --source original.md --candidate revised.md --protect-term "Project Atlas"
+```
+
+- Pattern lint: [docs/pattern-linter.md](docs/pattern-linter.md)
+- Protected content: [docs/protected-content.md](docs/protected-content.md)
 
 ### Number Sense
 

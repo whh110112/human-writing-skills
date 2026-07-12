@@ -1,0 +1,4 @@
+interface:
+  display_name: "Human Writing Skills"
+  short_description: "Natural prose, continuity, style matching, and manuscript audits"
+  default_prompt: "Use $human-writing-skills to revise this draft while preserving its facts, continuity, and intended voice."

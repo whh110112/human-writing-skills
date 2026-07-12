@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .protection import build_protection_manifest
+from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 from .skills import load_many, load_skill
 
 NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
@@ -37,6 +39,8 @@ PHYSICAL_AUDIT_MODULES = [
 LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
 PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
+REFERENCE_STYLE_AUDIT_MODULES = ["reference-style-alignment"]
+PROTECTED_CONTENT_MODULES = ["protected-content"]
 AUDIT_PROFILES = {
     "full",
     "logic",
@@ -46,6 +50,7 @@ AUDIT_PROFILES = {
     "ai-trace",
     "numbers",
     "proofread",
+    "style-match",
 }
 
 
@@ -112,11 +117,25 @@ def compile_prompt(
     strict_continuity: bool = False,
     number_sense: bool = False,
     deep_review: bool = False,
+    reference_paths: list[str] | None = None,
+    reference_style: str | None = None,
+    reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    protect_terms: list[str] | None = None,
 ) -> str:
     skill = load_skill(style)
     if skill.kind != "style":
         raise ValueError(f"'{style}' is a module, not a primary style skill.")
     selected_modules = load_many(modules or [])
+    reference_pack = build_reference_pack(
+        reference_paths,
+        reference_style,
+        task=task,
+        budget=reference_budget,
+    )
+    if reference_pack.active:
+        append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
+    if protect_terms:
+        append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
     if strict_continuity:
         append_missing(
             selected_modules,
@@ -145,6 +164,10 @@ def compile_prompt(
         blocks.append(f"# Technique Module: {module.name}\n\n{module.content}")
     if context:
         blocks.append(f"# Project Context\n\n{context}")
+    if reference_pack.active:
+        blocks.append(reference_pack.block)
+    if protect_terms:
+        blocks.append(build_protection_manifest("", protect_terms))
     blocks.append(f"# Task\n\n{task.strip()}")
     blocks.append(
         "# Output Contract\n\n"
@@ -162,14 +185,28 @@ def compile_audit_prompt(
     strict_continuity: bool = True,
     number_sense: bool = False,
     profiles: list[str] | None = None,
+    reference_paths: list[str] | None = None,
+    reference_style: str | None = None,
+    reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    protect_content: bool = False,
+    protect_terms: list[str] | None = None,
 ) -> str:
     selected_modules = load_many(modules or [])
     requested_profiles = set(profiles or ["full"])
+    reference_pack = build_reference_pack(
+        reference_paths,
+        reference_style,
+        budget=reference_budget,
+    )
+    if reference_pack.active:
+        requested_profiles.add("style-match")
     if number_sense:
         requested_profiles.add("numbers")
     unknown_profiles = requested_profiles - AUDIT_PROFILES
     if unknown_profiles:
         raise ValueError(f"Unknown audit profile: {', '.join(sorted(unknown_profiles))}")
+    if "style-match" in requested_profiles and not reference_pack.active:
+        raise ValueError("The style-match profile requires --reference or --reference-style.")
     physical_enabled = "physical" in requested_profiles or (
         "full" in requested_profiles and strict_continuity
     )
@@ -179,6 +216,7 @@ def compile_audit_prompt(
     logic_enabled = bool(requested_profiles & {"full", "logic"})
     character_enabled = bool(requested_profiles & {"full", "character"})
     proofread_enabled = bool(requested_profiles & {"full", "proofread"})
+    style_match_enabled = "style-match" in requested_profiles
 
     if logic_enabled:
         append_missing(selected_modules, LOGIC_AUDIT_MODULES)
@@ -194,6 +232,10 @@ def compile_audit_prompt(
         append_missing(selected_modules, ["natural-measurement"])
     if proofread_enabled:
         append_missing(selected_modules, PROOFREAD_AUDIT_MODULES)
+    if style_match_enabled:
+        append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
+    if protect_content or protect_terms:
+        append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
 
     context = read_optional(context_path)
     draft = read_optional(draft_path)
@@ -210,6 +252,10 @@ def compile_audit_prompt(
         blocks.append(f"# Audit Module: {module.name}\n\n{module.content}")
     if context:
         blocks.append(f"# Continuity Ledger\n\n{context}")
+    if reference_pack.active:
+        blocks.append(reference_pack.block)
+    if protect_content or protect_terms:
+        blocks.append(build_protection_manifest(draft, protect_terms))
     blocks.append(f"# Draft To Audit\n\n{draft}")
     task_lines = [
         "# Audit Task",
@@ -250,6 +296,11 @@ def compile_audit_prompt(
         task_lines.append(
             "For proofreading, separate definite mechanical errors from house-style choices and "
             "intentional voice; do not rewrite plot or characterization."
+        )
+    if style_match_enabled:
+        task_lines.append(
+            "For reference style, build an evidence-backed style card, compare the draft on each "
+            "dimension, and flag copying or context contamination as well as stylistic drift."
         )
     blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"

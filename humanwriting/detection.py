@@ -10,6 +10,7 @@ PIPELINE_PROFILES = [
     "relationship",
     "physical",
     "ai-trace",
+    "style-match",
     "numbers",
     "proofread",
 ]
@@ -56,12 +57,21 @@ def _match_reason(pattern: re.Pattern[str], text: str, label: str) -> tuple[bool
     return True, f"Detected {label} cue: {cue!r}."
 
 
-def detect_audit_profiles(draft: str) -> list[ProfileDecision]:
+def detect_audit_profiles(
+    draft: str,
+    reference_active: bool = False,
+) -> list[ProfileDecision]:
     optional = {
         "character": _match_reason(CHARACTER_PATTERN, draft, "character-action or voice"),
         "relationship": _match_reason(RELATIONSHIP_PATTERN, draft, "dialogue or relationship"),
         "physical": _match_reason(PHYSICAL_PATTERN, draft, "space, movement, appearance, or prop"),
         "numbers": _match_reason(NUMBER_PATTERN, draft, "exact-number"),
+        "style-match": (
+            reference_active,
+            "Explicit reference material or style direction was supplied."
+            if reference_active
+            else "No explicit reference material or style direction was supplied.",
+        ),
     }
     decisions: list[ProfileDecision] = []
     for profile in PIPELINE_PROFILES:

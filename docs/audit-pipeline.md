@@ -21,6 +21,10 @@ human-writing-skills pipeline `
 
 It writes stages for logic, character consistency, relationship stance, physical continuity, AI traces, number sense, and proofreading.
 
+It also writes `00-pattern-lint.md` and JSON as a deterministic preflight. These
+files contain evidence locations and a transparent editing score; they do not
+claim to identify the author.
+
 Run every generated Markdown prompt in a fresh Chatbox conversation, independent API request, or model session without prior stage memory.
 
 ## Dynamic Selection
@@ -39,6 +43,7 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `relationship` for dialogue, hierarchy, faction, intimacy, or secrecy cues
 - `physical` for space, movement, appearance, or prop cues
 - `numbers` for exact numbers with units
+- `style-match` only when `--reference` or `--reference-style` explicitly activates it
 
 The generated manifest records why every stage was selected or skipped. Detection is a conservative text heuristic, not complete story understanding; explicitly select stages for important chapters.
 
@@ -55,10 +60,13 @@ human-writing-skills pipeline `
 
 `--auto` and `--stage` are mutually exclusive.
 
+`--stage style-match` is rejected unless reference material or an explicit style
+direction is supplied. Only that stage receives the reference text.
+
 ## Recommended Order
 
 ```text
-logic -> character/relationship -> physical -> AI trace -> numbers -> proofreading
+pattern lint -> logic -> character/relationship -> physical -> AI trace -> style match -> numbers -> proofreading
 ```
 
 After structural changes, re-run affected downstream stages.
