@@ -233,6 +233,11 @@ Use `lint` for evidence-located pattern checks and `verify` to catch protected
 facts changed during rewriting. The lint score is an editing heuristic, not
 authorship proof.
 
+Protected-content instructions auto-load only for academic papers, news reports,
+and strongly identified legal or technical documents. Fiction, webnovels, casual
+Q&A, playful text, and self-media do not auto-load them; use `--protect-content`
+or `--protect-term` to override this gate.
+
 ```powershell
 human-writing-skills lint --draft my-chapter.md --style fiction
 human-writing-skills verify --source original.md --candidate revised.md --protect-term "Project Atlas"

@@ -6,6 +6,7 @@ from pathlib import Path
 from .compiler import compile_audit_prompt, read_optional
 from .detection import PIPELINE_PROFILES, ProfileDecision, detect_audit_profiles
 from .linter import format_lint_report, lint_file
+from .protection import detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 
 
@@ -66,6 +67,7 @@ def build_audit_pipeline(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
+    document_type: str = "auto",
 ) -> tuple[list[AuditStage], list[ProfileDecision]]:
     draft = read_optional(draft_path)
     reference_pack = build_reference_pack(
@@ -80,6 +82,10 @@ def build_audit_pipeline(
         reference_active=reference_pack.active,
     )
     reason_by_profile = {decision.profile: decision.reason for decision in decisions}
+    auto_protection, _ = detect_serious_document(draft, document_type=document_type)
+    protection_profile = None
+    if auto_protection and selected:
+        protection_profile = "proofread" if "proofread" in selected else selected[-1]
     pipeline = [
         AuditStage(
             order=index,
@@ -95,6 +101,8 @@ def build_audit_pipeline(
                 reference_budget=reference_budget,
                 protect_content=protect_content,
                 protect_terms=protect_terms,
+                document_type=document_type,
+                auto_protect=profile == protection_profile,
             ),
         )
         for index, profile in enumerate(selected, start=1)
@@ -113,6 +121,7 @@ def write_audit_pipeline(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
+    document_type: str = "auto",
     lint_style: str = "general",
     lint_allow: set[str] | None = None,
 ) -> tuple[Path, list[AuditStage]]:
@@ -126,6 +135,7 @@ def write_audit_pipeline(
         reference_budget=reference_budget,
         protect_content=protect_content,
         protect_terms=protect_terms,
+        document_type=document_type,
     )
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)

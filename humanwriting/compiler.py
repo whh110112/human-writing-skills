@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .protection import build_protection_manifest
+from .protection import build_protection_manifest, detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 from .skills import load_many, load_skill
 
@@ -120,12 +120,14 @@ def compile_prompt(
     reference_paths: list[str] | None = None,
     reference_style: str | None = None,
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    protect_content: bool = False,
     protect_terms: list[str] | None = None,
 ) -> str:
     skill = load_skill(style)
     if skill.kind != "style":
         raise ValueError(f"'{style}' is a module, not a primary style skill.")
     selected_modules = load_many(modules or [])
+    context = read_optional(context_path)
     reference_pack = build_reference_pack(
         reference_paths,
         reference_style,
@@ -134,7 +136,21 @@ def compile_prompt(
     )
     if reference_pack.active:
         append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
-    if protect_terms:
+    protection_requested = protect_content or bool(protect_terms) or any(
+        module.name == "protected-content" for module in selected_modules
+    )
+    auto_protection, auto_protection_reason = detect_serious_document(
+        text=context,
+        document_type=style,
+        task=task,
+    )
+    protection_active = protection_requested or auto_protection
+    protection_reason = (
+        "Explicit protection was requested."
+        if protection_requested
+        else auto_protection_reason
+    )
+    if protection_active:
         append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
     if strict_continuity:
         append_missing(
@@ -154,7 +170,6 @@ def compile_prompt(
         module.name for module in selected_modules
     ]:
         selected_modules.append(load_skill("natural-measurement"))
-    context = read_optional(context_path)
     blocks = [
         CORE_DIRECTIVE.strip(),
         CONTINUITY_DIRECTIVE.strip(),
@@ -166,8 +181,10 @@ def compile_prompt(
         blocks.append(f"# Project Context\n\n{context}")
     if reference_pack.active:
         blocks.append(reference_pack.block)
-    if protect_terms:
-        blocks.append(build_protection_manifest("", protect_terms))
+    if protection_active:
+        blocks.append(f"# Protection Activation\n\n{protection_reason}")
+        protected_source = "\n".join(part for part in [context, task] if part)
+        blocks.append(build_protection_manifest(protected_source, protect_terms))
     blocks.append(f"# Task\n\n{task.strip()}")
     blocks.append(
         "# Output Contract\n\n"
@@ -190,8 +207,11 @@ def compile_audit_prompt(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
+    document_type: str = "auto",
+    auto_protect: bool = True,
 ) -> str:
     selected_modules = load_many(modules or [])
+    draft = read_optional(draft_path)
     requested_profiles = set(profiles or ["full"])
     reference_pack = build_reference_pack(
         reference_paths,
@@ -234,11 +254,23 @@ def compile_audit_prompt(
         append_missing(selected_modules, PROOFREAD_AUDIT_MODULES)
     if style_match_enabled:
         append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
-    if protect_content or protect_terms:
+    protection_requested = protect_content or bool(protect_terms) or any(
+        module.name == "protected-content" for module in selected_modules
+    )
+    auto_protection, auto_protection_reason = detect_serious_document(
+        text=draft,
+        document_type=document_type,
+    )
+    protection_active = protection_requested or (auto_protect and auto_protection)
+    protection_reason = (
+        "Explicit protection was requested."
+        if protection_requested
+        else auto_protection_reason
+    )
+    if protection_active:
         append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
 
     context = read_optional(context_path)
-    draft = read_optional(draft_path)
     blocks = [
         "# Audit Directive\n\n"
         "You are auditing an existing draft, not generating new prose. "
@@ -254,7 +286,8 @@ def compile_audit_prompt(
         blocks.append(f"# Continuity Ledger\n\n{context}")
     if reference_pack.active:
         blocks.append(reference_pack.block)
-    if protect_content or protect_terms:
+    if protection_active:
+        blocks.append(f"# Protection Activation\n\n{protection_reason}")
         blocks.append(build_protection_manifest(draft, protect_terms))
     blocks.append(f"# Draft To Audit\n\n{draft}")
     task_lines = [

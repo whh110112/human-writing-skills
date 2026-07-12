@@ -7,6 +7,39 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
+SERIOUS_DOCUMENT_TYPES = {"academic-paper", "news-report", "legal", "technical"}
+NARRATIVE_DOCUMENT_TYPES = {"fiction", "webnovel", "self-media"}
+SERIOUS_TASK_PATTERN = re.compile(
+    r"(?:学术|科研|研究)?论文|新闻(?:稿|报道|报告)|法律文书|合同(?:条款|文本)?|"
+    r"判决书|起诉状|答辩状|法律意见书|技术文档|接口文档|API\s*文档|"
+    r"academic paper|research paper|news report|legal document|contract|"
+    r"technical documentation|API documentation",
+    re.IGNORECASE,
+)
+ACADEMIC_CUE = re.compile(
+    r"研究(?:方法|结果|结论)|实验(?:方法|结果)|样本量|显著性|置信区间|"
+    r"参考文献|doi\b|methodology|results?|conclusion|sample size|p\s*[<=>]",
+    re.IGNORECASE,
+)
+NEWS_CUE = re.compile(
+    r"据.{0,30}(?:报道|消息)|记者|通讯员|消息人士|新闻发布会|截至.{0,20}[时日]|"
+    r"reported by|according to|news conference|spokesperson",
+    re.IGNORECASE,
+)
+LEGAL_CUE = re.compile(
+    r"本合同|甲方|乙方|第[一二三四五六七八九十百\d]+条|依法|法定|"
+    r"判决如下|诉讼请求|违约责任|管辖法院|hereby|pursuant to|"
+    r"governing law|liability|jurisdiction",
+    re.IGNORECASE,
+)
+TECHNICAL_CUE = re.compile(
+    r"\bAPI\b|接口参数|请求参数|返回值|错误码|版本号|配置文件|数据类型|"
+    r"函数签名|schema|endpoint|request|response|error code|configuration|"
+    r"data type|function signature",
+    re.IGNORECASE,
+)
+
+
 @dataclass(frozen=True)
 class ProtectedItem:
     kind: str
@@ -38,19 +71,61 @@ class ProtectionReport:
         }
 
 
+CITATION_PATTERN = re.compile(r"\\cite\{[^}]+\}|\[[0-9][0-9,;\s\-–—]*\]")
+EQUATION_PATTERN = re.compile(r"\$\$.*?\$\$|\$[^$\n]+\$", re.DOTALL)
+NAMED_TERM_PATTERN = re.compile(
+    r"《[^》\n]{2,60}》|\b[A-Z]{2,}(?:[ -][A-Z0-9]{2,})*\b|"
+    r"\b[A-Z][A-Za-z0-9]*(?:[-_.][A-Za-z0-9]+)+\b"
+)
 PROTECTED_PATTERNS = [
     ("fenced-code", re.compile(r"```.*?```", re.DOTALL)),
     ("source-quote", re.compile(r"(?m)^\s*>\s+.+$")),
     ("inline-code", re.compile(r"`[^`\n]+`")),
     ("url", re.compile(r"https?://[^\s)>]+")),
-    ("citation", re.compile(r"\\cite\{[^}]+\}|\[[0-9][0-9,;\s\-–—]*\]")),
-    ("equation", re.compile(r"\$\$.*?\$\$|\$[^$\n]+\$", re.DOTALL)),
+    ("citation", CITATION_PATTERN),
+    ("equation", EQUATION_PATTERN),
+    ("named-term", NAMED_TERM_PATTERN),
 ]
 NUMBER_PATTERN = re.compile(
     r"(?<![\w.])[+-]?\d+(?:\.\d+)?(?:\s*(?:%|毫米|厘米|米|公里|秒|分钟|小时|"
     r"元|美元|岁|mg|g|kg|mm|cm|km|ms|s|min|h))?",
     re.IGNORECASE,
 )
+
+
+def detect_serious_document(
+    text: str = "",
+    document_type: str = "auto",
+    task: str = "",
+) -> tuple[bool, str]:
+    """Return whether protected-content rules should auto-load.
+
+    Exact numbers alone never count as a serious-document signal.
+    """
+    if document_type in NARRATIVE_DOCUMENT_TYPES:
+        return False, f"Narrative document type `{document_type}` suppresses auto-protection."
+    if document_type in SERIOUS_DOCUMENT_TYPES:
+        return True, f"Serious document type `{document_type}` requires factual preservation."
+    if document_type not in {"auto", "general", "argumentative"}:
+        raise ValueError(f"Unknown document type: {document_type}")
+    if SERIOUS_TASK_PATTERN.search(task):
+        return True, "The task explicitly requests a serious factual document."
+
+    has_citation = bool(CITATION_PATTERN.search(text))
+    has_equation = bool(EQUATION_PATTERN.search(text))
+    academic = bool(ACADEMIC_CUE.search(text)) and (has_citation or has_equation)
+    legal_hits = len(LEGAL_CUE.findall(text))
+    technical_hits = len(TECHNICAL_CUE.findall(text))
+    news_hits = len(NEWS_CUE.findall(text))
+    if academic:
+        return True, "Academic cues occur with a citation or equation."
+    if legal_hits >= 2:
+        return True, "Multiple legal-document cues were detected."
+    if technical_hits >= 2 and ("`" in text or "```" in text or "http" in text):
+        return True, "Multiple technical-document cues occur with code or a URL."
+    if news_hits >= 2:
+        return True, "Multiple attributed news-report cues were detected."
+    return False, "No strong serious-document evidence was detected."
 
 
 def _overlaps(span: tuple[int, int], occupied: list[tuple[int, int]]) -> bool:

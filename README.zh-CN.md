@@ -230,6 +230,10 @@ human-writing-skills pipeline `
 引文、公式、链接、代码和术语。痕迹分数只是透明的编辑启发式，不是 AI 作者
 身份鉴定。
 
+内容保护只对论文、新闻以及具有充分证据的法律/技术文档自动加载。小说、网文、
+普通问答、搞怪文本和自媒体默认不加载；需要例外时使用 `--protect-content` 或
+`--protect-term` 明确开启。
+
 ```powershell
 human-writing-skills lint --draft my-chapter.md --style fiction
 human-writing-skills verify --source original.md --candidate revised.md --protect-term "星港计划"

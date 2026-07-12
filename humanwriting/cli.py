@@ -78,6 +78,11 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
     build.add_argument("--task", required=True, help="Writing task to perform.")
     build.add_argument(
+        "--protect-content",
+        action="store_true",
+        help="Explicitly protect factual spans; serious academic/news output enables this automatically.",
+    )
+    build.add_argument(
         "--protect-term",
         action="append",
         default=[],
@@ -129,6 +134,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_reference_arguments(audit)
     audit.add_argument(
+        "--document-type",
+        choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "news-report", "legal", "technical"],
+        default="auto",
+        help="Controls serious-document protection. Auto requires strong textual evidence.",
+    )
+    audit.add_argument(
         "--protect-content",
         action="store_true",
         help="Add a manifest for numbers, citations, equations, URLs, code, quotes, and explicit terms.",
@@ -151,6 +162,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output directory. Defaults to <draft-name>-audit-pipeline.",
     )
     add_reference_arguments(pipeline)
+    pipeline.add_argument(
+        "--document-type",
+        choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "news-report", "legal", "technical"],
+        default="auto",
+        help="Controls serious-document protection. Auto requires strong textual evidence.",
+    )
     pipeline.add_argument(
         "--protect-content",
         action="store_true",
@@ -266,6 +283,7 @@ def main(argv: list[str] | None = None) -> int:
                 reference_paths=args.reference,
                 reference_style=args.reference_style,
                 reference_budget=args.reference_budget,
+                protect_content=args.protect_content,
                 protect_terms=args.protect_term,
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
@@ -287,6 +305,7 @@ def main(argv: list[str] | None = None) -> int:
                 reference_budget=args.reference_budget,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
+                document_type=args.document_type,
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
@@ -307,6 +326,7 @@ def main(argv: list[str] | None = None) -> int:
                 reference_budget=args.reference_budget,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
+                document_type=args.document_type,
                 lint_style=args.lint_style,
                 lint_allow=set(args.lint_allow),
             )

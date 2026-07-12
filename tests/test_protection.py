@@ -3,19 +3,24 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from humanwriting.compiler import compile_audit_prompt, compile_prompt
+from humanwriting.pipeline import build_audit_pipeline
 from humanwriting.protection import (
     build_protection_manifest,
     compare_protected_content,
     extract_protected_items,
+    detect_serious_document,
 )
 
 
 class ProtectionTests(unittest.TestCase):
     def test_extracts_numbers_citations_urls_code_and_terms(self):
-        text = "Accuracy was 92.4% [12]. See https://example.com and run `train.py`."
+        text = "API Accuracy was 92.4% [12]. See https://example.com and run `train.py`."
         items = extract_protected_items(text, terms=["Accuracy"])
         kinds = {item.kind for item in items}
-        self.assertTrue({"number", "citation", "url", "inline-code", "explicit-term"} <= kinds)
+        self.assertTrue(
+            {"number", "citation", "url", "inline-code", "named-term", "explicit-term"}
+            <= kinds
+        )
         values = {(item.kind, item.value) for item in items}
         self.assertNotIn(("number", "12"), values)
 
@@ -67,6 +72,66 @@ class ProtectionTests(unittest.TestCase):
         self.assertIn("Protected Content Manifest", audit)
         self.assertIn("92.4%", audit)
         self.assertIn("[12]", audit)
+
+    def test_serious_styles_auto_activate_but_narrative_styles_do_not(self):
+        academic = compile_prompt("academic-paper", "Write the results section with 92.4% accuracy.")
+        news = compile_prompt("news-report", "Write a report using the supplied figures.")
+        fiction = compile_prompt("fiction", "He moved three centimeters and counted seven seconds.")
+        legal_fiction = compile_prompt("fiction", "写一篇以合同纠纷为背景的法律题材小说。")
+
+        self.assertIn("Technique Module: protected-content", academic)
+        self.assertIn("Technique Module: protected-content", news)
+        self.assertNotIn("Technique Module: protected-content", fiction)
+        self.assertNotIn("Technique Module: protected-content", legal_fiction)
+
+    def test_auto_detection_requires_combined_serious_document_evidence(self):
+        self.assertFalse(detect_serious_document("她走了3厘米。结束。", "auto")[0])
+        self.assertTrue(
+            detect_serious_document("研究结果见文献[12]，样本量为300。", "auto")[0]
+        )
+        self.assertTrue(
+            detect_serious_document("第1条 本合同由甲方与乙方签订，违约责任如下。", "auto")[0]
+        )
+        self.assertTrue(
+            detect_serious_document("API endpoint 的 request 参数见 `schema.json`。", "auto")[0]
+        )
+
+    def test_audit_auto_protection_respects_document_type_override(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            legal = root / "legal.md"
+            casual = root / "casual.md"
+            legal.write_text("第1条 本合同由甲方与乙方签订，违约责任如下。", encoding="utf-8")
+            casual.write_text("她向前走了3厘米，又退回来。", encoding="utf-8")
+            legal_prompt = compile_audit_prompt(str(legal), profiles=["proofread"])
+            casual_prompt = compile_audit_prompt(str(casual), profiles=["proofread"])
+            suppressed = compile_audit_prompt(
+                str(legal), profiles=["proofread"], document_type="fiction"
+            )
+
+        self.assertIn("Audit Module: protected-content", legal_prompt)
+        self.assertNotIn("Audit Module: protected-content", casual_prompt)
+        self.assertNotIn("Audit Module: protected-content", suppressed)
+
+    def test_pipeline_auto_protection_is_loaded_once_to_save_tokens(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "legal.md"
+            draft.write_text("第1条 本合同由甲方与乙方签订，违约责任如下。", encoding="utf-8")
+            stages, _ = build_audit_pipeline(
+                str(draft), stages=["logic", "proofread"]
+            )
+            explicit_stages, _ = build_audit_pipeline(
+                str(draft), stages=["logic", "proofread"], protect_content=True
+            )
+            single_stage, _ = build_audit_pipeline(str(draft), stages=["logic"])
+
+        prompts = {stage.profile: stage.prompt for stage in stages}
+        explicit_prompts = {stage.profile: stage.prompt for stage in explicit_stages}
+        self.assertNotIn("Audit Module: protected-content", prompts["logic"])
+        self.assertIn("Audit Module: protected-content", prompts["proofread"])
+        self.assertIn("Audit Module: protected-content", explicit_prompts["logic"])
+        self.assertIn("Audit Module: protected-content", explicit_prompts["proofread"])
+        self.assertIn("Audit Module: protected-content", single_stage[0].prompt)
 
 
 if __name__ == "__main__":
