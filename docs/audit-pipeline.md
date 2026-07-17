@@ -21,7 +21,7 @@ human-writing-skills pipeline `
 
 It writes the established broad stages for logic, character consistency, relationship
 stance, physical continuity, AI traces, number sense, and proofreading. The higher-cost
-`voice`, `serial`, and `texture` stages stay out unless explicitly selected or detected
+`voice`, `serial`, `momentum`, and `texture` stages stay out unless explicitly selected or detected
 by `--auto`.
 
 It also writes `00-pattern-lint.md` and JSON as a deterministic preflight. These
@@ -46,8 +46,10 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `relationship` for dialogue, hierarchy, faction, intimacy, or secrecy cues
 - `voice` only for sustained multi-turn dialogue with attribution cues
 - `serial` only when prior context is supplied and the draft is narrative
+- `momentum` only for a multi-chapter draft or repeated continuation structure
 - `physical` for space, movement, appearance, or prop cues
-- `texture` for clustered imagery, detail inventory, fragment runs, or show-then-gloss cues
+- `texture` for cinematic opening stacks, formulaic introspection, clustered imagery,
+  detail inventory, fragment runs, or show-then-gloss cues
 - `numbers` for exact numbers with units
 - `style-match` only when `--reference` or `--reference-style` explicitly activates it
 
@@ -75,7 +77,7 @@ continuity ledger.
 ## Recommended Order
 
 ```text
-pattern lint -> logic -> character/relationship/voice/serial -> physical -> AI trace/texture -> style match -> numbers -> proofreading
+pattern lint -> logic -> character/relationship/voice/serial/momentum -> physical -> AI trace/texture -> style match -> numbers -> proofreading
 ```
 
 After structural changes, re-run affected downstream stages.

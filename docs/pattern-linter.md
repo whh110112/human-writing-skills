@@ -15,7 +15,9 @@ false precision, unusually uniform sentence rhythm, and excessive dash density.
 For narrative styles it also checks dense comparison clusters (`IMG001`), four-or-more
 short-paragraph runs (`PARA001`), biographical detail inventory (`INFO001`), and
 action immediately followed by a duplicate emotion gloss (`EMO002`). Genre profiles
-suppress these rules for news or academic writing. Code, URLs, and Markdown
+It also checks cinematic opening bundles (`OPEN002`), repeated vague introspection
+(`EMO003`), and repeated chapter scenic resets (`RESET001`). Genre profiles suppress
+these rules for news or academic writing. Code, URLs, and Markdown
 quotations are masked.
 
 The score is transparent and deterministic, but it is not evidence of AI

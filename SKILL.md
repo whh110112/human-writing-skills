@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Write, rewrite, or audit natural, genre-aware prose with long-form continuity, character-specific dialogue, selective serial reentry, prose-texture review, explicit reference-style matching, physical and relationship consistency, deterministic AI-pattern linting, and protected fact verification. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, style calibration from supplied samples, and detailed manuscript review.
+description: Write, rewrite, or audit natural, genre-aware prose with long-form continuity, character-specific dialogue, selective serial reentry, chapter-momentum and prose-texture review, explicit reference-style matching, physical and relationship consistency, deterministic AI-pattern linting, and protected fact verification. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, style calibration from supplied samples, and detailed manuscript review.
 ---
 
 # Human Writing Skills
@@ -20,8 +20,9 @@ chapters, and continuity ledgers separate from optional style references.
    material, gives an explicit style direction, or directly asks to match a style.
 5. For important revisions, run deterministic `lint`, then independent audit
    profiles, then `verify` protected content against the source.
-6. Keep `voice`, `serial`, and `texture` separate from the default audit. Activate
-   them explicitly or through `pipeline --auto`; `serial` requires supplied context.
+6. Keep `voice`, `serial`, `momentum`, and `texture` separate from the default audit.
+   Activate them explicitly or through `pipeline --auto`; `serial` requires supplied
+   context, while `momentum` requires a multi-chapter draft or an explicit request.
 
 ## Commands
 
@@ -31,6 +32,7 @@ human-writing-skills build --style fiction --reference sample.md --task "Match t
 human-writing-skills audit --draft chapter.md --context ledger.md --profile physical
 human-writing-skills audit --draft chapter.md --profile voice
 human-writing-skills audit --draft chapter.md --context ledger.md --profile serial
+human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills pipeline --draft chapter.md --context ledger.md --auto --output-dir audit
 human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills verify --source original.md --candidate revised.md

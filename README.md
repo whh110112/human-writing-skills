@@ -51,10 +51,12 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
 | `dialogue-voice-audit` | interchangeable speakers, response-tactic drift, and audience-inappropriate register |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
+| `chapter-momentum-audit` | atmosphere-only chapters, missing payoffs, discarded residue, and unsupported hooks |
 | `narrative-distance-control` | unmotivated zoom, missing orientation, and viewpoint-distance drift |
 | `imagery-load-audit` | stacked comparisons, competing sensory channels, and show-then-gloss repetition |
 | `paragraph-rhythm-audit` | mechanical one-line paragraph runs and overloaded long blocks |
 | `detail-disclosure-audit` | biography and appearance inventories delivered before the scene uses them |
+| `scene-entry-audit` | exact-time/location/weather/outfit opening bundles before pressure-bearing action |
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
@@ -207,12 +209,14 @@ default, by `--review`, by `--deep-review`, or by the broad `full` audit:
 ```powershell
 human-writing-skills build --style fiction --module dialogue-voice-audit --task "Write the negotiation."
 human-writing-skills build --style webnovel --context ledger.md --module serial-reentry --task "Continue chapter 18."
+human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills audit --draft chapter.md --profile texture
 ```
 
 Use `dialogue-voice-audit` for distinguishable speakers, `serial-reentry` only with
-prior chapters or a ledger, and the `texture` audit for narrative distance, imagery
-load, paragraph fragmentation, emotional over-explanation, and detail inventory.
+prior chapters or a ledger, `momentum` for a multi-chapter draft, and `texture` for
+narrative distance, cinematic opening stacks, imagery load, paragraph fragmentation,
+emotional over-explanation, and detail inventory.
 
 ### Audit Profiles
 
@@ -220,12 +224,13 @@ load, paragraph fragmentation, emotional over-explanation, and detail inventory.
 
 | Profile | Purpose |
 | --- | --- |
-| `full` | Broad default audit; optional `voice`, `serial`, and `texture` remain separate |
+| `full` | Broad default audit; optional `voice`, `serial`, `momentum`, and `texture` remain separate |
 | `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
 | `character` | Character goal, voice, competence, boundaries, and change gates |
 | `voice` | Speaker fingerprints, response tactics, register, and interchangeable dialogue |
 | `serial` | Recap dumps, missing carryovers, and chapter resets; requires `--context` |
-| `texture` | Narrative distance, imagery load, paragraph cadence, and detail disclosure |
+| `momentum` | Multi-chapter entry pressure, irreversible turns, payoff, residue, and exit pressure |
+| `texture` | Narrative distance, scene-entry load, imagery, paragraph cadence, and detail disclosure |
 | `physical` | Position, capacity, reach, clothing, props, and injuries |
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
@@ -247,7 +252,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, number, voice, serial, and texture stages only when matching cues exist. `serial` additionally requires supplied context. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, number, voice, serial, momentum, and texture stages only when matching cues exist. `serial` additionally requires supplied context; `momentum` requires multi-chapter structure. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 
@@ -288,6 +293,7 @@ python -m humanwriting.cli audit `
 The project converts recurring public complaints about AI writing into executable checks: stock phrasing, plastic prose, triplet structures, over-smooth transitions, static paragraphs, hollow emotion, cultural vacuum, and long-form drift.
 
 - Research map: [docs/forum-complaint-research.md](docs/forum-complaint-research.md)
+- Cool18 popular-fiction study: [docs/cool18-popular-fiction-research.md](docs/cool18-popular-fiction-research.md)
 
 List styles:
 

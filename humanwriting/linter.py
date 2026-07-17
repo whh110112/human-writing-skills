@@ -9,6 +9,38 @@ from pathlib import Path
 
 SEVERITY_WEIGHT = {"low": 2, "medium": 5, "high": 9}
 NARRATIVE_STYLES = {"fiction", "webnovel", "self-media"}
+CHAPTER_HEADING_PATTERN = re.compile(
+    r"(?m)^\s*(?:#{1,6}\s*)?(?:第\s*[一二三四五六七八九十百零〇\d]+\s*[章节回卷]|"
+    r"chapter\s+\d+)[^\n]*$",
+    re.IGNORECASE,
+)
+SCENE_OPENING_CUE_PATTERNS = {
+    "clock": re.compile(
+        r"(?:(?:凌晨|清晨|早上|上午|中午|下午|傍晚|晚上|夜里)\s*"
+        r"(?:\d{1,2}|[一二三四五六七八九十两]+)\s*(?:点|时)(?:半|\d{1,2}分)?|"
+        r"(?:\d{1,2}|[一二三四五六七八九十两]+)\s*点(?:半|\d{1,2}分)?|"
+        r"\d{1,2}\s*时(?:\d{1,2}分)?)"
+    ),
+    "place": re.compile(
+        r"[\u4e00-\u9fffA-Za-z0-9]{2,18}(?:机场|航站楼|车站|酒店|大厦|公寓|办公室|"
+        r"宿舍|宫殿|广场|餐厅|咖啡馆|会所|小区|街口|路口|码头|医院|学校)"
+    ),
+    "light-weather": re.compile(
+        r"落日|夕阳|阳光|晨光|暮色|夜色|灯光|月光|雨|雪|雾|夜风|微风|冷风"
+    ),
+    "appearance": re.compile(
+        r"身穿|穿着|外套|短裙|长裙|西装|制服|高跟鞋|平底鞋|长发|短发|妆容"
+    ),
+    "generalized-feeling": re.compile(
+        r"莫名|说不清|无法形容|不知为何|不知道为什么|一股.{0,16}(?:感觉|情绪)|"
+        r"(?:疲惫|紧张|幸福|不安|心动)中带着?"
+    ),
+}
+FORMULAIC_INTROSPECTION_PATTERN = re.compile(
+    r"不是那种.{0,45}而是|像是.{0,35}(?:又像是|却又像)|"
+    r"(?:他|她|我)不知道为什么|(?:他|她|我)?莫名(?:地|其妙|就)?|"
+    r"说不清(?:是什么|为什么)|无法形容(?:的|这种)"
+)
 
 
 @dataclass(frozen=True)
@@ -264,6 +296,21 @@ def _coefficient_of_variation(values: list[int]) -> float:
     return math.sqrt(variance) / mean
 
 
+def _chapter_opening_spans(text: str, width: int = 700) -> list[tuple[int, int]]:
+    return [
+        (match.end(), min(len(text), match.end() + width))
+        for match in CHAPTER_HEADING_PATTERN.finditer(text)
+    ]
+
+
+def _scene_opening_cues(fragment: str) -> set[str]:
+    return {
+        name
+        for name, pattern in SCENE_OPENING_CUE_PATTERNS.items()
+        if pattern.search(fragment)
+    }
+
+
 def _precision_is_earned(text: str, start: int, end: int) -> bool:
     context = text[max(0, start - 60) : min(len(text), end + 60)]
     return bool(
@@ -386,6 +433,78 @@ def lint_text(
                         "Several biographical or measured details arrive together; keep what the scene uses and delay the rest.",
                     )
                 )
+
+        opening_spans = [(0, min(len(masked), 700)), *_chapter_opening_spans(masked)]
+        seen_starts: set[int] = set()
+        stacked_openings: list[tuple[int, int, set[str]]] = []
+        for start, end in opening_spans:
+            if start in seen_starts:
+                continue
+            seen_starts.add(start)
+            cues = _scene_opening_cues(masked[start:end])
+            if len(cues) >= 4:
+                stacked_openings.append((start, end, cues))
+        if "OPEN002" not in allowed and "cinematic-opening-stack" not in allowed:
+            for start, end, cues in stacked_openings[:3]:
+                findings.append(
+                    _finding_from_span(
+                        text,
+                        "OPEN002",
+                        "cinematic-opening-stack",
+                        "medium",
+                        start,
+                        min(end, start + 180),
+                        "The opening front-loads "
+                        + ", ".join(sorted(cues))
+                        + "; keep only details used by the first pressure-bearing action.",
+                    )
+                )
+
+        introspection_matches = list(FORMULAIC_INTROSPECTION_PATTERN.finditer(masked))
+        if (
+            len(introspection_matches) >= 3
+            and "EMO003" not in allowed
+            and "formulaic-introspection" not in allowed
+        ):
+            first = introspection_matches[0]
+            findings.append(
+                _finding_from_span(
+                    text,
+                    "EMO003",
+                    "formulaic-introspection",
+                    "medium",
+                    first.start(),
+                    first.end(),
+                    "Repeated vague self-interpretation explains feeling without changing action; "
+                    "keep only the instance that adds contradiction, choice, or consequence.",
+                )
+            )
+
+        chapter_openings = _chapter_opening_spans(masked)
+        scenic_resets = [
+            (start, end)
+            for start, end in chapter_openings
+            if len(_scene_opening_cues(masked[start:end])) >= 3
+        ]
+        if (
+            len(chapter_openings) >= 3
+            and len(scenic_resets) * 5 >= len(chapter_openings) * 3
+            and "RESET001" not in allowed
+            and "chapter-scenic-reset" not in allowed
+        ):
+            start, end = scenic_resets[0]
+            findings.append(
+                _finding_from_span(
+                    text,
+                    "RESET001",
+                    "chapter-scenic-reset",
+                    "medium",
+                    start,
+                    min(end, start + 180),
+                    "Most chapters restart with a fresh scenic slate; carry forward a consequence, "
+                    "object, question, or relationship pressure before re-establishing atmosphere.",
+                )
+            )
 
         run_start = None
         run_count = 0

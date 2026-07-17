@@ -50,6 +50,8 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("imagery-load-audit", list_module_skills())
         self.assertIn("paragraph-rhythm-audit", list_module_skills())
         self.assertIn("detail-disclosure-audit", list_module_skills())
+        self.assertIn("scene-entry-audit", list_module_skills())
+        self.assertIn("chapter-momentum-audit", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -164,6 +166,7 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Technique Module: dialogue-voice-audit", deep)
         self.assertNotIn("Technique Module: serial-reentry", deep)
         self.assertNotIn("Technique Module: imagery-load-audit", deep)
+        self.assertNotIn("Technique Module: chapter-momentum-audit", deep)
 
     def test_new_generation_modules_are_explicit_and_independent(self):
         prompt = compile_prompt(
@@ -262,6 +265,7 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: dialogue-voice-audit", prompt)
         self.assertNotIn("Audit Module: serial-reentry", prompt)
         self.assertNotIn("Audit Module: imagery-load-audit", prompt)
+        self.assertNotIn("Audit Module: chapter-momentum-audit", prompt)
 
     def test_relationship_profile_does_not_load_unrelated_audits(self):
         with TemporaryDirectory() as directory:
@@ -296,7 +300,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: proofreading-audit", proofread)
         self.assertNotIn("Audit Module: ai-trace-rubric", proofread)
 
-    def test_voice_serial_and_texture_profiles_are_isolated(self):
+    def test_voice_serial_momentum_and_texture_profiles_are_isolated(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             draft = root / "draft.md"
@@ -310,13 +314,17 @@ class CompilerTests(unittest.TestCase):
                 profiles=["serial"],
             )
             texture = compile_audit_prompt(str(draft), profiles=["texture"])
+            momentum = compile_audit_prompt(str(draft), profiles=["momentum"])
         self.assertIn("Audit Module: dialogue-voice-audit", voice)
         self.assertNotIn("Audit Module: serial-reentry", voice)
         self.assertIn("Audit Module: serial-reentry", serial)
         self.assertNotIn("Audit Module: dialogue-voice-audit", serial)
         self.assertIn("Audit Module: imagery-load-audit", texture)
         self.assertIn("Audit Module: paragraph-rhythm-audit", texture)
+        self.assertIn("Audit Module: scene-entry-audit", texture)
         self.assertNotIn("Audit Module: dialogue-voice-audit", texture)
+        self.assertIn("Audit Module: chapter-momentum-audit", momentum)
+        self.assertNotIn("Audit Module: serial-reentry", momentum)
 
     def test_serial_profile_requires_prior_context(self):
         with TemporaryDirectory() as directory:
@@ -357,6 +365,21 @@ class CompilerTests(unittest.TestCase):
         decisions = detect_audit_profiles("第二章，他想起上一章的争执。")
         selected = {decision.profile for decision in decisions if decision.selected}
         self.assertNotIn("serial", selected)
+
+    def test_auto_detection_selects_momentum_only_for_multi_chapter_text(self):
+        one = detect_audit_profiles("第一章 夜雨\n她推门进来。")
+        many = detect_audit_profiles(
+            "第一章 夜雨\n她推门进来。\n\n第二章 余波\n他还握着那封信。"
+        )
+        self.assertNotIn("momentum", {item.profile for item in one if item.selected})
+        self.assertIn("momentum", {item.profile for item in many if item.selected})
+
+    def test_auto_detection_sends_cinematic_opening_stack_to_texture(self):
+        decisions = detect_audit_profiles(
+            "第一章 抵达\n傍晚六点半，临港机场二号航站楼，落日照着玻璃。"
+            "她身穿深色制服，心里莫名有一股说不清的感觉。"
+        )
+        self.assertIn("texture", {item.profile for item in decisions if item.selected})
 
     def test_pipeline_writes_independent_stage_prompts_and_manifest(self):
         with TemporaryDirectory() as directory:

@@ -86,3 +86,6 @@ python -m humanwriting.cli audit `
 
 The shared conclusion: AI taste is not only a word-list problem. It is a combined
 failure of structure, evidence, rhythm, voice, and context maintenance.
+
+For a current serialized-fiction case study, see
+[Cool18 Popular-Fiction Research](cool18-popular-fiction-research.md).

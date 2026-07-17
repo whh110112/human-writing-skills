@@ -90,3 +90,6 @@ python -m humanwriting.cli audit `
 - GitHub 开源写作规范：多个项目总结了 significance inflation、dead transitions、formulaic contrast、generic filler 等英文 AI 文体特征。
 
 这些来源的共同结论是：AI 味不是一个词表问题，而是结构、证据、节奏、声音和上下文维护共同失败的结果。
+
+当前连载小说样本的专项研究见
+[Cool18 热门小说研究](cool18-popular-fiction-research.zh-CN.md)。

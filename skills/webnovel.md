@@ -18,6 +18,10 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 
 ## Style Controls
 
+- Treat title, premise, current chapter setup, and promised scene as a reader contract.
+  Progress at least one promised element before adding a new attraction or threat.
+- Enter a chapter through inherited pressure or a task. Use exact time, named place,
+  weather, clothing, and appearance only when the first decision uses them.
 - Use clean, fast prose during action.
 - Give important reveals a short beat before reaction.
 - Avoid instrument-like micro-measurements in intimate, emotional, comic, or dialogue
@@ -27,6 +31,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - End with a hook that follows from the scene, not a random shock.
 - Use short scene blocks when pressure turns quickly, but make every block inherit a
   residue and leave a new complication.
+- Let dialogue transact: alter permission, knowledge, leverage, risk, debt, trust, or
+  commitment instead of merely confirming the mood.
 
 ## Avoid
 
@@ -34,3 +40,5 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - repeated awe reactions
 - explaining the whole system in one block
 - resetting relationships after major scenes
+- rebuilding every chapter from weather, lighting, clothes, and summarized feeling
+- delaying the promised scene with biography, world rules, or decorative atmosphere

@@ -16,6 +16,10 @@ without earned context, repeats across outputs, or substitutes for observation.
 - Generic body cues: "深邃的眼眸", "嘴角微微上扬", "眼中闪过一丝"
 - Emotion labels: "不禁感到一阵愤怒", "心中涌起复杂情绪"
 - Empty atmosphere: "空气仿佛凝固", "时间在这一刻静止"
+- Cinematic setup bundles: exact clock + named place + colored light/weather + full
+  outfit + generalized feeling before the first consequential action
+- Vague self-interpretation: repeated "不知道为什么", "莫名", "不是那种……而是……",
+  or "像是……又像是……" without a changed choice
 -万能转场: "与此同时", "另一边", "很快", "下一秒" used without causal bridge
 
 ### English and general prose

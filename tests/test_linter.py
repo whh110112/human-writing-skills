@@ -76,6 +76,36 @@ class LinterTests(unittest.TestCase):
         self.assertNotIn("IMG001", {item.rule_id for item in by_rule.findings})
         self.assertNotIn("IMG001", {item.rule_id for item in by_category.findings})
 
+    def test_reports_cinematic_opening_and_repeated_vague_introspection(self):
+        text = (
+            "第一章 抵达\n\n"
+            "傍晚六点半，临港机场二号航站楼，落日照着玻璃。她身穿深色制服，"
+            "心里莫名有一股说不清的感觉。\n\n"
+            "她不知道为什么没有回信。后来又莫名地笑了一下。"
+        )
+        report = lint_text(text, style="webnovel")
+        rule_ids = {item.rule_id for item in report.findings}
+        self.assertTrue({"OPEN002", "EMO003"} <= rule_ids)
+
+    def test_reports_repeated_scenic_chapter_resets(self):
+        text = (
+            "第一章 到站\n\n清晨，临港车站下着雨。她穿着灰色外套，走进大厅。\n\n"
+            "第二章 见面\n\n傍晚，滨江酒店亮起灯光。她换上黑色西装，走向前台。\n\n"
+            "第三章 离开\n\n夜里，城南码头吹着冷风。她穿着长裙，站在路口。"
+        )
+        report = lint_text(text, style="webnovel")
+        self.assertIn("RESET001", {item.rule_id for item in report.findings})
+
+    def test_new_scene_rules_are_narrative_only_and_allowlisted(self):
+        text = (
+            "傍晚六点半，临港机场二号航站楼，落日照着玻璃。"
+            "她身穿深色制服，心里莫名有一股说不清的感觉。"
+        )
+        serious = lint_text(text, style="news-report")
+        allowed = lint_text(text, style="fiction", allow={"cinematic-opening-stack"})
+        self.assertNotIn("OPEN002", {item.rule_id for item in serious.findings})
+        self.assertNotIn("OPEN002", {item.rule_id for item in allowed.findings})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -54,7 +54,7 @@ def select_pipeline_profiles(
     decisions = []
     selected = []
     for profile in PIPELINE_PROFILES:
-        include = profile not in {"voice", "serial", "texture"}
+        include = profile not in {"voice", "serial", "momentum", "texture"}
         if profile == "style-match":
             include = reference_active
         if include:
@@ -198,7 +198,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "logic -> character/relationship/voice/serial -> physical -> AI trace/texture -> style match -> numbers -> proofreading.",
+            "logic -> character/relationship/voice/serial/momentum -> physical -> AI trace/texture -> style match -> numbers -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

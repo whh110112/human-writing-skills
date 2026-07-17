@@ -40,11 +40,13 @@ LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
 VOICE_AUDIT_MODULES = ["dialogue-voice-audit"]
 SERIAL_AUDIT_MODULES = ["serial-reentry"]
+MOMENTUM_AUDIT_MODULES = ["chapter-momentum-audit"]
 TEXTURE_AUDIT_MODULES = [
     "narrative-distance-control",
     "imagery-load-audit",
     "paragraph-rhythm-audit",
     "detail-disclosure-audit",
+    "scene-entry-audit",
 ]
 PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
 REFERENCE_STYLE_AUDIT_MODULES = ["reference-style-alignment"]
@@ -55,6 +57,7 @@ AUDIT_PROFILES = {
     "character",
     "voice",
     "serial",
+    "momentum",
     "texture",
     "physical",
     "relationship",
@@ -251,6 +254,7 @@ def compile_audit_prompt(
     character_enabled = bool(requested_profiles & {"full", "character"})
     voice_enabled = "voice" in requested_profiles
     serial_enabled = "serial" in requested_profiles
+    momentum_enabled = "momentum" in requested_profiles
     texture_enabled = "texture" in requested_profiles
     proofread_enabled = bool(requested_profiles & {"full", "proofread"})
     style_match_enabled = "style-match" in requested_profiles
@@ -263,6 +267,8 @@ def compile_audit_prompt(
         append_missing(selected_modules, VOICE_AUDIT_MODULES)
     if serial_enabled:
         append_missing(selected_modules, SERIAL_AUDIT_MODULES)
+    if momentum_enabled:
+        append_missing(selected_modules, MOMENTUM_AUDIT_MODULES)
     if texture_enabled:
         append_missing(selected_modules, TEXTURE_AUDIT_MODULES)
     if physical_enabled:
@@ -341,6 +347,12 @@ def compile_audit_prompt(
         task_lines.append(
             "For serial reentry, compare the draft with supplied prior material, keep only live "
             "carryovers, and flag both recap dumps and chapter resets."
+        )
+    if momentum_enabled:
+        task_lines.append(
+            "For chapter momentum, map each chapter's entry pressure, irreversible turn, "
+            "payoff, residue, and exit pressure; flag atmosphere-only openings, repeated "
+            "resets, and hooks unsupported by the chapter's own action."
         )
     if texture_enabled:
         task_lines.append(

@@ -108,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
             "character",
             "voice",
             "serial",
+            "momentum",
             "texture",
             "physical",
             "relationship",
@@ -204,7 +205,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--stage",
         action="append",
         choices=PIPELINE_PROFILES,
-        help="Explicit stage. Can be repeated. Without --auto or --stage, all stages are written.",
+        help="Explicit stage. Can be repeated. Without --auto or --stage, the established broad stages are written.",
     )
 
     lint = subparsers.add_parser(
