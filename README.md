@@ -49,6 +49,12 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `relationship-stance-audit` | audience-specific stance checks for rivalries, affairs, factions, hierarchy, sects, and family politics |
 | `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
+| `dialogue-voice-audit` | interchangeable speakers, response-tactic drift, and audience-inappropriate register |
+| `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
+| `narrative-distance-control` | unmotivated zoom, missing orientation, and viewpoint-distance drift |
+| `imagery-load-audit` | stacked comparisons, competing sensory channels, and show-then-gloss repetition |
+| `paragraph-rhythm-audit` | mechanical one-line paragraph runs and overloaded long blocks |
+| `detail-disclosure-audit` | biography and appearance inventories delivered before the scene uses them |
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
@@ -193,15 +199,33 @@ tests/               standard-library unit tests
 
 ## CLI Usage
 
+### Optional Narrative Modules
+
+The new narrative controls are progressive-disclosure modules. They are not added by
+default, by `--review`, by `--deep-review`, or by the broad `full` audit:
+
+```powershell
+human-writing-skills build --style fiction --module dialogue-voice-audit --task "Write the negotiation."
+human-writing-skills build --style webnovel --context ledger.md --module serial-reentry --task "Continue chapter 18."
+human-writing-skills audit --draft chapter.md --profile texture
+```
+
+Use `dialogue-voice-audit` for distinguishable speakers, `serial-reentry` only with
+prior chapters or a ledger, and the `texture` audit for narrative distance, imagery
+load, paragraph fragmentation, emotional over-explanation, and detail inventory.
+
 ### Audit Profiles
 
 `audit` can load only the checks needed for the current pass:
 
 | Profile | Purpose |
 | --- | --- |
-| `full` | Default complete audit; `--no-strict-continuity` removes physical checks |
+| `full` | Broad default audit; optional `voice`, `serial`, and `texture` remain separate |
 | `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
 | `character` | Character goal, voice, competence, boundaries, and change gates |
+| `voice` | Speaker fingerprints, response tactics, register, and interchangeable dialogue |
+| `serial` | Recap dumps, missing carryovers, and chapter resets; requires `--context` |
+| `texture` | Narrative distance, imagery load, paragraph cadence, and detail disclosure |
 | `physical` | Position, capacity, reach, clothing, props, and injuries |
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
@@ -223,7 +247,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, and number stages when the chapter contains matching cues. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, number, voice, serial, and texture stages only when matching cues exist. `serial` additionally requires supplied context. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 

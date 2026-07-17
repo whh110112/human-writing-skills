@@ -23,6 +23,7 @@ def select_pipeline_profiles(
     stages: list[str] | None = None,
     auto: bool = False,
     reference_active: bool = False,
+    context_active: bool = False,
 ) -> tuple[list[str], list[ProfileDecision]]:
     if stages:
         selected = list(dict.fromkeys(stages))
@@ -34,23 +35,34 @@ def select_pipeline_profiles(
         decisions = []
         for profile in PIPELINE_PROFILES:
             is_selected = profile in selected
-            reason = "Explicitly selected by the user."
+            reason = (
+                "Explicitly selected by the user."
+                if is_selected
+                else "Not explicitly selected by the user."
+            )
             if profile == "style-match" and not reference_active:
                 reason = "No explicit reference material or style direction was supplied."
             decisions.append(ProfileDecision(profile, is_selected, reason))
         return selected, decisions
     if auto:
-        decisions = detect_audit_profiles(draft, reference_active=reference_active)
+        decisions = detect_audit_profiles(
+            draft,
+            reference_active=reference_active,
+            context_active=context_active,
+        )
         return [decision.profile for decision in decisions if decision.selected], decisions
     decisions = []
     selected = []
     for profile in PIPELINE_PROFILES:
-        include = profile != "style-match" or reference_active
-        reason = (
-            "Included in the complete default pipeline."
-            if include
-            else "No explicit reference material or style direction was supplied."
-        )
+        include = profile not in {"voice", "serial", "texture"}
+        if profile == "style-match":
+            include = reference_active
+        if include:
+            reason = "Included in the established broad pipeline."
+        elif profile == "style-match":
+            reason = "No explicit reference material or style direction was supplied."
+        else:
+            reason = "Optional high-cost stage; use --auto or select it explicitly."
         decisions.append(ProfileDecision(profile, include, reason))
         if include:
             selected.append(profile)
@@ -70,6 +82,7 @@ def build_audit_pipeline(
     document_type: str = "auto",
 ) -> tuple[list[AuditStage], list[ProfileDecision]]:
     draft = read_optional(draft_path)
+    context_active = bool(read_optional(context_path))
     reference_pack = build_reference_pack(
         reference_paths,
         reference_style,
@@ -80,6 +93,7 @@ def build_audit_pipeline(
         stages=stages,
         auto=auto,
         reference_active=reference_pack.active,
+        context_active=context_active,
     )
     reason_by_profile = {decision.profile: decision.reason for decision in decisions}
     auto_protection, _ = detect_serious_document(draft, document_type=document_type)
@@ -184,7 +198,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "logic -> character/relationship -> physical -> AI trace -> style match -> numbers -> proofreading.",
+            "logic -> character/relationship/voice/serial -> physical -> AI trace/texture -> style match -> numbers -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

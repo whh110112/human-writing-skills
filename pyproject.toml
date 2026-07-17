@@ -1,14 +1,14 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "human-writing-skills"
-version = "0.4.1"
+version = "0.5.0"
 description = "Markdown writing skills and a prompt compiler for natural, context-aware AI-assisted writing."
 readme = "README.md"
 requires-python = ">=3.9"
-license = "MIT"
+license = { text = "MIT" }
 authors = [{ name = "Human Writing Skills contributors" }]
 keywords = ["writing", "skills", "prompting", "ai-writing", "long-context"]
 classifiers = [

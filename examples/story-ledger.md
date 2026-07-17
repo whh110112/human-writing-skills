@@ -52,6 +52,19 @@
 - Concrete, tense, lightly lyrical but not ornate.
 - Avoid modern slang and large exposition blocks.
 
+## Speaker Fingerprints
+
+| Speaker | Turn shape | Response tactic | Register by audience | Avoid |
+| --- | --- | --- | --- | --- |
+| Lin Qiao | short questions, then silence | tests a claim with one concrete detail | formal with officials, clipped with Captain Wei | explaining suspicion directly |
+| Captain Wei | complete sentences that omit the source | redirects, warns, rarely denies | official in public, quieter when alone | casual confession |
+
+## Live Carryovers For The Next Chapter
+
+- Ash under Lin Qiao's fingernails should recall the burned page without a recap.
+- Captain Wei's polite final line remains socially unresolved.
+- Do not restate the full quarantine history until a present decision needs it.
+
 ## Newly True
 
 - Lin Qiao has one use of her ability left before she loses hearing for the day.

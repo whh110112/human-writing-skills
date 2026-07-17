@@ -38,6 +38,14 @@ PHYSICAL_AUDIT_MODULES = [
 ]
 LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
+VOICE_AUDIT_MODULES = ["dialogue-voice-audit"]
+SERIAL_AUDIT_MODULES = ["serial-reentry"]
+TEXTURE_AUDIT_MODULES = [
+    "narrative-distance-control",
+    "imagery-load-audit",
+    "paragraph-rhythm-audit",
+    "detail-disclosure-audit",
+]
 PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
 REFERENCE_STYLE_AUDIT_MODULES = ["reference-style-alignment"]
 PROTECTED_CONTENT_MODULES = ["protected-content"]
@@ -45,6 +53,9 @@ AUDIT_PROFILES = {
     "full",
     "logic",
     "character",
+    "voice",
+    "serial",
+    "texture",
     "physical",
     "relationship",
     "ai-trace",
@@ -212,6 +223,7 @@ def compile_audit_prompt(
 ) -> str:
     selected_modules = load_many(modules or [])
     draft = read_optional(draft_path)
+    context = read_optional(context_path)
     requested_profiles = set(profiles or ["full"])
     reference_pack = build_reference_pack(
         reference_paths,
@@ -227,6 +239,8 @@ def compile_audit_prompt(
         raise ValueError(f"Unknown audit profile: {', '.join(sorted(unknown_profiles))}")
     if "style-match" in requested_profiles and not reference_pack.active:
         raise ValueError("The style-match profile requires --reference or --reference-style.")
+    if "serial" in requested_profiles and not context:
+        raise ValueError("The serial profile requires --context with prior chapters or a continuity ledger.")
     physical_enabled = "physical" in requested_profiles or (
         "full" in requested_profiles and strict_continuity
     )
@@ -235,6 +249,9 @@ def compile_audit_prompt(
     numbers_enabled = bool(requested_profiles & {"full", "numbers"})
     logic_enabled = bool(requested_profiles & {"full", "logic"})
     character_enabled = bool(requested_profiles & {"full", "character"})
+    voice_enabled = "voice" in requested_profiles
+    serial_enabled = "serial" in requested_profiles
+    texture_enabled = "texture" in requested_profiles
     proofread_enabled = bool(requested_profiles & {"full", "proofread"})
     style_match_enabled = "style-match" in requested_profiles
 
@@ -242,6 +259,12 @@ def compile_audit_prompt(
         append_missing(selected_modules, LOGIC_AUDIT_MODULES)
     if character_enabled:
         append_missing(selected_modules, CHARACTER_AUDIT_MODULES)
+    if voice_enabled:
+        append_missing(selected_modules, VOICE_AUDIT_MODULES)
+    if serial_enabled:
+        append_missing(selected_modules, SERIAL_AUDIT_MODULES)
+    if texture_enabled:
+        append_missing(selected_modules, TEXTURE_AUDIT_MODULES)
     if physical_enabled:
         append_missing(selected_modules, PHYSICAL_AUDIT_MODULES)
     if relationship_enabled:
@@ -270,7 +293,6 @@ def compile_audit_prompt(
     if protection_active:
         append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
 
-    context = read_optional(context_path)
     blocks = [
         "# Audit Directive\n\n"
         "You are auditing an existing draft, not generating new prose. "
@@ -309,6 +331,21 @@ def compile_audit_prompt(
         task_lines.append(
             "For character consistency, compare goals, voice, knowledge, competence, boundaries, "
             "status, and recent change gates before calling a deviation an error."
+        )
+    if voice_enabled:
+        task_lines.append(
+            "For dialogue voice, build evidence-backed speaker fingerprints, compare response "
+            "tactics and register, and distinguish drift from audience-aware performance."
+        )
+    if serial_enabled:
+        task_lines.append(
+            "For serial reentry, compare the draft with supplied prior material, keep only live "
+            "carryovers, and flag both recap dumps and chapter resets."
+        )
+    if texture_enabled:
+        task_lines.append(
+            "For prose texture, audit narrative distance, image and sensory load, show-then-gloss "
+            "duplication, paragraph cadence, and premature detail inventory."
         )
     if relationship_enabled:
         task_lines.append(

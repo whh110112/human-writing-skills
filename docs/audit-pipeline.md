@@ -7,7 +7,7 @@ The project keeps three complementary modes:
 | Mode | Purpose |
 | --- | --- |
 | `build --review` | Compact editing and AI-trace guidance during generation |
-| `build --deep-review` | Complete self-review when context is plentiful |
+| `build --deep-review` | Expanded legacy self-review; optional narrative modules remain explicit |
 | `pipeline` | Independent, single-purpose passes over the same draft |
 
 ## Complete Pipeline
@@ -19,7 +19,10 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-It writes stages for logic, character consistency, relationship stance, physical continuity, AI traces, number sense, and proofreading.
+It writes the established broad stages for logic, character consistency, relationship
+stance, physical continuity, AI traces, number sense, and proofreading. The higher-cost
+`voice`, `serial`, and `texture` stages stay out unless explicitly selected or detected
+by `--auto`.
 
 It also writes `00-pattern-lint.md` and JSON as a deterministic preflight. These
 files contain evidence locations and a transparent editing score; they do not
@@ -41,7 +44,10 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 
 - `character` for character-action or voice cues
 - `relationship` for dialogue, hierarchy, faction, intimacy, or secrecy cues
+- `voice` only for sustained multi-turn dialogue with attribution cues
+- `serial` only when prior context is supplied and the draft is narrative
 - `physical` for space, movement, appearance, or prop cues
+- `texture` for clustered imagery, detail inventory, fragment runs, or show-then-gloss cues
 - `numbers` for exact numbers with units
 - `style-match` only when `--reference` or `--reference-style` explicitly activates it
 
@@ -63,10 +69,13 @@ human-writing-skills pipeline `
 `--stage style-match` is rejected unless reference material or an explicit style
 direction is supplied. Only that stage receives the reference text.
 
+`--stage serial` is rejected unless `--context` supplies prior chapters or a
+continuity ledger.
+
 ## Recommended Order
 
 ```text
-pattern lint -> logic -> character/relationship -> physical -> AI trace -> style match -> numbers -> proofreading
+pattern lint -> logic -> character/relationship/voice/serial -> physical -> AI trace/texture -> style match -> numbers -> proofreading
 ```
 
 After structural changes, re-run affected downstream stages.

@@ -54,6 +54,28 @@ class LinterTests(unittest.TestCase):
         self.assertIn("start", payload["findings"][0])
         self.assertIn("line", payload["findings"][0])
 
+    def test_reports_dense_imagery_fragment_runs_and_detail_inventory(self):
+        text = (
+            "他三十八岁，身高一米八，体重七十五公斤，职业是律师。\n\n"
+            "雨像旧胶片，灯仿佛一只眼，门如同一张嘴，风宛如叹息。\n\n"
+            "深圳。\n\n酒店。\n\n深夜。\n\n电话响了。"
+        )
+        report = lint_text(text, style="fiction")
+        rule_ids = {finding.rule_id for finding in report.findings}
+        self.assertTrue({"INFO001", "IMG001", "PARA001"} <= rule_ids)
+
+    def test_new_texture_rules_do_not_run_for_serious_styles(self):
+        text = "患者三十八岁，身高一米八，体重七十五公斤，职业是律师。"
+        report = lint_text(text, style="academic-paper")
+        self.assertFalse({"INFO001", "IMG001", "PARA001"} & {item.rule_id for item in report.findings})
+
+    def test_allowlist_suppresses_structural_texture_rules(self):
+        text = "雨像旧胶片，灯仿佛一只眼，门如同一张嘴，风宛如叹息。"
+        by_rule = lint_text(text, style="fiction", allow={"IMG001"})
+        by_category = lint_text(text, style="fiction", allow={"imagery-density"})
+        self.assertNotIn("IMG001", {item.rule_id for item in by_rule.findings})
+        self.assertNotIn("IMG001", {item.rule_id for item in by_category.findings})
+
 
 if __name__ == "__main__":
     unittest.main()

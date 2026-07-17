@@ -88,6 +88,20 @@ RULES = [
         "Show the emotion through action, perception, contradiction, or consequence.",
     ),
     PatternRule(
+        "EMO002",
+        "show-then-gloss",
+        "medium",
+        re.compile(
+            r"(?:握紧|攥紧|避开(?:了)?目光|垂下(?:了)?眼|停住(?:了)?脚步|"
+            r"手指(?:微微)?发抖|呼吸(?:一滞|急促)).{0,60}?"
+            r"(?:这表明|显然|说明|因为|感到|意味着).{0,20}?"
+            r"(?:愤怒|紧张|害怕|犹豫|不安|羞愧|嫉妒|悲伤)",
+            re.DOTALL,
+        ),
+        "The action already carries the emotion; remove the gloss unless it complicates or corrects the evidence.",
+        excluded_styles=frozenset({"academic-paper", "news-report"}),
+    ),
+    PatternRule(
         "ATM001",
         "empty-atmosphere",
         "medium",
@@ -232,6 +246,14 @@ def _sentence_lengths(text: str) -> list[int]:
     return [len(re.findall(r"[\u4e00-\u9fff]|\b[\w'-]+\b", sentence)) for sentence in sentences]
 
 
+def _paragraph_spans(text: str) -> list[tuple[int, int, str]]:
+    return [
+        (match.start(), match.end(), match.group(0).strip())
+        for match in re.finditer(r"\S.*?(?=\n\s*\n|\Z)", text, re.DOTALL)
+        if match.group(0).strip()
+    ]
+
+
 def _coefficient_of_variation(values: list[int]) -> float:
     if not values:
         return 0.0
@@ -317,6 +339,80 @@ def lint_text(
                 "Em-dash density is high; verify that each dash marks a real interruption or turn.",
             )
         )
+
+    if style in NARRATIVE_STYLES:
+        paragraphs = _paragraph_spans(masked)
+        imagery_pattern = re.compile(
+            r"像|仿佛|如同|宛如|好似|犹如|\blike\b|\bas if\b",
+            re.IGNORECASE,
+        )
+        detail_pattern = re.compile(
+            r"(?:[今现]年)?\d{1,3}岁|身高|体重|职业|结婚[了]?\d|任职|毕业于|"
+            r"\b(?:aged?|height|weighs?|occupation|married|graduated)\b",
+            re.IGNORECASE,
+        )
+        for start, end, paragraph in paragraphs:
+            image_count = len(imagery_pattern.findall(paragraph))
+            if (
+                image_count >= 4
+                and "IMG001" not in allowed
+                and "imagery-density" not in allowed
+            ):
+                findings.append(
+                    _finding_from_span(
+                        text,
+                        "IMG001",
+                        "imagery-density",
+                        "medium",
+                        start,
+                        min(end, start + 160),
+                        "This paragraph stacks several comparisons; keep the image that changes perception or action.",
+                    )
+                )
+            detail_count = len(detail_pattern.findall(paragraph))
+            if (
+                detail_count >= 3
+                and "INFO001" not in allowed
+                and "detail-inventory" not in allowed
+            ):
+                findings.append(
+                    _finding_from_span(
+                        text,
+                        "INFO001",
+                        "detail-inventory",
+                        "medium",
+                        start,
+                        min(end, start + 160),
+                        "Several biographical or measured details arrive together; keep what the scene uses and delay the rest.",
+                    )
+                )
+
+        run_start = None
+        run_count = 0
+        for start, end, paragraph in paragraphs:
+            if len(paragraph) <= 24:
+                if run_start is None:
+                    run_start = start
+                run_count += 1
+                if (
+                    run_count == 4
+                    and "PARA001" not in allowed
+                    and "fragment-run" not in allowed
+                ):
+                    findings.append(
+                        _finding_from_span(
+                            text,
+                            "PARA001",
+                            "fragment-run",
+                            "medium",
+                            run_start,
+                            min(end, run_start + 160),
+                            "Four or more short paragraphs run together; verify that each break marks a real turn.",
+                        )
+                    )
+            else:
+                run_start = None
+                run_count = 0
 
     findings.sort(key=lambda finding: (finding.start, finding.rule_id))
     weighted = sum(SEVERITY_WEIGHT[finding.severity] for finding in findings)

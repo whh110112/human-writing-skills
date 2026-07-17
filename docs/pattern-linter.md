@@ -12,8 +12,11 @@ human-writing-skills lint --draft chapter.md --allow PREC001 --fail-score 35
 Checks include inflated vocabulary, generic body cues, empty atmosphere, formulaic
 contrast, dead transitions, chatbot residue, promotional language, stacked hedging,
 false precision, unusually uniform sentence rhythm, and excessive dash density.
-Genre profiles suppress rules that are normal in news or academic writing. Code,
-URLs, and Markdown quotations are masked.
+For narrative styles it also checks dense comparison clusters (`IMG001`), four-or-more
+short-paragraph runs (`PARA001`), biographical detail inventory (`INFO001`), and
+action immediately followed by a duplicate emotion gloss (`EMO002`). Genre profiles
+suppress these rules for news or academic writing. Code, URLs, and Markdown
+quotations are masked.
 
 The score is transparent and deterministic, but it is not evidence of AI
 authorship. Review every evidence span in context and allowlist intentional usage.

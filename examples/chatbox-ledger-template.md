@@ -84,6 +84,21 @@ Only add a movement if it appears on-page.
 - Cultural coordinate:
 - Avoid:
 
+## Speaker Fingerprints
+
+| Speaker | Turn shape | Response tactic | Public/private register | Taboo or avoid |
+| --- | --- | --- | --- | --- |
+|  |  | answer / evade / joke / counterquestion / silence |  |  |
+
+## Live Carryovers For Reentry
+
+Only list prior facts the next chapter will use now.
+
+- Object, injury, message, or phrase:
+- Unresolved relationship pressure:
+- Rule, cost, or threat needed now:
+- Prior information to delay rather than recap:
+
 ## Current State
 
 - Last scene/section ended at:
