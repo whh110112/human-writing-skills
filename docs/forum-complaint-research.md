@@ -1,15 +1,14 @@
-# Forum Complaint Research and Repair Map
+# Common Writing Problems and Repair Map
 
-This page turns recurring complaints from public writing forums, Reddit discussions,
-and GitHub writing guides into executable audit modules.
+This page turns recurring structural, expressive, and continuity problems in
+long-form writing into executable audit modules.
 
-## Sampling Principles
+## Design Principles
 
-- Use public and verifiable material only.
-- Treat repeated patterns as useful signals; do not overfit to one post.
-- Do not copy long passages from discussions or published work.
-- A complaint is not a universal ban. Genre, character voice, context, and intent
-  decide whether a phrase should stay.
+- Prioritize problems that recur across genres instead of hard-coding one sample.
+- Treat phrases and sentence shapes as signals, not automatic deletion rules.
+- Let genre, character voice, context, and intent decide whether wording should stay.
+- Repair evidence, action, rhythm, and state change instead of merely swapping synonyms.
 
 ## Common Complaints
 
@@ -51,7 +50,7 @@ evidence, or convert explanation into action.
 
 ## Recommended Commands
 
-Use `--deep-review` for the complete forum-informed audit set; use compact `--review` for long-form continuation:
+Use `--deep-review` for the complete structure-and-expression audit set; use compact `--review` for long-form continuation:
 
 ```powershell
 python -m humanwriting.cli build `
@@ -72,20 +71,5 @@ python -m humanwriting.cli audit `
   --profile numbers
 ```
 
-## Sources
-
-- Public JJWXC forum discussion about "AI taste", plastic prose, and stiff writing.
-- TRAE Chinese writing and novel-skill discussions covering cliches, transitions,
-  emotion labels, state files, and AI-trace workflows.
-- V2EX discussion about AI novel writing and the burden of maintaining world,
-  character, and continuity ledgers.
-- Reddit AI-writing discussions about robotic structure, neat closure, triplets,
-  empty metaphors, and polished slop.
-- GitHub writing guides cataloging significance inflation, dead transitions,
-  formulaic contrast, and generic filler.
-
-The shared conclusion: AI taste is not only a word-list problem. It is a combined
-failure of structure, evidence, rhythm, voice, and context maintenance.
-
-For a current serialized-fiction case study, see
-[Cool18 Popular-Fiction Research](cool18-popular-fiction-research.md).
+AI taste is not only a word-list problem. It emerges when structure, evidence,
+rhythm, voice, and context maintenance fall out of balance.

@@ -288,12 +288,11 @@ python -m humanwriting.cli audit `
 - Guide: [docs/number-sense.md](docs/number-sense.md)
 - Example: [examples/false-precision-draft.zh-CN.md](examples/false-precision-draft.zh-CN.md)
 
-### Forum Complaint Research
+### Common Writing Problems
 
-The project converts recurring public complaints about AI writing into executable checks: stock phrasing, plastic prose, triplet structures, over-smooth transitions, static paragraphs, hollow emotion, cultural vacuum, and long-form drift.
+The project converts recurring long-form writing problems into executable checks: stock phrasing, plastic prose, triplet structures, over-smooth transitions, static paragraphs, hollow emotion, cultural vacuum, and long-form drift.
 
-- Research map: [docs/forum-complaint-research.md](docs/forum-complaint-research.md)
-- Cool18 popular-fiction study: [docs/cool18-popular-fiction-research.md](docs/cool18-popular-fiction-research.md)
+- Rule map: [docs/forum-complaint-research.md](docs/forum-complaint-research.md)
 
 List styles:
 

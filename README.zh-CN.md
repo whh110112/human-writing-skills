@@ -284,12 +284,11 @@ python -m humanwriting.cli audit `
 - 说明：[docs/number-sense.zh-CN.md](docs/number-sense.zh-CN.md)
 - 示例：[examples/false-precision-draft.zh-CN.md](examples/false-precision-draft.zh-CN.md)
 
-### 论坛吐槽反向工程
+### 常见写作问题审查
 
-本项目把公开论坛和写作社区里反复出现的 AI 文吐槽，整理成可执行审查项：套话、塑料感、三连式结构、过度顺滑、段落无推进、空情绪、万能转场、文化真空和长文漂移。
+本项目把长文本中反复出现的问题整理成可执行审查项：套话、塑料感、三连式结构、过度顺滑、段落无推进、空情绪、万能转场、文化真空和长文漂移。
 
-- 调研映射：[docs/forum-complaint-research.zh-CN.md](docs/forum-complaint-research.zh-CN.md)
-- Cool18 热门小说研究：[docs/cool18-popular-fiction-research.zh-CN.md](docs/cool18-popular-fiction-research.zh-CN.md)
+- 规则映射：[docs/forum-complaint-research.zh-CN.md](docs/forum-complaint-research.zh-CN.md)
 
 列出所有文体：
 
