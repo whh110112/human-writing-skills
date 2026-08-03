@@ -74,6 +74,8 @@ Keep:
 - Public stance, private stance, and information permissions
 - Who may mention whom, allowed tone, forbidden leaks, and exception motives
 - Voice anchors
+- Stable speaker baseline, knowledge/role constraints, disclosure habits, and audience shifts
+- Current dialogue contract: purpose, desired outcomes, protected information, response tactics, and intended state change
 - Spatial positions and seat/standing locations
 - Physical resource modes, capacity, and occupants
 - Clothing, shoes, injuries, and prop state
@@ -169,7 +171,9 @@ Treat the following as standing instructions for this writing session.
 Rules:
 - Keep the continuity ledger active.
 - Before every draft, check fixed facts, active threads, voice anchors, and current state.
-- Before dialogue, check speaker -> listener/audience -> referenced party, mention policy, and information permissions.
+- Before dialogue, check speaker -> listener/audience -> referenced party together with
+  baseline voice, current goal, knowledge/role constraints, response linkage, mention
+  policy, and information permissions; do not substitute occupation for personality.
 - In cars, rooms, elevators, dining areas, beds, stools, aircraft, motorcycles, or other physical spaces, check positions, resource capacity, transformations, reach, clothing, props, and movement gates before drafting.
 - Do not overwrite established facts for convenience.
 - If context is missing, make the smallest possible assumption and mark it.

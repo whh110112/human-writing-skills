@@ -84,11 +84,17 @@ Only add a movement if it appears on-page.
 - Cultural coordinate:
 - Avoid:
 
-## Speaker Fingerprints
+## Speaker Models
 
-| Speaker | Turn shape | Response tactic | Public/private register | Taboo or avoid |
-| --- | --- | --- | --- | --- |
-|  |  | answer / evade / joke / counterquestion / silence |  |  |
+| Speaker | Stable baseline | Default tactic/disclosure | Knowledge and role limits | Audience shifts | Change gates |
+| --- | --- | --- | --- | --- | --- |
+|  | diction, directness, turn shape | answer / evade / bargain / teach / test / silence | knows, must ask, cannot promise | public / private / rank / intimacy | stress / performance / deception / new evidence |
+
+## Current Dialogue Contract
+
+| Speaker | Listener/audience | Immediate goal | Topic and constraint | Likely tactic | Intended state change |
+| --- | --- | --- | --- | --- | --- |
+|  |  | what the listener should do or believe | what matters now; what cannot be admitted |  | knowledge / leverage / permission / risk / commitment |
 
 ## Live Carryovers For Reentry
 

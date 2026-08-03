@@ -68,6 +68,17 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Write the next scene.", prompt)
         self.assertNotIn("Technique Module: reference-style-alignment", prompt)
 
+    def test_dialogue_generation_activates_only_for_explicit_narrative_tasks(self):
+        dialogue = compile_prompt("fiction", "写一场两位角色各有所求的谈判。")
+        narration = compile_prompt("fiction", "写一段独自穿过雨夜的场景。")
+        excluded = compile_prompt("fiction", "只写动作，不要对话。")
+        serious = compile_prompt("news-report", "Write an interview-based report.")
+        self.assertIn("Technique Module: dialogue-voice-audit", dialogue)
+        self.assertIn("Scene Speech Contract", dialogue)
+        self.assertNotIn("Technique Module: dialogue-voice-audit", narration)
+        self.assertNotIn("Technique Module: dialogue-voice-audit", excluded)
+        self.assertNotIn("Technique Module: dialogue-voice-audit", serious)
+
     def test_reference_style_does_not_activate_without_explicit_signal(self):
         prompt = compile_prompt("fiction", "Write a quiet scene by the river.")
         self.assertNotIn("Technique Module: reference-style-alignment", prompt)
@@ -316,6 +327,8 @@ class CompilerTests(unittest.TestCase):
             texture = compile_audit_prompt(str(draft), profiles=["texture"])
             momentum = compile_audit_prompt(str(draft), profiles=["momentum"])
         self.assertIn("Audit Module: dialogue-voice-audit", voice)
+        self.assertIn("Scene Speech Contract", voice)
+        self.assertIn("occupational stereotype", voice)
         self.assertNotIn("Audit Module: serial-reentry", voice)
         self.assertIn("Audit Module: serial-reentry", serial)
         self.assertNotIn("Audit Module: dialogue-voice-audit", serial)
@@ -360,6 +373,13 @@ class CompilerTests(unittest.TestCase):
         decisions = detect_audit_profiles(draft, context_active=True)
         selected = {decision.profile for decision in decisions if decision.selected}
         self.assertTrue({"voice", "serial", "texture"} <= selected)
+
+    def test_auto_detection_uses_context_for_short_dialogue_review(self):
+        draft = "她说：\u201c我只答应这一回。\u201d他问：\u201c条件呢？\u201d"
+        without_context = detect_audit_profiles(draft)
+        with_context = detect_audit_profiles(draft, context_active=True)
+        self.assertNotIn("voice", {item.profile for item in without_context if item.selected})
+        self.assertIn("voice", {item.profile for item in with_context if item.selected})
 
     def test_auto_detection_skips_serial_without_context(self):
         decisions = detect_audit_profiles("第二章，他想起上一章的争执。")

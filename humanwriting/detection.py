@@ -113,13 +113,19 @@ def _match_reason(pattern: re.Pattern[str], text: str, label: str) -> tuple[bool
     return True, f"Detected {label} cue: {cue!r}."
 
 
-def _voice_reason(text: str) -> tuple[bool, str]:
+def _voice_reason(text: str, context_active: bool = False) -> tuple[bool, str]:
     dialogue_marks = len(DIALOGUE_MARK_PATTERN.findall(text))
     attributions = len(DIALOGUE_ATTRIBUTION_PATTERN.findall(text))
-    selected = dialogue_marks >= 4 and attributions >= 2
+    sustained = dialogue_marks >= 4 and attributions >= 2
+    context_backed = context_active and dialogue_marks >= 2 and attributions >= 1
+    selected = sustained or context_backed
     if not selected:
-        return False, "No sustained multi-turn dialogue cues found in the draft."
-    return True, f"Detected sustained dialogue: {dialogue_marks} openings and {attributions} attribution cues."
+        return False, "No sustained or context-backed multi-speaker dialogue cues found in the draft."
+    basis = "context-backed" if context_backed and not sustained else "sustained"
+    return True, (
+        f"Detected {basis} dialogue: {dialogue_marks} openings and "
+        f"{attributions} attribution cues."
+    )
 
 
 def _serial_reason(text: str, context_active: bool) -> tuple[bool, str]:
@@ -208,7 +214,7 @@ def detect_audit_profiles(
     optional = {
         "character": _match_reason(CHARACTER_PATTERN, draft, "character-action or voice"),
         "relationship": _match_reason(RELATIONSHIP_PATTERN, draft, "dialogue or relationship"),
-        "voice": _voice_reason(draft),
+        "voice": _voice_reason(draft, context_active),
         "serial": _serial_reason(draft, context_active),
         "momentum": _momentum_reason(draft),
         "physical": _match_reason(PHYSICAL_PATTERN, draft, "space, movement, appearance, or prop"),

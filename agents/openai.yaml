@@ -1,4 +1,4 @@
 interface:
   display_name: "Human Writing Skills"
-  short_description: "Natural prose, continuity, chapter momentum, and focused audits"
-  default_prompt: "Use $human-writing-skills to revise this draft with only the relevant modules while preserving facts, continuity, chapter pressure, and each character's voice."
+  short_description: "Natural prose, continuity, character-fit dialogue, and focused audits"
+  default_prompt: "Use $human-writing-skills with only the relevant modules while preserving facts, continuity, scene pressure, and dialogue that fits each character's baseline, goal, knowledge, audience, and current situation."

@@ -44,7 +44,7 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 
 - `character` for character-action or voice cues
 - `relationship` for dialogue, hierarchy, faction, intimacy, or secrecy cues
-- `voice` only for sustained multi-turn dialogue with attribution cues
+- `voice` for sustained attributed dialogue; supplied context also permits shorter attributed exchanges
 - `serial` only when prior context is supplied and the draft is narrative
 - `momentum` only for a multi-chapter draft or repeated continuation structure
 - `physical` for space, movement, appearance, or prop cues
@@ -53,7 +53,11 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `numbers` for exact numbers with units
 - `style-match` only when `--reference` or `--reference-style` explicitly activates it
 
-The generated manifest records why every stage was selected or skipped. Detection is a conservative text heuristic, not complete story understanding; explicitly select stages for important chapters.
+The `voice` stage checks stable baseline, current goal, knowledge and role constraints,
+audience, response linkage, and motivated register shifts without equating occupation
+with personality. The generated manifest records why every stage was selected or
+skipped. Detection is a conservative text heuristic, not complete story understanding;
+explicitly select stages for important chapters.
 
 ## Explicit Stages
 

@@ -13,6 +13,7 @@ For each important character, extract:
 - Current goal and immediate tactic
 - Public persona and private pressure
 - Stable voice markers: vocabulary, directness, humor, titles, taboo phrases
+- Disclosure habits, domain knowledge, role duties, incentives, and liabilities
 - Knowledge and mistaken beliefs
 - Skills, limits, injuries, resources, rank, and obligations
 - Loyalties, hostilities, attraction, shame, fear, and boundaries
@@ -27,6 +28,10 @@ For each important character, extract:
 - Boundary drift: a refusal, loyalty, taboo, trauma, promise, or secret disappears.
 - Emotion without bridge: attitude reverses without event, thought, evidence, or accumulating pressure.
 - Rank mismatch: address forms and behavior ignore hierarchy, intimacy, or public posture.
+- Speech-purpose drift: the character forgets what they want from this listener, ignores
+  practical constraints, or becomes the author's exposition channel.
+- Trait caricature: one adjective or occupation controls every line despite changes in
+  audience, pressure, intimacy, or strategy.
 - Author convenience: a character explains, forgives, confesses, attacks, or cooperates only to move the plot.
 
 ## Change Test

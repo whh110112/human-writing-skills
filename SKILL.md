@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Write, rewrite, or audit natural, genre-aware prose with long-form continuity, character-specific dialogue, selective serial reentry, chapter-momentum and prose-texture review, explicit reference-style matching, physical and relationship consistency, deterministic AI-pattern linting, and protected fact verification. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, style calibration from supplied samples, and detailed manuscript review.
+description: Write, rewrite, or audit natural, genre-aware prose with long-form continuity, character- and situation-fit dialogue, selective serial reentry, chapter-momentum and prose-texture review, explicit reference-style matching, physical and relationship consistency, deterministic AI-pattern linting, and protected fact verification. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, dialogue scenes, style calibration from supplied samples, and detailed manuscript review.
 ---
 
 # Human Writing Skills
@@ -13,7 +13,7 @@ chapters, and continuity ledgers separate from optional style references.
 1. Select one base style from `skills/`: `fiction`, `webnovel`, `argumentative`,
    `news-report`, `self-media`, or `academic-paper`.
 2. Read only the relevant modules. Add continuity, spatial, relationship, number,
-   rhythm, or AI-trace modules when the text actually needs them.
+   dialogue, rhythm, or AI-trace modules when the text actually needs them.
 3. Treat user facts and `--context` as authoritative. Never borrow facts from a
    style sample.
 4. Activate `reference-style-alignment` only when the user supplies reference
@@ -21,7 +21,8 @@ chapters, and continuity ledgers separate from optional style references.
 5. For important revisions, run deterministic `lint`, then independent audit
    profiles, then `verify` protected content against the source.
 6. Keep `voice`, `serial`, `momentum`, and `texture` separate from the default audit.
-   Activate them explicitly or through `pipeline --auto`; `serial` requires supplied
+   Activate them explicitly or through `pipeline --auto`; generation may auto-load
+   `voice` only for an explicit speech-centered fiction task. `serial` requires supplied
    context, while `momentum` requires a multi-chapter draft or an explicit request.
 
 ## Commands

@@ -33,6 +33,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
   residue and leave a new complication.
 - Let dialogue transact: alter permission, knowledge, leverage, risk, debt, trust, or
   commitment instead of merely confirming the mood.
+- Preserve speaker baselines while letting audience, urgency, deception, and status
+  motivate register shifts; do not turn occupation or temperament into a fixed voice mask.
 
 ## Avoid
 

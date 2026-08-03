@@ -52,12 +52,19 @@
 - Concrete, tense, lightly lyrical but not ornate.
 - Avoid modern slang and large exposition blocks.
 
-## Speaker Fingerprints
+## Speaker Models
 
-| Speaker | Turn shape | Response tactic | Register by audience | Avoid |
-| --- | --- | --- | --- | --- |
-| Lin Qiao | short questions, then silence | tests a claim with one concrete detail | formal with officials, clipped with Captain Wei | explaining suspicion directly |
-| Captain Wei | complete sentences that omit the source | redirects, warns, rarely denies | official in public, quieter when alone | casual confession |
+| Speaker | Stable baseline | Default tactic/disclosure | Knowledge and role limits | Audience shifts | Change gates |
+| --- | --- | --- | --- | --- | --- |
+| Lin Qiao | short concrete questions, then silence | tests a claim; implies suspicion | knows archives, not patrol procedure | formal with officials, clipped with Captain Wei | direct accusation only after proof or immediate danger |
+| Captain Wei | complete sentences that omit the source | redirects, warns, rarely denies | knows patrols; cannot expose his source | official in public, quieter when alone | plain disclosure only after trust, threat, or loss of cover |
+
+## Current Dialogue Contract
+
+| Speaker | Listener/audience | Immediate goal | Topic and constraint | Likely tactic | Intended state change |
+| --- | --- | --- | --- | --- | --- |
+| Lin Qiao | Captain Wei; workers may arrive | gain one verifiable lead | missing ferry; lacks proof | concrete question, then silence | increase his disclosure risk |
+| Captain Wei | Lin Qiao; workers may overhear | stop an unsafe search without exposing his source | patrol route and customs hall | coded warning, partial answer | change her next action while preserving doubt |
 
 ## Live Carryovers For The Next Chapter
 

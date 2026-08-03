@@ -19,6 +19,7 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | 文字空泛、对称、像模板 | 用具体的修订检查项压掉套话和泛泛表达 |
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
+| 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
 | 提示词越写越乱 | 用 CLI 把文体、上下文、任务编译成清晰指令包 |
 | “像人写的”太抽象 | 把自然感拆成节奏、细节、转场、视角、证据等可执行规则 |
 
@@ -45,7 +46,7 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | `relationship-stance-audit` | 检查“谁在谁面前提谁”：敌对、多角、阵营、上下级、掌门/家族等关系立场错误 |
 | `logic-causality-audit` | 检查因果、时间线、知识来源、动机、规则、资源和后果断裂 |
 | `character-consistency-audit` | 检查人物目标、声音、能力、边界、知识和转变是否有过渡 |
-| `dialogue-voice-audit` | 检查人物声音互换、回应策略漂移和不合听众关系的语域变化 |
+| `dialogue-voice-audit` | 按人物基线、场景目的、知识/角色约束、听众和变调动机生成并审核对白 |
 | `serial-reentry` | 有前章或账本时，检查前情倾倒、遗漏承接和章节状态重置 |
 | `chapter-momentum-audit` | 检查只铺气氛不推进、承诺未兑现、章间残留丢失和无依据钩子 |
 | `narrative-distance-control` | 检查无动机拉近镜头、缺少场景定位和叙事距离漂移 |
@@ -138,7 +139,8 @@ human-writing-skills audit `
 - 活跃线索：未解决冲突、悬念、伏笔、论点
 - 关系状态：谁知道、想要、隐瞒、亏欠、拒绝了什么，谁握有主动权
 - 关系立场：公开/私下态度、当前听众、谁能在谁面前提谁、禁泄秘密和例外动机
-- 声音锚点：叙述视角、语气、节奏、禁用表达
+- 声音锚点：叙述视角、用词、直接程度、披露习惯、知识边界、听众变化和禁用表达
+- 对话契约：谁对谁说、为何现在说、想让对方做什么、不能透露什么、这轮要改变什么
 - 当前状态：上一段结束在哪里，下一段必须如何衔接
 - 节拍桥：上一拍留下什么、下一拍为什么开始、中间发生什么微转折、结尾留下什么压力
 - 新增事实：本次输出后哪些事情变成了真
@@ -179,6 +181,23 @@ python -m humanwriting.cli build `
 - 说明：[docs/relationship-stance-continuity.zh-CN.md](docs/relationship-stance-continuity.zh-CN.md)
 - 关系账本模板：[examples/relationship-stance-ledger.zh-CN.md](examples/relationship-stance-ledger.zh-CN.md)
 
+## 人物与情境对白
+
+`dialogue-voice-audit` 把对白拆成三层：人物长期语言基线、当前场景对基线的
+调制，以及每句话试图完成的行动。职业、阶层、地域和性格标签只能提供知识、
+利益、责任与语域变化线索，不能直接替代人物性格。生成时明确要求言语中心场景
+即可按需激活；已有稿件使用独立 `voice` 审稿：
+
+```powershell
+human-writing-skills audit `
+  --draft my-dialogue-scene.md `
+  --context my-novel-ledger.md `
+  --profile voice
+```
+
+审核会区分“设定冲突”和“有动机的反差”，并检查谈话目的、知识边界、现实约束、
+上一句回应、听众与权力关系，而不是要求人物永远用同一种腔调。
+
 如果已经有一段文本需要审稿，使用 `audit`：
 
 ```powershell
@@ -200,17 +219,19 @@ tests/               标准库单元测试
 
 ### 按需叙事模块
 
-新增能力采用渐进加载。默认生成、`--review`、`--deep-review` 和宽覆盖的 `full`
-审稿都不会自动塞入这些专项模块：
+新增能力采用渐进加载。生成任务只有明确要求对话、谈判、会谈、审问、争论等
+言语中心场景时，才自动加入 `dialogue-voice-audit`；普通叙述和严肃文体不会误触发。
+审稿中的 `voice`、`serial`、`momentum`、`texture` 仍不塞入宽覆盖的 `full`：
 
 ```powershell
-human-writing-skills build --style fiction --module dialogue-voice-audit --task "写一场谈判。"
+human-writing-skills build --style fiction --task "写一场两位角色各有所求的谈判。"
 human-writing-skills build --style webnovel --context ledger.md --module serial-reentry --task "续写第18章。"
 human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills audit --draft chapter.md --profile texture
 ```
 
-`dialogue-voice-audit` 用于区分人物说话方式；`serial-reentry` 只有提供前章或账本
+`dialogue-voice-audit` 不按职业套口吻，而是检查稳定语言基线、现实利益、知识边界、
+当场目标、回应关系和有动机的变调；`serial-reentry` 只有提供前章或账本
 时才可使用；`momentum` 只审多章稿件的入场压力、变化、回报和章尾承接；`texture`
 负责电影式开场堆料、叙事距离、比喻与感官负载、单行段落成串、动作后重复解释
 情绪以及人物资料倾倒。
@@ -224,7 +245,7 @@ human-writing-skills audit --draft chapter.md --profile texture
 | `full` | 宽覆盖默认审稿；新增的 `voice`、`serial`、`momentum`、`texture` 保持独立 |
 | `logic` | 因果、时间线、知识、动机、规则、资源与后果 |
 | `character` | 人物目标、声音、能力、边界和变化桥梁 |
-| `voice` | 人物对白指纹、回应策略、语域变化和角色声音互换 |
+| `voice` | 人物基线、谈话目的、知识/角色约束、回应衔接、听众语域和变调依据 |
 | `serial` | 前情倾倒、遗漏承接和章节重置；必须提供 `--context` |
 | `momentum` | 多章稿件的入场压力、不可逆变化、承诺回报、残留和章尾压力 |
 | `texture` | 叙事距离、场景入场负载、意象、段落节拍和资料投放 |
@@ -249,7 +270,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按本章出现的人物、关系、空间、精确数字、持续对白、多章结构和文风密度线索追加专项阶段。只有同时提供前章或账本时才会追加 `serial`；只有检测到多章或重复续篇结构时才会追加 `momentum`。清单会说明选择和跳过原因。
+每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按本章出现的人物、关系、空间、精确数字、持续对白、多章结构和文风密度线索追加专项阶段。持续多轮对白会追加 `voice`；提供账本时，较短但有说话归属的对白也可触发，以便对照人物设定。只有同时提供前章或账本时才会追加 `serial`；只有检测到多章或重复续篇结构时才会追加 `momentum`。清单会说明选择和跳过原因。
 
 - 详细说明：[docs/audit-pipeline.zh-CN.md](docs/audit-pipeline.zh-CN.md)
 

@@ -23,6 +23,7 @@ AI writing often fails in predictable ways:
 | Generic "AI voice" | Concrete revision checks for rhythm, specificity, and empty phrasing |
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
+| Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
 | Prompts become messy | A CLI that compiles style, context, and task into one clean instruction pack |
 | Advice stays abstract | Rules are written as observable editing actions |
 
@@ -49,7 +50,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `relationship-stance-audit` | audience-specific stance checks for rivalries, affairs, factions, hierarchy, sects, and family politics |
 | `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
-| `dialogue-voice-audit` | interchangeable speakers, response-tactic drift, and audience-inappropriate register |
+| `dialogue-voice-audit` | dialogue generation and review against speaker baseline, scene goal, role/knowledge constraints, audience, and motivated shifts |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
 | `chapter-momentum-audit` | atmosphere-only chapters, missing payoffs, discarded residue, and unsupported hooks |
 | `narrative-distance-control` | unmotivated zoom, missing orientation, and viewpoint-distance drift |
@@ -137,7 +138,8 @@ The ledger tracks:
 - active threads: unresolved conflicts, clues, promises, open arguments
 - relationship state: who knows, wants, hides, owes, refuses, or holds leverage
 - relationship stance: public/private posture, current audience, mention policy, forbidden leaks, and exception motives
-- voice anchors: point of view, diction, pacing, formality, taboo phrases
+- voice anchors: point of view, diction, directness, disclosure habits, domain limits, audience shifts, taboo phrases
+- dialogue contract: who speaks to whom, why now, desired listener action, protected information, and intended state change
 - current state: where the previous passage ended and what must connect next
 - beat bridge: previous residue, entry pressure, micro-turn, and exit hook
 - change log: what became newly true in the latest output
@@ -182,6 +184,25 @@ the established relationship graph.
 - Guide: [docs/relationship-stance-continuity.md](docs/relationship-stance-continuity.md)
 - Ledger template: [examples/relationship-stance-ledger.zh-CN.md](examples/relationship-stance-ledger.zh-CN.md)
 
+## Character- and Situation-Fit Dialogue
+
+`dialogue-voice-audit` separates stable speaker baseline, situation-driven modulation,
+and the action each turn is trying to perform. Occupation, class, region, and trait
+labels supply possible knowledge, incentives, duties, and register pressure; they do
+not substitute for personality. An explicit speech-centered generation task activates
+the module on demand. Review an existing scene with an independent `voice` pass:
+
+```powershell
+human-writing-skills audit `
+  --draft my-dialogue-scene.md `
+  --context my-novel-ledger.md `
+  --profile voice
+```
+
+The audit separates contradiction from motivated contrast and checks scene purpose,
+knowledge boundaries, practical constraints, response linkage, audience, and power
+instead of forcing a character into one permanent register.
+
 If the draft already exists, use `audit`:
 
 ```powershell
@@ -203,17 +224,22 @@ tests/               standard-library unit tests
 
 ### Optional Narrative Modules
 
-The new narrative controls are progressive-disclosure modules. They are not added by
-default, by `--review`, by `--deep-review`, or by the broad `full` audit:
+The narrative controls use progressive disclosure. Generation adds
+`dialogue-voice-audit` only when a fiction or webnovel task explicitly asks for a
+speech-centered scene such as dialogue, negotiation, a meeting, interrogation, or
+argument. Narration-only and serious-document tasks do not trigger it. The `voice`,
+`serial`, `momentum`, and `texture` audit profiles remain outside broad `full` review:
 
 ```powershell
-human-writing-skills build --style fiction --module dialogue-voice-audit --task "Write the negotiation."
+human-writing-skills build --style fiction --task "Write a negotiation in which both speakers want different outcomes."
 human-writing-skills build --style webnovel --context ledger.md --module serial-reentry --task "Continue chapter 18."
 human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills audit --draft chapter.md --profile texture
 ```
 
-Use `dialogue-voice-audit` for distinguishable speakers, `serial-reentry` only with
+`dialogue-voice-audit` models baseline speech, practical incentives, knowledge limits,
+scene goals, response linkage, and motivated code-switching without treating a job as
+a personality. Use `serial-reentry` only with
 prior chapters or a ledger, `momentum` for a multi-chapter draft, and `texture` for
 narrative distance, cinematic opening stacks, imagery load, paragraph fragmentation,
 emotional over-explanation, and detail inventory.
@@ -227,7 +253,7 @@ emotional over-explanation, and detail inventory.
 | `full` | Broad default audit; optional `voice`, `serial`, `momentum`, and `texture` remain separate |
 | `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
 | `character` | Character goal, voice, competence, boundaries, and change gates |
-| `voice` | Speaker fingerprints, response tactics, register, and interchangeable dialogue |
+| `voice` | Speaker baseline, scene goal, role/knowledge limits, response linkage, audience register, and change gates |
 | `serial` | Recap dumps, missing carryovers, and chapter resets; requires `--context` |
 | `momentum` | Multi-chapter entry pressure, irreversible turns, payoff, residue, and exit pressure |
 | `texture` | Narrative distance, scene-entry load, imagery, paragraph cadence, and detail disclosure |
@@ -252,7 +278,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, number, voice, serial, momentum, and texture stages only when matching cues exist. `serial` additionally requires supplied context; `momentum` requires multi-chapter structure. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, number, voice, serial, momentum, and texture stages only when matching cues exist. Sustained dialogue adds `voice`; with a supplied ledger, shorter attributed dialogue can also trigger it for character-setting comparison. `serial` additionally requires supplied context; `momentum` requires multi-chapter structure. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 

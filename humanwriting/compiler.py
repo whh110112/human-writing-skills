@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from .protection import build_protection_manifest, detect_serious_document
@@ -7,6 +8,19 @@ from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 from .skills import load_many, load_skill
 
 NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
+DIALOGUE_GENERATION_STYLES = {"fiction", "webnovel"}
+DIALOGUE_GENERATION_PATTERN = re.compile(
+    r"(?:写|续写|生成|创作|展开|安排).{0,24}(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天|问答)|"
+    r"(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天)(?:场景|片段|戏|章节)?|"
+    r"\b(?:write|continue|draft|create).{0,40}(?:dialogue|conversation|negotiation|meeting|interview|interrogation|argument)|"
+    r"\b(?:dialogue|conversation|negotiation|interrogation)\s+(?:scene|chapter|exchange)\b",
+    re.IGNORECASE,
+)
+DIALOGUE_NEGATION_PATTERN = re.compile(
+    r"(?:不要|避免|无需|不需要|不写|没有|无).{0,10}(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天)|"
+    r"\b(?:no|without|avoid|exclude).{0,16}(?:dialogue|conversation|negotiation|interview)\b",
+    re.IGNORECASE,
+)
 CORE_REVIEW_MODULES = [
     "editor-loop",
     "ai-trace-rubric",
@@ -93,7 +107,8 @@ Maintain a running ledger while generating long text:
   and can use as leverage
 - Relationship stance: who may safely mention, praise, criticize, compare, expose,
   or conceal whom in the current audience
-- Voice anchors: diction, point of view, formality, humor, pacing, taboo phrases
+- Voice anchors: diction, directness, disclosure strategy, domain limits,
+  audience shifts, pacing, and taboo phrases
 - Scene or section state: where the previous output ended and what must connect next
 - Beat bridge: what residue from the previous beat enters the next beat, what changes,
   and what pressure or question remains open
@@ -148,6 +163,13 @@ def compile_prompt(
         task=task,
         budget=reference_budget,
     )
+    dialogue_generation_active = (
+        style in DIALOGUE_GENERATION_STYLES
+        and bool(DIALOGUE_GENERATION_PATTERN.search(task))
+        and not DIALOGUE_NEGATION_PATTERN.search(task)
+    )
+    if dialogue_generation_active:
+        append_missing(selected_modules, VOICE_AUDIT_MODULES)
     if reference_pack.active:
         append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
     protection_requested = protect_content or bool(protect_terms) or any(
@@ -340,8 +362,9 @@ def compile_audit_prompt(
         )
     if voice_enabled:
         task_lines.append(
-            "For dialogue voice, build evidence-backed speaker fingerprints, compare response "
-            "tactics and register, and distinguish drift from audience-aware performance."
+            "For dialogue voice, build evidence-backed speaker models and a scene speech contract; "
+            "check goals, topic, response linkage, knowledge, role constraints, audience, register, "
+            "and motivated change gates without relying on occupational stereotypes."
         )
     if serial_enabled:
         task_lines.append(
