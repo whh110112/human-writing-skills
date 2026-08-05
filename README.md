@@ -24,6 +24,7 @@ AI writing often fails in predictable ways:
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
+| A consequential line or action receives no uptake before the prose cuts away | Response-obligation checks and deferred interaction debt |
 | Prompts become messy | A CLI that compiles style, context, and task into one clean instruction pack |
 | Advice stays abstract | Rules are written as observable editing actions |
 
@@ -50,7 +51,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `relationship-stance-audit` | audience-specific stance checks for rivalries, affairs, factions, hierarchy, sects, and family politics |
 | `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
-| `dialogue-voice-audit` | dialogue generation and review against speaker baseline, scene goal, role/knowledge constraints, audience, and motivated shifts |
+| `dialogue-voice-audit` | character-fit dialogue plus verbal, physical, silent, interrupted, or deferred uptake for consequential turns |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
 | `chapter-momentum-audit` | atmosphere-only chapters, missing payoffs, discarded residue, and unsupported hooks |
 | `narrative-distance-control` | unmotivated zoom, missing orientation, and viewpoint-distance drift |
@@ -61,7 +62,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
-| `prose-progress-audit` | polished paragraphs that do not add a new fact, action, proof, or pressure |
+| `prose-progress-audit` | static paragraphs and pressure-bearing interactions abandoned before uptake or explicit deferral |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -140,6 +141,7 @@ The ledger tracks:
 - relationship stance: public/private posture, current audience, mention policy, forbidden leaks, and exception motives
 - voice anchors: point of view, diction, directness, disclosure habits, domain limits, audience shifts, taboo phrases
 - dialogue contract: who speaks to whom, why now, desired listener action, protected information, and intended state change
+- interaction debt: which consequential line or action still awaits uptake, refusal, interruption, consequence, or delayed payoff
 - current state: where the previous passage ended and what must connect next
 - beat bridge: previous residue, entry pressure, micro-turn, and exit hook
 - change log: what became newly true in the latest output
@@ -200,8 +202,10 @@ human-writing-skills audit `
 ```
 
 The audit separates contradiction from motivated contrast and checks scene purpose,
-knowledge boundaries, practical constraints, response linkage, audience, and power
-instead of forcing a character into one permanent register.
+knowledge boundaries, practical constraints, response linkage, audience, and power.
+A consequential line or action does not require a mechanical spoken reply, but it
+must receive verbal, physical, silently legible, interrupted, or deliberately deferred
+uptake before the prose shifts away.
 
 If the draft already exists, use `audit`:
 
@@ -253,7 +257,7 @@ emotional over-explanation, and detail inventory.
 | `full` | Broad default audit; optional `voice`, `serial`, `momentum`, and `texture` remain separate |
 | `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
 | `character` | Character goal, voice, competence, boundaries, and change gates |
-| `voice` | Speaker baseline, scene goal, role/knowledge limits, response linkage, audience register, and change gates |
+| `voice` | Speaker baseline, scene goal, role/knowledge limits, audience register, change gates, and response obligations |
 | `serial` | Recap dumps, missing carryovers, and chapter resets; requires `--context` |
 | `momentum` | Multi-chapter entry pressure, irreversible turns, payoff, residue, and exit pressure |
 | `texture` | Narrative distance, scene-entry load, imagery, paragraph cadence, and detail disclosure |

@@ -35,6 +35,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
   commitment instead of merely confirming the mood.
 - Preserve speaker baselines while letting audience, urgency, deception, and status
   motivate register shifts; do not turn occupation or temperament into a fixed voice mask.
+- Land consequential interactions before shifting focus, or carry the missing
+  response as visible debt.
 
 ## Avoid
 
@@ -44,3 +46,4 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - resetting relationships after major scenes
 - rebuilding every chapter from weather, lighting, clothes, and summarized feeling
 - delaying the promised scene with biography, world rules, or decorative atmosphere
+- cutting away from a consequential line or action before anyone receives or defers it

@@ -27,11 +27,15 @@ Before drafting or revising a scene, name the current state:
   are safe, risky, forbidden, or useful in this audience.
 - Residue: the last line, object, gesture, message, silence, or physical distance that
   should still affect the next beat.
+- Interaction debt: which pressure-bearing line or action still awaits uptake, refusal,
+  consequence, or a deliberately delayed answer.
 
 ## Techniques
 
 - Let dialogue do relationship work. Each important line should shift permission,
   trust, distance, threat, debt, embarrassment, or knowledge.
+- Close or deliberately carry each important response obligation. A reply may be
+  verbal, physical, silent, interrupted, or delayed, but it cannot simply disappear.
 - Use questions as pressure, not decoration. A question should force a choice: answer,
   evade, joke, lie, delay, or counterattack.
 - Preserve asymmetry. One character may know more, want more, risk more, or recover
@@ -74,6 +78,7 @@ For every two-person or group scene, answer:
 - What does each person want the other person to do, admit, miss, or remember?
 - Which absent person or group is safe, risky, or forbidden to mention here?
 - Which boundary, promise, secret, or leverage point changes?
+- Which important line or action receives uptake, and which interaction debt remains open?
 - What visible detail proves the relationship is different at the end?
 
 If the people leave the scene with the same trust, distance, knowledge, and leverage

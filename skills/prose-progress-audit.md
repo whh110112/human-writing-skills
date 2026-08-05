@@ -37,10 +37,23 @@ If two neighboring paragraphs reduce to the same summary, cut or merge one.
 - Practical consequence becomes clear.
 - The writer admits uncertainty or limit.
 
+## Interaction Progress Test
+
+When a line, gesture, decision, or discovery puts pressure on another present
+character, mark the response obligation it creates. Before the passage shifts away,
+look for uptake through speech, action, bodily response, legible silence, interruption,
+or explicit deferral. If none exists, flag an orphaned interaction beat.
+
+Do not require a reply to every sentence. Review only stimuli that request, challenge,
+reveal, touch a boundary, alter terms, or otherwise change the listener's available
+choices. A delayed answer is valid when the text carries the unresolved interaction
+debt into the next relevant beat.
+
 ## Audit Steps
 
 1. Create a paragraph summary list.
-2. Mark duplicated summaries, decorative summaries, and paragraphs with no state change.
+2. Mark duplicated summaries, decorative summaries, paragraphs with no state change,
+   and pressure-bearing interactions abandoned without uptake or deferral.
 3. For each weak paragraph, decide:
    - cut
    - merge
@@ -57,6 +70,7 @@ Prose Progress Audit
 - Paragraph summary map:
 - Duplicate or static paragraphs:
 - Missing state change:
+- Orphaned interaction beat or deferred interaction debt:
 - Minimal repair:
 ```
 

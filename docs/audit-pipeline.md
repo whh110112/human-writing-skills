@@ -54,8 +54,9 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `style-match` only when `--reference` or `--reference-style` explicitly activates it
 
 The `voice` stage checks stable baseline, current goal, knowledge and role constraints,
-audience, response linkage, and motivated register shifts without equating occupation
-with personality. The generated manifest records why every stage was selected or
+audience, response linkage, motivated register shifts, and whether pressure-bearing
+turns receive verbal, physical, silent, interrupted, or deferred uptake without
+equating occupation with personality. The generated manifest records why every stage was selected or
 skipped. Detection is a conservative text heuristic, not complete story understanding;
 explicitly select stages for important chapters.
 

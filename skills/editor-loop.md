@@ -10,7 +10,8 @@ Use an iterative workflow instead of expecting one perfect generation. Draft, di
    - Produce the requested passage with the selected style and context ledger.
 
 2. Diagnose
-   - Mark lines that feel too smooth, generic, explanatory, emotionally flat, or discontinuous.
+   - Mark lines that feel too smooth, generic, explanatory, emotionally flat, discontinuous,
+     or abandoned before another character receives the interaction.
    - Name the issue; do not merely say "sounds AI".
 
 3. Rewrite Locally

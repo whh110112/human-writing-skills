@@ -76,6 +76,7 @@ Keep:
 - Voice anchors
 - Stable speaker baseline, knowledge/role constraints, disclosure habits, and audience shifts
 - Current dialogue contract: purpose, desired outcomes, protected information, response tactics, and intended state change
+- Open interaction debt: consequential lines or actions awaiting uptake, refusal, interruption, consequence, or delayed payoff
 - Spatial positions and seat/standing locations
 - Physical resource modes, capacity, and occupants
 - Clothing, shoes, injuries, and prop state
@@ -174,6 +175,9 @@ Rules:
 - Before dialogue, check speaker -> listener/audience -> referenced party together with
   baseline voice, current goal, knowledge/role constraints, response linkage, mention
   policy, and information permissions; do not substitute occupation for personality.
+- Before shifting away from a consequential line or action, show verbal, physical,
+  silently legible, interrupted, or deliberately deferred uptake without forcing every
+  sentence into mechanical ping-pong.
 - In cars, rooms, elevators, dining areas, beds, stools, aircraft, motorcycles, or other physical spaces, check positions, resource capacity, transformations, reach, clothing, props, and movement gates before drafting.
 - Do not overwrite established facts for convenience.
 - If context is missing, make the smallest possible assumption and mark it.

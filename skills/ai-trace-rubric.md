@@ -25,6 +25,7 @@ Score each dimension from 0 to 3:
 | Context drift | Facts, stakes, or timeline blur | Update and obey the continuity ledger |
 | Relationship stance drift | A character mentions, praises, criticizes, compares, or exposes the wrong person for the current audience | Audit speaker -> listener -> referenced party; add motive, change target, code the mention, or add consequence |
 | Weak beat bridge | Paragraphs or scenes sit beside each other instead of causing each other | Reconnect residue, micro-turn, proof detail, and exit pressure |
+| Orphaned interaction | A consequential line or action is abandoned before uptake | Add speech, action, legible silence, interruption, or explicit deferral; avoid mechanical ping-pong |
 | Relationship reset | Trust, boundaries, secrets, or leverage reset after charged scenes | Track who knows, wants, hides, owes, refuses, and can withdraw |
 | False precision | Tiny exact measures or counted micro-actions appear where no person would measure | Keep useful facts; soften decorative numbers into felt, relational, or plot-relevant detail |
 | Physical drift | Position, clothing, props, or injuries change without transition | Add spatial blocking, appearance/prop state, or movement gate |

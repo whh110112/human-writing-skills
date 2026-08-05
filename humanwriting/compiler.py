@@ -364,7 +364,8 @@ def compile_audit_prompt(
         task_lines.append(
             "For dialogue voice, build evidence-backed speaker models and a scene speech contract; "
             "check goals, topic, response linkage, knowledge, role constraints, audience, register, "
-            "and motivated change gates without relying on occupational stereotypes."
+            "motivated change gates, and whether pressure-bearing turns receive uptake or become "
+            "explicit interaction debt without relying on occupational stereotypes."
         )
     if serial_enabled:
         task_lines.append(
@@ -390,7 +391,8 @@ def compile_audit_prompt(
     if ai_trace_enabled:
         task_lines.append(
             "For AI-trace review, identify exact phrases or paragraph structures before scoring; "
-            "do not flag a pattern without quoting or locating its evidence."
+            "also locate orphaned pressure-bearing interactions before a topic or scene shift, "
+            "and do not flag a pattern without quoting or locating its evidence."
         )
     if numbers_enabled:
         task_lines.append(

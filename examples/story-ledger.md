@@ -43,6 +43,8 @@
 - Entry pressure: dawn workers will arrive soon, so she cannot search the customs hall
   slowly.
 - Required micro-turn: Lin Qiao should gain one fragile inference, not certainty.
+- Open interaction debt: Captain Wei's coded warning requires Lin Qiao to test,
+  resist, or visibly defer it before either character leaves.
 - Exit pressure: the scene should leave Captain Wei's protection feeling useful and
   suspicious at the same time.
 

@@ -65,6 +65,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Beat bridge", prompt)
         self.assertIn("Relationship state", prompt)
         self.assertIn("Fiction Skill", prompt)
+        self.assertIn("pressure-bearing line or action", prompt)
         self.assertIn("Write the next scene.", prompt)
         self.assertNotIn("Technique Module: reference-style-alignment", prompt)
 
@@ -75,6 +76,7 @@ class CompilerTests(unittest.TestCase):
         serious = compile_prompt("news-report", "Write an interview-based report.")
         self.assertIn("Technique Module: dialogue-voice-audit", dialogue)
         self.assertIn("Scene Speech Contract", dialogue)
+        self.assertIn("Response Obligation And Interaction Debt", dialogue)
         self.assertNotIn("Technique Module: dialogue-voice-audit", narration)
         self.assertNotIn("Technique Module: dialogue-voice-audit", excluded)
         self.assertNotIn("Technique Module: dialogue-voice-audit", serious)
@@ -160,6 +162,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: vocal-rhythm", prompt)
         self.assertIn("Technique Module: editor-loop", prompt)
         self.assertIn("Technique Module: ai-trace-rubric", prompt)
+        self.assertIn("Orphaned interaction", prompt)
         self.assertNotIn("Technique Module: relationship-stance-audit", prompt)
         self.assertNotIn("Technique Module: cliche-phrase-audit", prompt)
         self.assertNotIn("Technique Module: formulaic-structure-audit", prompt)
@@ -297,6 +300,19 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: forensic-physical-audit", prompt)
         self.assertNotIn("Audit Module: ai-trace-rubric", prompt)
 
+    def test_ai_trace_profile_catches_orphaned_interactions_without_voice_cost(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text(
+                "她只说了一句重要的话，随后叙述直接转向了窗外的天气。",
+                encoding="utf-8",
+            )
+            prompt = compile_audit_prompt(str(draft), profiles=["ai-trace"])
+        self.assertIn("Audit Module: prose-progress-audit", prompt)
+        self.assertIn("Interaction Progress Test", prompt)
+        self.assertIn("orphaned pressure-bearing interactions", prompt)
+        self.assertNotIn("Audit Module: dialogue-voice-audit", prompt)
+
     def test_logic_character_and_proofread_profiles_are_isolated(self):
         with TemporaryDirectory() as directory:
             draft = Path(directory) / "draft.md"
@@ -328,6 +344,7 @@ class CompilerTests(unittest.TestCase):
             momentum = compile_audit_prompt(str(draft), profiles=["momentum"])
         self.assertIn("Audit Module: dialogue-voice-audit", voice)
         self.assertIn("Scene Speech Contract", voice)
+        self.assertIn("Response Obligation And Interaction Debt", voice)
         self.assertIn("occupational stereotype", voice)
         self.assertNotIn("Audit Module: serial-reentry", voice)
         self.assertIn("Audit Module: serial-reentry", serial)

@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Write, rewrite, or audit natural, genre-aware prose with long-form continuity, character- and situation-fit dialogue, selective serial reentry, chapter-momentum and prose-texture review, explicit reference-style matching, physical and relationship consistency, deterministic AI-pattern linting, and protected fact verification. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, dialogue scenes, style calibration from supplied samples, and detailed manuscript review.
+description: Write, rewrite, or audit natural, genre-aware prose with long-form continuity, character- and situation-fit dialogue, interaction-response continuity, selective serial reentry, chapter-momentum and prose-texture review, explicit reference-style matching, physical and relationship consistency, deterministic AI-pattern linting, and protected fact verification. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, dialogue scenes, style calibration from supplied samples, and detailed manuscript review.
 ---
 
 # Human Writing Skills

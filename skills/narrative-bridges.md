@@ -39,6 +39,8 @@ Do not write a transition until the chain is clear.
   next beat's options.
 - Let dialogue create a turn: a line should shift permission, distance, knowledge,
   threat, or obligation, not merely restate mood.
+- Before changing topic, viewpoint, time, or scene, land the uptake to a pressure-bearing
+  line or action through reply, action, visible silence, interruption, or explicit deferral.
 - Vary block size. Use short beats for shock, decision, or embarrassment; use longer
   beats when attention is narrowing, bargaining, remembering, or resisting.
 - Keep one productive gap. The reader should feel a pressure to continue without
@@ -50,6 +52,8 @@ Do not write a transition until the chain is clear.
   when no concrete bridge exists
 - opening every new paragraph with abstract summary or emotional labels
 - cutting to a new scene that forgets the previous scene's cost, posture, or object
+- abandoning a pressure-bearing line or action without reception, consequence, or
+  deliberately carried interaction debt
 - resolving the scene's emotional meaning immediately after showing it
 - adding random sensory detail that does not change attention, pressure, or choice
 
@@ -60,6 +64,7 @@ For each scene or major paragraph, answer:
 - What did the previous beat leave behind?
 - What changed in this beat?
 - What exact detail proves the change?
+- Which response obligation was closed, refused, interrupted, or deliberately deferred?
 - Why must the next beat follow from this one?
 
 If a beat can be removed without damaging cause, tension, or character state, merge it,

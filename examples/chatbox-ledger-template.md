@@ -117,6 +117,7 @@ Only list prior facts the next chapter will use now.
 - Previous residue:
 - Entry pressure:
 - Micro-turn required next:
+- Open interaction debt and intended response gate:
 - Exit pressure to preserve:
 
 ## Newly True

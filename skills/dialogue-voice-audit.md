@@ -63,32 +63,57 @@ reflect the parties' actual incentives and constraints, but it may detour when t
 scene gives a motive such as testing, stalling, face-saving, seduction, intimidation,
 misunderstanding, or concealment.
 
+## Response Obligation And Interaction Debt
+
+A pressure-bearing utterance or action opens a response obligation when it asks for
+information, changes terms, tests a boundary, offers or withholds something, reveals
+knowledge, assigns blame, makes contact, or otherwise demands adjustment from someone
+present. Before the prose changes topic, viewpoint, time, or scene, show one form of
+uptake:
+
+- a verbal answer, refusal, evasion, counter, clarification, or acknowledgment
+- a chosen action that accepts, resists, redirects, approaches, withdraws, or delays
+- a visible bodily or sensory response that changes the beat
+- deliberate silence made legible through timing, attention, or the speaker's reaction
+- an interruption or external event that clearly prevents a response
+- explicit deferral recorded as open interaction debt for a later beat
+
+The response need not be immediate, cooperative, or verbal. Do not force mechanical
+ping-pong after greetings, incidental remarks, self-talk, rhetorical lines, or turns
+whose uptake is already obvious. The failure is an important stimulus abandoned with
+no reception, consequence, or deliberate deferral.
+
 ## Drafting Mode
 
 When this file is loaded as a `Technique Module`:
 
 1. Build a compact speaker model and scene speech contract before drafting.
 2. Give each turn a purpose and make it respond to the preceding turn.
-3. Let expertise appear through what a speaker asks, notices, refuses, corrects,
+3. After a pressure-bearing turn, land the listener's uptake before shifting focus,
+   unless the missing response is deliberately carried as interaction debt.
+4. Let expertise appear through what a speaker asks, notices, refuses, corrects,
    or treats as obvious, not through an exposition dump.
-4. Keep vocabulary and syntax near the speaker's baseline while allowing motivated
+5. Keep vocabulary and syntax near the speaker's baseline while allowing motivated
    code-switching for audience, pressure, performance, quotation, or strategy.
-5. Make important dialogue transact: alter knowledge, leverage, permission, risk,
+6. Make important dialogue transact: alter knowledge, leverage, permission, risk,
    commitment, trust, or the next available action.
-6. Do not display the hidden model unless the user asks for notes.
+7. Do not display the hidden model unless the user asks for notes.
 
 ## Audit Mode
 
 When this file is loaded as an `Audit Module`:
 
 1. Extract speaker models and the scene speech contract from evidence.
-2. Map representative turns as `goal -> tactic -> wording -> listener update`.
+2. Map representative turns as
+   `stimulus -> response obligation -> uptake -> state change or interaction debt`.
 3. Remove labels from several lines and test whether they remain attributable.
 4. Flag only evidence-backed failures:
    - interchangeable speakers or narrator-shaped exposition
    - topic or incentive drift without a scene motive
    - knowledge, competence, or institutional-constraint mismatch
    - a reply that ignores the preceding turn
+   - a pressure-bearing line or action abandoned before any uptake or explicit deferral
+   - silence treated as a response even though the text gives it no timing or consequence
    - unearned register, politeness, directness, dialect, or profanity shift
    - speech incompatible with the current audience, power balance, or emotional load
    - personality reduced to one repeated verbal tic or occupational stereotype
@@ -105,6 +130,8 @@ Character-Fit Dialogue Audit
 - Speaker model and evidence source:
 - Scene speech contract:
 - Turn or line:
+- Response obligation: none / immediate / refused / interrupted / deferred
+- Actual uptake or missing landing beat:
 - Conflict: baseline / goal / topic / knowledge / role constraint / audience / response
 - Confirmed mismatch or uncertain inference:
 - Valid change gate, if any:
