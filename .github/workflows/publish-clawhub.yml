@@ -1,0 +1,72 @@
+name: Publish to ClawHub
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish, without the leading v
+        required: true
+        type: string
+      changelog:
+        description: Optional changelog for a manual publication
+        required: false
+        default: Manual ClawHub publication.
+        type: string
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve release metadata
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_CHANGELOG: ${{ inputs.changelog }}
+        shell: bash
+        run: |
+          version="${RELEASE_TAG:-$INPUT_VERSION}"
+          version="${version#v}"
+          changelog="${RELEASE_BODY:-$INPUT_CHANGELOG}"
+          if [[ -z "$version" ]]; then
+            echo "A release tag or manual version is required." >&2
+            exit 1
+          fi
+          if [[ -z "$changelog" ]]; then
+            changelog="Publish human-writing-skills v$version."
+          fi
+          {
+            echo "version=$version"
+            echo "changelog<<EOF"
+            echo "$changelog"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish skill
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+          VERSION: ${{ steps.release.outputs.version }}
+          CHANGELOG: ${{ steps.release.outputs.changelog }}
+        run: |
+          npx --yes clawhub@0.23.3 skill publish . \
+            --slug human-writing-skills \
+            --name "Human Writing Skills" \
+            --owner whh110112 \
+            --version "$VERSION" \
+            --changelog "$CHANGELOG" \
+            --tags latest \
+            --source-repo "$GITHUB_REPOSITORY" \
+            --source-commit "$GITHUB_SHA" \
+            --source-ref "$GITHUB_REF_NAME"
