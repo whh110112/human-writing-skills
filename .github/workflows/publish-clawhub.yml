@@ -61,7 +61,7 @@ jobs:
           CHANGELOG: ${{ steps.release.outputs.changelog }}
         run: |
           npx --yes clawhub@0.23.3 login --token "$CLAWHUB_TOKEN"
-          npx --yes clawhub@0.23.3 skill publish . \
+          npx --yes clawhub@0.23.3 --no-input skill publish . \
             --slug human-writing-skills \
             --name "Human Writing Skills" \
             --owner whh110112 \
