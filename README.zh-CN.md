@@ -21,6 +21,9 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
 | 关键台词或动作后无人承接，剧情生硬切走 | 检查回应义务，并把延迟回应记录为互动欠账 |
+| 时代、技术、制度或世界规则互相冲突 | 抽取世界契约，再检查物件、行动和例外是否兼容 |
+| 调查、谈判、研发等过程被跳过，结果凭空成功 | 检查承诺、尝试、阻力、判断、代价和结果的赚取链 |
+| 扩写只增加环境、心理和同义复述 | 比较场景承诺与注意力分配，把篇幅还给关键过程和后果 |
 | 提示词越写越乱 | 用 CLI 把文体、上下文、任务编译成清晰指令包 |
 | “像人写的”太抽象 | 把自然感拆成节奏、细节、转场、视角、证据等可执行规则 |
 
@@ -50,6 +53,10 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | `dialogue-voice-audit` | 按人物基线与情境生成并审核对白，检查关键回合是否得到语言、动作、沉默或延迟回应 |
 | `serial-reentry` | 有前章或账本时，检查前情倾倒、遗漏承接和章节状态重置 |
 | `chapter-momentum-audit` | 检查只铺气氛不推进、承诺未兑现、章间残留丢失和无依据钩子 |
+| `world-ontology-audit` | 检查时代、技术、制度、社会习惯和架空规则是否兼容 |
+| `process-earnedness-audit` | 检查关键结果是否由选择、阻力、证据和代价赚到 |
+| `attention-budget-audit` | 检查低价值描写、语义回声和无状态变化扩写是否挤占核心内容 |
+| `chapter-pattern-audit` | 对三章以上提取结构指纹，识别重复开场、转折、情绪峰值和钩子模板 |
 | `narrative-distance-control` | 检查无动机拉近镜头、缺少场景定位和叙事距离漂移 |
 | `imagery-load-audit` | 检查比喻堆叠、感官争抢和展示动作后重复解释情绪 |
 | `paragraph-rhythm-audit` | 检查机械单行段落连发和塞入过多转折的长段 |
@@ -73,6 +80,7 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | `ai-trace-rubric` | 把“还像 AI”拆成可诊断、可修复的维度 |
 | `reference-style-alignment` | 只在明确提供参考资料或文风要求时，提炼可迁移的声音与写法，不复制内容 |
 | `protected-content` | 防止润色时误改数字、引文、公式、链接、代码、原话和指定术语 |
+| `source-grounding` | 严肃文本有明确来源时，核对主张、出处、适用范围和不确定性 |
 
 ## 快速开始
 
@@ -123,6 +131,24 @@ human-writing-skills audit `
 模块会提炼视角、句长节奏、词汇层级、意象密度、场景和人物描写方法、对白
 节拍、情绪表达和转场方式。剧情事实仍以 `--context` 为准，不得复制参考资料的
 人名、事件或标志性句子。详见 [docs/reference-style.zh-CN.md](docs/reference-style.zh-CN.md)。
+
+## 严肃文本来源依据
+
+`--source` 与 `--reference` 完全分离。它只在论文、新闻、法律或技术文本中
+激活 `source-grounding`，建立“主张 -> 来源位置 -> 支持范围 -> 结论”的证据表。
+小说、网文、自媒体和普通问答不会自动加载。
+
+```powershell
+human-writing-skills audit `
+  --draft paper.md `
+  --document-type academic-paper `
+  --source study-a.md `
+  --source study-b.md `
+  --profile sources
+```
+
+来源核验会区分“文献存在”和“文献支持当前结论”。没有外部数据库访问时，只会
+把 DOI、标准、判例或元数据标为待核验，不会猜测真实性。
 
 ## 长文本连续性方案
 
@@ -224,20 +250,28 @@ tests/               标准库单元测试
 
 新增能力采用渐进加载。生成任务只有明确要求对话、谈判、会谈、审问、争论等
 言语中心场景时，才自动加入 `dialogue-voice-audit`；普通叙述和严肃文体不会误触发。
-审稿中的 `voice`、`serial`、`momentum`、`texture` 仍不塞入宽覆盖的 `full`：
+审稿中的 `voice`、`serial`、`world`、`process`、`momentum`、`salience`、
+`recurrence`、`texture`、`sources` 仍不塞入宽覆盖的 `full`：
 
 ```powershell
 human-writing-skills build --style fiction --task "写一场两位角色各有所求的谈判。"
 human-writing-skills build --style webnovel --context ledger.md --module serial-reentry --task "续写第18章。"
 human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills audit --draft chapter.md --profile texture
+human-writing-skills audit --draft chapter.md --profile process
+human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
 `dialogue-voice-audit` 不按职业套口吻，而是检查稳定语言基线、现实利益、知识边界、
 当场目标、回应关系和有动机的变调；`serial-reentry` 只有提供前章或账本
 时才可使用；`momentum` 只审多章稿件的入场压力、变化、回报和章尾承接；`texture`
 负责电影式开场堆料、叙事距离、比喻与感官负载、单行段落成串、动作后重复解释
-情绪以及人物资料倾倒。
+情绪以及人物资料倾倒。`world` 只在明确世界坐标出现时检查兼容性；`process`
+检查关键结果是否由过程赚到；`salience` 只对长稿检查注意力预算；`recurrence`
+至少需要三章；`sources` 需要严肃文体和明确来源文件。
+
+生成时，`world`、`process` 和 `attention-budget-audit` 也只会分别在任务出现明确
+世界设定、关键过程、扩写/长稿/灌水审查信号时加入，不随普通 `--deep-review` 加载。
 
 ### 审稿 Profile
 
@@ -245,12 +279,16 @@ human-writing-skills audit --draft chapter.md --profile texture
 
 | Profile | 用途 |
 | --- | --- |
-| `full` | 宽覆盖默认审稿；新增的 `voice`、`serial`、`momentum`、`texture` 保持独立 |
+| `full` | 宽覆盖默认审稿；高成本与强条件 Profile 保持独立 |
 | `logic` | 因果、时间线、知识、动机、规则、资源与后果 |
 | `character` | 人物目标、声音、能力、边界和变化桥梁 |
 | `voice` | 人物基线、谈话目的、知识/角色约束、听众语域、变调依据和回应义务 |
 | `serial` | 前情倾倒、遗漏承接和章节重置；必须提供 `--context` |
 | `momentum` | 多章稿件的入场压力、不可逆变化、承诺回报、残留和章尾压力 |
+| `world` | 时代、技术、制度、社会习惯和世界规则兼容性 |
+| `process` | 承诺、尝试、阻力、判断、代价、证据与结果的赚取链 |
+| `salience` | 长稿注意力分配、低价值扩写和跨段语义回声 |
+| `recurrence` | 三章以上的章节结构指纹和模板复读 |
 | `texture` | 叙事距离、场景入场负载、意象、段落节拍和资料投放 |
 | `physical` | 座位、空间、容量、触达、服装、道具和伤势 |
 | `relationship` | 关系立场、当前听众、信息权限、称谓和秘密泄露 |
@@ -258,6 +296,7 @@ human-writing-skills audit --draft chapter.md --profile texture
 | `numbers` | 动作与情绪中的假精确数字 |
 | `proofread` | 错别字、标点、称谓、排版和机械错误 |
 | `style-match` | 对照明确输入的参考资料检查文风漂移；没有参考信号时不可使用 |
+| `sources` | 对照明确来源核验严肃文本主张；需要 `--source` 和严肃文体 |
 
 Profile 可以重复组合，例如 `--profile relationship --profile ai-trace`。
 
@@ -273,7 +312,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按本章出现的人物、关系、空间、精确数字、持续对白、多章结构和文风密度线索追加专项阶段。持续多轮对白会追加 `voice`；提供账本时，较短但有说话归属的对白也可触发，以便对照人物设定。只有同时提供前章或账本时才会追加 `serial`；只有检测到多章或重复续篇结构时才会追加 `momentum`。清单会说明选择和跳过原因。
+每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 需要账本；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。清单会说明每项选择和跳过原因。
 
 - 详细说明：[docs/audit-pipeline.zh-CN.md](docs/audit-pipeline.zh-CN.md)
 

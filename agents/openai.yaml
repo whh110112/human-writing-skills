@@ -1,4 +1,4 @@
 interface:
   display_name: "Human Writing Skills"
-  short_description: "Natural prose, character-fit dialogue, response continuity, and focused audits"
-  default_prompt: "Use $human-writing-skills with only the relevant modules while preserving facts, continuity, scene pressure, character-fit dialogue, and visible uptake or deliberate deferral after consequential interactions."
+  short_description: "Natural prose, long-form continuity, world logic, and focused audits"
+  default_prompt: "Use $human-writing-skills with only the relevant modules while preserving facts, world rules, continuity, earned outcomes, scene pressure, character-fit dialogue, and supplied-source boundaries."

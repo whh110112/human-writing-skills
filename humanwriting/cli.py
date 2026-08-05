@@ -10,6 +10,7 @@ from .linter import format_lint_report, lint_file
 from .pipeline import write_audit_pipeline
 from .protection import compare_protected_files, format_protection_report
 from .reference import DEFAULT_REFERENCE_BUDGET
+from .source import DEFAULT_SOURCE_BUDGET
 from .skills import list_module_skills, list_skills, list_style_skills
 
 
@@ -29,6 +30,21 @@ def add_reference_arguments(parser: argparse.ArgumentParser) -> None:
         type=int,
         default=DEFAULT_REFERENCE_BUDGET,
         help=f"Maximum sampled reference characters. Default: {DEFAULT_REFERENCE_BUDGET}.",
+    )
+
+
+def add_source_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--source",
+        action="append",
+        default=[],
+        help="Factual source file for serious-document grounding. Can be repeated.",
+    )
+    parser.add_argument(
+        "--source-budget",
+        type=int,
+        default=DEFAULT_SOURCE_BUDGET,
+        help=f"Maximum sampled factual-source characters. Default: {DEFAULT_SOURCE_BUDGET}.",
     )
 
 
@@ -89,6 +105,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exact term that generated prose must preserve. Can be repeated.",
     )
     add_reference_arguments(build)
+    add_source_arguments(build)
 
     audit = subparsers.add_parser("audit", help="Build a forensic audit pack for an existing draft.")
     audit.add_argument("--draft", required=True, help="Markdown/text file containing the draft to audit.")
@@ -102,21 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument(
         "--profile",
         action="append",
-        choices=[
-            "full",
-            "logic",
-            "character",
-            "voice",
-            "serial",
-            "momentum",
-            "texture",
-            "physical",
-            "relationship",
-            "ai-trace",
-            "numbers",
-            "proofread",
-            "style-match",
-        ],
+        choices=["full", *PIPELINE_PROFILES],
         help="Audit profile. Can be repeated. Defaults to full.",
     )
     audit.add_argument(
@@ -137,6 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Legacy alias that adds the numbers profile to the selected audit.",
     )
     add_reference_arguments(audit)
+    add_source_arguments(audit)
     audit.add_argument(
         "--document-type",
         choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "news-report", "legal", "technical"],
@@ -166,6 +170,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output directory. Defaults to <draft-name>-audit-pipeline.",
     )
     add_reference_arguments(pipeline)
+    add_source_arguments(pipeline)
     pipeline.add_argument(
         "--document-type",
         choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "news-report", "legal", "technical"],
@@ -287,6 +292,8 @@ def main(argv: list[str] | None = None) -> int:
                 reference_paths=args.reference,
                 reference_style=args.reference_style,
                 reference_budget=args.reference_budget,
+                source_paths=args.source,
+                source_budget=args.source_budget,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
             )
@@ -307,6 +314,8 @@ def main(argv: list[str] | None = None) -> int:
                 reference_paths=args.reference,
                 reference_style=args.reference_style,
                 reference_budget=args.reference_budget,
+                source_paths=args.source,
+                source_budget=args.source_budget,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
                 document_type=args.document_type,
@@ -328,6 +337,8 @@ def main(argv: list[str] | None = None) -> int:
                 reference_paths=args.reference,
                 reference_style=args.reference_style,
                 reference_budget=args.reference_budget,
+                source_paths=args.source,
+                source_budget=args.source_budget,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
                 document_type=args.document_type,

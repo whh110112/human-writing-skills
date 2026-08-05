@@ -19,6 +19,10 @@
 | 情绪很满但不真实 | 只写情绪标签，缺少身体反应、动作矛盾和具体后果 | `embodied-emotion`, `relationship-state` |
 | 转场万能，剧情像被推着走 | 连接词替代了因果、物件、动作、视角变化 | `narrative-bridges`, `formulaic-structure-audit` |
 | 文化真空，像不知道具体时代和地方 | 缺少物质细节、社群词、时代锚点和生活经验 | `cultural-anchors` |
+| 有时代细节，但技术、制度和物件互相打架 | 没有把时代与世界设定当作可验证的约束 | `world-ontology-audit` |
+| 关键调查、研发、谈判或战斗被一句带过 | 结果没有经过尝试、阻力、判断、证据和代价 | `process-earnedness-audit` |
+| 扩写越长越水，关键过程反而越短 | 注意力花在环境、心理和语义复述上 | `attention-budget-audit` |
+| 每章换了词，但开场、转折和钩子都一样 | 章节功能顺序形成重复模板 | `chapter-pattern-audit` |
 | 长文越写越忘 | 没有维护事实账本、关系状态、空间状态和伏笔 | `relationship-state`, `spatial-blocking`, `physical-continuity-audit` |
 | 动作描写里充满精确数字 | 把感官经验写成测量报告 | `natural-measurement` |
 

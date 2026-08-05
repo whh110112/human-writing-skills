@@ -63,6 +63,24 @@ reflect the parties' actual incentives and constraints, but it may detour when t
 scene gives a motive such as testing, stalling, face-saving, seduction, intimidation,
 misunderstanding, or concealment.
 
+## Common Ground And Subtext
+
+For an important exchange, distinguish:
+
+```text
+known to both -> known only to speaker -> known only to listener -> disputed or false
+surface statement -> hidden aim -> protected information -> intended listener update
+```
+
+- Do not make characters explain facts both already know unless the line accuses,
+  reframes, rehearses, performs for an audience, or tests a disputed interpretation.
+- Let subtext come from a gap between wording and aim, not from random vagueness.
+- Check whether a line changes information, leverage, permission, risk, commitment,
+  or interpretation. Greetings and texture may remain socially functional.
+- Flag narration that immediately paraphrases an already legible line or gesture.
+- Preserve direct speech when urgency, intimacy, rank, ritual, or deliberate candor
+  makes directness the meaningful choice.
+
 ## Response Obligation And Interaction Debt
 
 A pressure-bearing utterance or action opens a response obligation when it asks for
@@ -89,15 +107,16 @@ When this file is loaded as a `Technique Module`:
 
 1. Build a compact speaker model and scene speech contract before drafting.
 2. Give each turn a purpose and make it respond to the preceding turn.
-3. After a pressure-bearing turn, land the listener's uptake before shifting focus,
+3. Track common ground so speakers do not recite shared history for the reader.
+4. After a pressure-bearing turn, land the listener's uptake before shifting focus,
    unless the missing response is deliberately carried as interaction debt.
-4. Let expertise appear through what a speaker asks, notices, refuses, corrects,
+5. Let expertise appear through what a speaker asks, notices, refuses, corrects,
    or treats as obvious, not through an exposition dump.
-5. Keep vocabulary and syntax near the speaker's baseline while allowing motivated
+6. Keep vocabulary and syntax near the speaker's baseline while allowing motivated
    code-switching for audience, pressure, performance, quotation, or strategy.
-6. Make important dialogue transact: alter knowledge, leverage, permission, risk,
+7. Make important dialogue transact: alter knowledge, leverage, permission, risk,
    commitment, trust, or the next available action.
-7. Do not display the hidden model unless the user asks for notes.
+8. Do not display the hidden model unless the user asks for notes.
 
 ## Audit Mode
 
@@ -112,6 +131,9 @@ When this file is loaded as an `Audit Module`:
    - topic or incentive drift without a scene motive
    - knowledge, competence, or institutional-constraint mismatch
    - a reply that ignores the preceding turn
+   - shared facts restated only for reader exposition
+   - on-the-nose lines whose wording, motive, and meaning are identical without cause
+   - narration that translates an already legible line or gesture
    - a pressure-bearing line or action abandoned before any uptake or explicit deferral
    - silence treated as a response even though the text gives it no timing or consequence
    - unearned register, politeness, directness, dialect, or profanity shift
@@ -129,6 +151,8 @@ When this file is loaded as an `Audit Module`:
 Character-Fit Dialogue Audit
 - Speaker model and evidence source:
 - Scene speech contract:
+- Common ground and information asymmetry:
+- Surface statement, hidden aim, and protected information:
 - Turn or line:
 - Response obligation: none / immediate / refused / interrupted / deferred
 - Actual uptake or missing landing beat:

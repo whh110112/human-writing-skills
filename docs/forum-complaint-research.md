@@ -20,6 +20,10 @@ long-form writing into executable audit modules.
 | Big emotion, low realism | The draft names feelings without body, action, contradiction, or consequence | `embodied-emotion`, `relationship-state` |
 | Dead transitions | Connective phrases replace causality, objects, action, or point of view | `narrative-bridges`, `formulaic-structure-audit` |
 | Cultural vacuum | The prose lacks era, place, material detail, and community language | `cultural-anchors` |
+| Period detail exists, but technology, institutions, and objects conflict | The setting is not treated as a testable constraint | `world-ontology-audit` |
+| Investigation, research, negotiation, or combat is skipped | The result lacks attempts, resistance, judgment, evidence, and cost | `process-earnedness-audit` |
+| Expansion grows while the promised process gets thinner | Attention is spent on atmosphere and semantic restatement | `attention-budget-audit` |
+| Chapters change wording but repeat the same opening, turn, and hook | Chapter functions form a copied architecture | `chapter-pattern-audit` |
 | Long-form drift | Facts, relationships, space, props, and hooks are not tracked | `relationship-state`, `spatial-blocking`, `physical-continuity-audit` |
 | False precision | Human perception is written like measurement data | `natural-measurement` |
 

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .protection import build_protection_manifest, detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
+from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
 from .skills import load_many, load_skill
 
 NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
@@ -19,6 +20,25 @@ DIALOGUE_GENERATION_PATTERN = re.compile(
 DIALOGUE_NEGATION_PATTERN = re.compile(
     r"(?:不要|避免|无需|不需要|不写|没有|无).{0,10}(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天)|"
     r"\b(?:no|without|avoid|exclude).{0,16}(?:dialogue|conversation|negotiation|interview)\b",
+    re.IGNORECASE,
+)
+WORLD_GENERATION_PATTERN = re.compile(
+    r"(?:世界观|架空|时代背景|历史背景|世界规则|科技水平|制度设定|社会规则|"
+    r"古代|民国|唐朝|宋朝|明朝|清朝|赛博朋克|蒸汽朋克|修仙|魔法|星际)|"
+    r"\b(?:worldbuilding|world rules?|historical setting|alternate history|"
+    r"cyberpunk|steampunk|magic system|technology level)\b",
+    re.IGNORECASE,
+)
+PROCESS_GENERATION_PATTERN = re.compile(
+    r"(?:调查|侦查|研发|实验|谈判|会谈|审讯|诊断|手术|施工|经营|贷款|"
+    r"招标|审判|训练|修炼|炼制|战斗|破案|制作|推演)(?:过程|场景|章节|细节)?|"
+    r"\b(?:investigation|research process|experiment|negotiation|interrogation|"
+    r"diagnosis|surgery|construction|trial|training|crafting|battle planning)\b",
+    re.IGNORECASE,
+)
+SALIENCE_GENERATION_PATTERN = re.compile(
+    r"(?:扩写|长篇|长稿|水文|灌水|篇幅分配|节奏审核|删减冗余|语义重复)|"
+    r"\b(?:expand|long-form|attention budget|pacing audit|dilution|semantic repetition)\b",
     re.IGNORECASE,
 )
 CORE_REVIEW_MODULES = [
@@ -55,6 +75,10 @@ CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
 VOICE_AUDIT_MODULES = ["dialogue-voice-audit"]
 SERIAL_AUDIT_MODULES = ["serial-reentry"]
 MOMENTUM_AUDIT_MODULES = ["chapter-momentum-audit"]
+WORLD_AUDIT_MODULES = ["world-ontology-audit"]
+PROCESS_AUDIT_MODULES = ["process-earnedness-audit"]
+SALIENCE_AUDIT_MODULES = ["attention-budget-audit"]
+RECURRENCE_AUDIT_MODULES = ["chapter-pattern-audit"]
 TEXTURE_AUDIT_MODULES = [
     "narrative-distance-control",
     "imagery-load-audit",
@@ -64,6 +88,7 @@ TEXTURE_AUDIT_MODULES = [
 ]
 PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
 REFERENCE_STYLE_AUDIT_MODULES = ["reference-style-alignment"]
+SOURCE_AUDIT_MODULES = ["source-grounding"]
 PROTECTED_CONTENT_MODULES = ["protected-content"]
 AUDIT_PROFILES = {
     "full",
@@ -72,6 +97,10 @@ AUDIT_PROFILES = {
     "voice",
     "serial",
     "momentum",
+    "world",
+    "process",
+    "salience",
+    "recurrence",
     "texture",
     "physical",
     "relationship",
@@ -79,6 +108,7 @@ AUDIT_PROFILES = {
     "numbers",
     "proofread",
     "style-match",
+    "sources",
 }
 
 
@@ -149,6 +179,8 @@ def compile_prompt(
     reference_paths: list[str] | None = None,
     reference_style: str | None = None,
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
 ) -> str:
@@ -163,6 +195,7 @@ def compile_prompt(
         task=task,
         budget=reference_budget,
     )
+    source_pack = build_source_pack(source_paths, source_budget)
     dialogue_generation_active = (
         style in DIALOGUE_GENERATION_STYLES
         and bool(DIALOGUE_GENERATION_PATTERN.search(task))
@@ -170,6 +203,14 @@ def compile_prompt(
     )
     if dialogue_generation_active:
         append_missing(selected_modules, VOICE_AUDIT_MODULES)
+    if style in DIALOGUE_GENERATION_STYLES and WORLD_GENERATION_PATTERN.search(
+        "\n".join(part for part in [task, context] if part)
+    ):
+        append_missing(selected_modules, WORLD_AUDIT_MODULES)
+    if style in DIALOGUE_GENERATION_STYLES and PROCESS_GENERATION_PATTERN.search(task):
+        append_missing(selected_modules, PROCESS_AUDIT_MODULES)
+    if style in DIALOGUE_GENERATION_STYLES and SALIENCE_GENERATION_PATTERN.search(task):
+        append_missing(selected_modules, SALIENCE_AUDIT_MODULES)
     if reference_pack.active:
         append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
     protection_requested = protect_content or bool(protect_terms) or any(
@@ -188,6 +229,8 @@ def compile_prompt(
     )
     if protection_active:
         append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
+    if source_pack.active and auto_protection:
+        append_missing(selected_modules, SOURCE_AUDIT_MODULES)
     if strict_continuity:
         append_missing(
             selected_modules,
@@ -217,6 +260,8 @@ def compile_prompt(
         blocks.append(f"# Project Context\n\n{context}")
     if reference_pack.active:
         blocks.append(reference_pack.block)
+    if source_pack.active and auto_protection:
+        blocks.append(source_pack.block)
     if protection_active:
         blocks.append(f"# Protection Activation\n\n{protection_reason}")
         protected_source = "\n".join(part for part in [context, task] if part)
@@ -241,6 +286,8 @@ def compile_audit_prompt(
     reference_paths: list[str] | None = None,
     reference_style: str | None = None,
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
@@ -255,10 +302,17 @@ def compile_audit_prompt(
         reference_style,
         budget=reference_budget,
     )
+    source_pack = build_source_pack(source_paths, source_budget)
     if reference_pack.active:
         requested_profiles.add("style-match")
     if number_sense:
         requested_profiles.add("numbers")
+    serious_document, serious_document_reason = detect_serious_document(
+        text=draft,
+        document_type=document_type,
+    )
+    if source_pack.active and serious_document:
+        requested_profiles.add("sources")
     unknown_profiles = requested_profiles - AUDIT_PROFILES
     if unknown_profiles:
         raise ValueError(f"Unknown audit profile: {', '.join(sorted(unknown_profiles))}")
@@ -266,6 +320,10 @@ def compile_audit_prompt(
         raise ValueError("The style-match profile requires --reference or --reference-style.")
     if "serial" in requested_profiles and not context:
         raise ValueError("The serial profile requires --context with prior chapters or a continuity ledger.")
+    if "sources" in requested_profiles and not source_pack.active:
+        raise ValueError("The sources profile requires one or more --source files.")
+    if "sources" in requested_profiles and not serious_document:
+        raise ValueError("The sources profile is limited to serious academic, news, legal, or technical documents.")
     physical_enabled = "physical" in requested_profiles or (
         "full" in requested_profiles and strict_continuity
     )
@@ -277,9 +335,14 @@ def compile_audit_prompt(
     voice_enabled = "voice" in requested_profiles
     serial_enabled = "serial" in requested_profiles
     momentum_enabled = "momentum" in requested_profiles
+    world_enabled = "world" in requested_profiles
+    process_enabled = "process" in requested_profiles
+    salience_enabled = "salience" in requested_profiles
+    recurrence_enabled = "recurrence" in requested_profiles
     texture_enabled = "texture" in requested_profiles
     proofread_enabled = bool(requested_profiles & {"full", "proofread"})
     style_match_enabled = "style-match" in requested_profiles
+    sources_enabled = "sources" in requested_profiles
 
     if logic_enabled:
         append_missing(selected_modules, LOGIC_AUDIT_MODULES)
@@ -291,6 +354,14 @@ def compile_audit_prompt(
         append_missing(selected_modules, SERIAL_AUDIT_MODULES)
     if momentum_enabled:
         append_missing(selected_modules, MOMENTUM_AUDIT_MODULES)
+    if world_enabled:
+        append_missing(selected_modules, WORLD_AUDIT_MODULES)
+    if process_enabled:
+        append_missing(selected_modules, PROCESS_AUDIT_MODULES)
+    if salience_enabled:
+        append_missing(selected_modules, SALIENCE_AUDIT_MODULES)
+    if recurrence_enabled:
+        append_missing(selected_modules, RECURRENCE_AUDIT_MODULES)
     if texture_enabled:
         append_missing(selected_modules, TEXTURE_AUDIT_MODULES)
     if physical_enabled:
@@ -305,13 +376,12 @@ def compile_audit_prompt(
         append_missing(selected_modules, PROOFREAD_AUDIT_MODULES)
     if style_match_enabled:
         append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
+    if sources_enabled:
+        append_missing(selected_modules, SOURCE_AUDIT_MODULES)
     protection_requested = protect_content or bool(protect_terms) or any(
         module.name == "protected-content" for module in selected_modules
     )
-    auto_protection, auto_protection_reason = detect_serious_document(
-        text=draft,
-        document_type=document_type,
-    )
+    auto_protection, auto_protection_reason = serious_document, serious_document_reason
     protection_active = protection_requested or (auto_protect and auto_protection)
     protection_reason = (
         "Explicit protection was requested."
@@ -336,6 +406,8 @@ def compile_audit_prompt(
         blocks.append(f"# Continuity Ledger\n\n{context}")
     if reference_pack.active:
         blocks.append(reference_pack.block)
+    if sources_enabled:
+        blocks.append(source_pack.block)
     if protection_active:
         blocks.append(f"# Protection Activation\n\n{protection_reason}")
         blocks.append(build_protection_manifest(draft, protect_terms))
@@ -378,6 +450,26 @@ def compile_audit_prompt(
             "payoff, residue, and exit pressure; flag atmosphere-only openings, repeated "
             "resets, and hooks unsupported by the chapter's own action."
         )
+    if world_enabled:
+        task_lines.append(
+            "For world ontology, extract the active era, technology, institution, social, "
+            "and speculative constraints before judging objects or actions as compatible."
+        )
+    if process_enabled:
+        task_lines.append(
+            "For process earnedness, map promise -> attempt -> resistance -> judgment or skill "
+            "-> cost or evidence -> result and locate the earliest unearned jump."
+        )
+    if salience_enabled:
+        task_lines.append(
+            "For attention budget, compare paragraph-level word allocation with the scene contract, "
+            "and locate semantic echoes or low-value expansion that displaces consequential beats."
+        )
+    if recurrence_enabled:
+        task_lines.append(
+            "For chapter recurrence, fingerprint at least three chapters by entry, pressure, "
+            "transaction, turn, crest, and exit before flagging repeated architecture."
+        )
     if texture_enabled:
         task_lines.append(
             "For prose texture, audit narrative distance, image and sensory load, show-then-gloss "
@@ -408,6 +500,11 @@ def compile_audit_prompt(
         task_lines.append(
             "For reference style, build an evidence-backed style card, compare the draft on each "
             "dimension, and flag copying or context contamination as well as stylistic drift."
+        )
+    if sources_enabled:
+        task_lines.append(
+            "For source grounding, map each material claim to a supplied source location, distinguish "
+            "existence from support, and mark anything requiring external verification instead of guessing."
         )
     blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"

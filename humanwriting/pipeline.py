@@ -8,6 +8,7 @@ from .detection import PIPELINE_PROFILES, ProfileDecision, detect_audit_profiles
 from .linter import format_lint_report, lint_file
 from .protection import detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
+from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,8 @@ def select_pipeline_profiles(
     auto: bool = False,
     reference_active: bool = False,
     context_active: bool = False,
+    source_active: bool = False,
+    serious_document: bool = False,
 ) -> tuple[list[str], list[ProfileDecision]]:
     if stages:
         selected = list(dict.fromkeys(stages))
@@ -32,6 +35,10 @@ def select_pipeline_profiles(
             raise ValueError(f"Unknown pipeline stage: {', '.join(sorted(unknown))}")
         if "style-match" in selected and not reference_active:
             raise ValueError("The style-match stage requires --reference or --reference-style.")
+        if "sources" in selected and not source_active:
+            raise ValueError("The sources stage requires one or more --source files.")
+        if "sources" in selected and not serious_document:
+            raise ValueError("The sources stage is limited to serious academic, news, legal, or technical documents.")
         decisions = []
         for profile in PIPELINE_PROFILES:
             is_selected = profile in selected
@@ -42,6 +49,10 @@ def select_pipeline_profiles(
             )
             if profile == "style-match" and not reference_active:
                 reason = "No explicit reference material or style direction was supplied."
+            if profile == "sources" and not source_active:
+                reason = "No factual --source files were supplied."
+            elif profile == "sources" and not serious_document:
+                reason = "The draft is not a serious factual document."
             decisions.append(ProfileDecision(profile, is_selected, reason))
         return selected, decisions
     if auto:
@@ -49,18 +60,36 @@ def select_pipeline_profiles(
             draft,
             reference_active=reference_active,
             context_active=context_active,
+            source_active=source_active,
+            serious_document=serious_document,
         )
         return [decision.profile for decision in decisions if decision.selected], decisions
     decisions = []
     selected = []
     for profile in PIPELINE_PROFILES:
-        include = profile not in {"voice", "serial", "momentum", "texture"}
+        include = profile not in {
+            "voice",
+            "serial",
+            "world",
+            "process",
+            "momentum",
+            "salience",
+            "recurrence",
+            "texture",
+            "sources",
+        }
         if profile == "style-match":
             include = reference_active
+        if profile == "sources":
+            include = source_active and serious_document
         if include:
             reason = "Included in the established broad pipeline."
         elif profile == "style-match":
             reason = "No explicit reference material or style direction was supplied."
+        elif profile == "sources" and not source_active:
+            reason = "No factual --source files were supplied."
+        elif profile == "sources":
+            reason = "The draft is not a serious factual document."
         else:
             reason = "Optional high-cost stage; use --auto or select it explicitly."
         decisions.append(ProfileDecision(profile, include, reason))
@@ -77,6 +106,8 @@ def build_audit_pipeline(
     reference_paths: list[str] | None = None,
     reference_style: str | None = None,
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
@@ -88,12 +119,16 @@ def build_audit_pipeline(
         reference_style,
         budget=reference_budget,
     )
+    source_pack = build_source_pack(source_paths, source_budget)
+    serious_document, _ = detect_serious_document(draft, document_type=document_type)
     selected, decisions = select_pipeline_profiles(
         draft,
         stages=stages,
         auto=auto,
         reference_active=reference_pack.active,
         context_active=context_active,
+        source_active=source_pack.active,
+        serious_document=serious_document,
     )
     reason_by_profile = {decision.profile: decision.reason for decision in decisions}
     auto_protection, _ = detect_serious_document(draft, document_type=document_type)
@@ -113,6 +148,8 @@ def build_audit_pipeline(
                 reference_paths=reference_paths if profile == "style-match" else None,
                 reference_style=reference_style if profile == "style-match" else None,
                 reference_budget=reference_budget,
+                source_paths=source_paths if profile == "sources" else None,
+                source_budget=source_budget,
                 protect_content=protect_content,
                 protect_terms=protect_terms,
                 document_type=document_type,
@@ -133,6 +170,8 @@ def write_audit_pipeline(
     reference_paths: list[str] | None = None,
     reference_style: str | None = None,
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
@@ -147,6 +186,8 @@ def write_audit_pipeline(
         reference_paths=reference_paths,
         reference_style=reference_style,
         reference_budget=reference_budget,
+        source_paths=source_paths,
+        source_budget=source_budget,
         protect_content=protect_content,
         protect_terms=protect_terms,
         document_type=document_type,
@@ -198,7 +239,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "logic -> character/relationship/voice/serial/momentum -> physical -> AI trace/texture -> style match -> numbers -> proofreading.",
+            "logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match -> numbers -> sources -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

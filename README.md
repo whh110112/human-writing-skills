@@ -54,6 +54,10 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `dialogue-voice-audit` | character-fit dialogue plus verbal, physical, silent, interrupted, or deferred uptake for consequential turns |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
 | `chapter-momentum-audit` | atmosphere-only chapters, missing payoffs, discarded residue, and unsupported hooks |
+| `world-ontology-audit` | incompatible era, technology, institution, social practice, or speculative rule |
+| `process-earnedness-audit` | promised processes skipped before an unsupported result |
+| `attention-budget-audit` | low-value expansion and semantic echoes displacing consequential material |
+| `chapter-pattern-audit` | repeated chapter architecture across three or more chapters |
 | `narrative-distance-control` | unmotivated zoom, missing orientation, and viewpoint-distance drift |
 | `imagery-load-audit` | stacked comparisons, competing sensory channels, and show-then-gloss repetition |
 | `paragraph-rhythm-audit` | mechanical one-line paragraph runs and overloaded long blocks |
@@ -77,6 +81,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
 | `reference-style-alignment` | explicit reference material into transferable voice features without copying content |
 | `protected-content` | accidental changes to numbers, citations, equations, URLs, code, quotes, and required terms |
+| `source-grounding` | claim-to-source checks for serious documents with explicit factual sources |
 
 ## Quick Start
 
@@ -128,6 +133,24 @@ The compiler extracts point of view, rhythm, register, imagery, description,
 dialogue cadence, emotion handling, and transitions. Plot facts still come from
 `--context`; names, events, and distinctive phrases must not be copied from the
 reference. See [docs/reference-style.md](docs/reference-style.md).
+
+## Serious-Document Sources
+
+`--source` is separate from `--reference`. It activates `source-grounding` only for
+academic, news, legal, or technical work and builds a claim-to-source evidence map.
+Fiction, webnovels, self-media, and casual answers do not auto-load it.
+
+```powershell
+human-writing-skills audit `
+  --draft paper.md `
+  --document-type academic-paper `
+  --source study-a.md `
+  --source study-b.md `
+  --profile sources
+```
+
+The audit separates source existence from claim support. Without external registry
+access, it marks citation metadata as unverified instead of inventing a verdict.
 
 ## Long-Form Continuity
 
@@ -232,13 +255,16 @@ The narrative controls use progressive disclosure. Generation adds
 `dialogue-voice-audit` only when a fiction or webnovel task explicitly asks for a
 speech-centered scene such as dialogue, negotiation, a meeting, interrogation, or
 argument. Narration-only and serious-document tasks do not trigger it. The `voice`,
-`serial`, `momentum`, and `texture` audit profiles remain outside broad `full` review:
+`serial`, `world`, `process`, `momentum`, `salience`, `recurrence`, `texture`, and
+`sources` audit profiles remain outside broad `full` review:
 
 ```powershell
 human-writing-skills build --style fiction --task "Write a negotiation in which both speakers want different outcomes."
 human-writing-skills build --style webnovel --context ledger.md --module serial-reentry --task "Continue chapter 18."
 human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills audit --draft chapter.md --profile texture
+human-writing-skills audit --draft chapter.md --profile process
+human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
 `dialogue-voice-audit` models baseline speech, practical incentives, knowledge limits,
@@ -246,7 +272,14 @@ scene goals, response linkage, and motivated code-switching without treating a j
 a personality. Use `serial-reentry` only with
 prior chapters or a ledger, `momentum` for a multi-chapter draft, and `texture` for
 narrative distance, cinematic opening stacks, imagery load, paragraph fragmentation,
-emotional over-explanation, and detail inventory.
+emotional over-explanation, and detail inventory. Use `world` only with explicit
+setting constraints, `process` for consequential domain work, `salience` for long
+drafts, `recurrence` for at least three chapters, and `sources` only with serious
+documents and factual source files.
+
+During generation, world, process, and attention-budget modules activate only from
+explicit setting, consequential-process, expansion, long-form, or dilution signals;
+ordinary `--deep-review` does not load them.
 
 ### Audit Profiles
 
@@ -254,12 +287,16 @@ emotional over-explanation, and detail inventory.
 
 | Profile | Purpose |
 | --- | --- |
-| `full` | Broad default audit; optional `voice`, `serial`, `momentum`, and `texture` remain separate |
+| `full` | Broad default audit; high-cost and strongly gated profiles remain separate |
 | `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
 | `character` | Character goal, voice, competence, boundaries, and change gates |
 | `voice` | Speaker baseline, scene goal, role/knowledge limits, audience register, change gates, and response obligations |
 | `serial` | Recap dumps, missing carryovers, and chapter resets; requires `--context` |
 | `momentum` | Multi-chapter entry pressure, irreversible turns, payoff, residue, and exit pressure |
+| `world` | Era, technology, institution, social-practice, and world-rule compatibility |
+| `process` | Promise, attempt, resistance, judgment, cost, evidence, and earned result |
+| `salience` | Long-draft attention allocation, dilution, and semantic echoes |
+| `recurrence` | Chapter fingerprints and repeated architecture across three or more chapters |
 | `texture` | Narrative distance, scene-entry load, imagery, paragraph cadence, and detail disclosure |
 | `physical` | Position, capacity, reach, clothing, props, and injuries |
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
@@ -267,6 +304,7 @@ emotional over-explanation, and detail inventory.
 | `numbers` | False precision in action and emotion |
 | `proofread` | Typos, punctuation, naming, layout, and mechanical errors |
 | `style-match` | Drift from explicitly supplied reference material; unavailable without a reference signal |
+| `sources` | Claim grounding against factual sources; requires a serious document and `--source` |
 
 Profiles can be combined, for example `--profile relationship --profile ai-trace`.
 
@@ -282,7 +320,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds character, relationship, physical, number, voice, serial, momentum, and texture stages only when matching cues exist. Sustained dialogue adds `voice`; with a supplied ledger, shorter attributed dialogue can also trigger it for character-setting comparison. `serial` additionally requires supplied context; `momentum` requires multi-chapter structure. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` requires context, `salience` requires a long narrative of at least 4,000 characters, `recurrence` requires at least three chapters, and `sources` requires both a serious document and explicit factual sources. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 

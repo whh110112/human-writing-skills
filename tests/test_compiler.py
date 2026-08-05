@@ -52,6 +52,11 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("detail-disclosure-audit", list_module_skills())
         self.assertIn("scene-entry-audit", list_module_skills())
         self.assertIn("chapter-momentum-audit", list_module_skills())
+        self.assertIn("world-ontology-audit", list_module_skills())
+        self.assertIn("process-earnedness-audit", list_module_skills())
+        self.assertIn("attention-budget-audit", list_module_skills())
+        self.assertIn("chapter-pattern-audit", list_module_skills())
+        self.assertIn("source-grounding", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -80,6 +85,17 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Technique Module: dialogue-voice-audit", narration)
         self.assertNotIn("Technique Module: dialogue-voice-audit", excluded)
         self.assertNotIn("Technique Module: dialogue-voice-audit", serious)
+
+    def test_world_and_process_generation_activate_only_on_matching_narrative_tasks(self):
+        world = compile_prompt("fiction", "写一场民国背景下使用电报传讯的场景。")
+        process = compile_prompt("webnovel", "详细写调查和取证过程，结果必须有代价。")
+        plain = compile_prompt("fiction", "写一段河边散步。")
+        serious = compile_prompt("news-report", "报道一次科研实验。")
+        self.assertIn("Technique Module: world-ontology-audit", world)
+        self.assertIn("Technique Module: process-earnedness-audit", process)
+        self.assertNotIn("Technique Module: world-ontology-audit", plain)
+        self.assertNotIn("Technique Module: process-earnedness-audit", plain)
+        self.assertNotIn("Technique Module: process-earnedness-audit", serious)
 
     def test_reference_style_does_not_activate_without_explicit_signal(self):
         prompt = compile_prompt("fiction", "Write a quiet scene by the river.")
@@ -174,6 +190,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: cliche-phrase-audit", deep)
         self.assertIn("Technique Module: formulaic-structure-audit", deep)
         self.assertIn("Technique Module: prose-progress-audit", deep)
+        self.assertNotIn("Technique Module: attention-budget-audit", deep)
         self.assertIn("Technique Module: relationship-stance-audit", deep)
         self.assertIn("Technique Module: natural-measurement", deep)
         self.assertLess(len(compact), len(deep))
@@ -192,6 +209,12 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: paragraph-rhythm-audit", prompt)
         self.assertNotIn("Technique Module: serial-reentry", prompt)
         self.assertNotIn("Technique Module: imagery-load-audit", prompt)
+
+    def test_attention_budget_generation_requires_explicit_long_form_signal(self):
+        explicit = compile_prompt("fiction", "扩写这一章，并检查篇幅分配和灌水。")
+        plain = compile_prompt("fiction", "写下一场戏。", deep_review=True)
+        self.assertIn("Technique Module: attention-budget-audit", explicit)
+        self.assertNotIn("Technique Module: attention-budget-audit", plain)
 
     def test_compact_review_stays_within_generation_prompt_budget(self):
         context = Path(__file__).resolve().parent.parent / "examples" / "story-ledger.md"
@@ -280,6 +303,11 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: serial-reentry", prompt)
         self.assertNotIn("Audit Module: imagery-load-audit", prompt)
         self.assertNotIn("Audit Module: chapter-momentum-audit", prompt)
+        self.assertNotIn("Audit Module: world-ontology-audit", prompt)
+        self.assertNotIn("Audit Module: process-earnedness-audit", prompt)
+        self.assertNotIn("Audit Module: attention-budget-audit", prompt)
+        self.assertNotIn("Audit Module: chapter-pattern-audit", prompt)
+        self.assertNotIn("Audit Module: source-grounding", prompt)
 
     def test_relationship_profile_does_not_load_unrelated_audits(self):
         with TemporaryDirectory() as directory:
@@ -345,6 +373,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: dialogue-voice-audit", voice)
         self.assertIn("Scene Speech Contract", voice)
         self.assertIn("Response Obligation And Interaction Debt", voice)
+        self.assertIn("Common Ground And Subtext", voice)
         self.assertIn("occupational stereotype", voice)
         self.assertNotIn("Audit Module: serial-reentry", voice)
         self.assertIn("Audit Module: serial-reentry", serial)
@@ -355,6 +384,20 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: dialogue-voice-audit", texture)
         self.assertIn("Audit Module: chapter-momentum-audit", momentum)
         self.assertNotIn("Audit Module: serial-reentry", momentum)
+
+    def test_new_deep_profiles_are_isolated(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("民国调查终于完成。", encoding="utf-8")
+            world = compile_audit_prompt(str(draft), profiles=["world"])
+            process = compile_audit_prompt(str(draft), profiles=["process"])
+            salience = compile_audit_prompt(str(draft), profiles=["salience"])
+            recurrence = compile_audit_prompt(str(draft), profiles=["recurrence"])
+        self.assertIn("Audit Module: world-ontology-audit", world)
+        self.assertNotIn("Audit Module: process-earnedness-audit", world)
+        self.assertIn("Audit Module: process-earnedness-audit", process)
+        self.assertIn("Audit Module: attention-budget-audit", salience)
+        self.assertIn("Audit Module: chapter-pattern-audit", recurrence)
 
     def test_serial_profile_requires_prior_context(self):
         with TemporaryDirectory() as directory:
@@ -411,6 +454,75 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("momentum", {item.profile for item in one if item.selected})
         self.assertIn("momentum", {item.profile for item in many if item.selected})
 
+    def test_auto_detection_selects_world_process_salience_and_recurrence_conservatively(self):
+        short = detect_audit_profiles("她沿河走了一会儿。")
+        short_selected = {item.profile for item in short if item.selected}
+        self.assertFalse({"world", "process", "salience", "recurrence"} & short_selected)
+
+        world_process = detect_audit_profiles("民国背景下，他们调查线索，最终查明了结果。")
+        selected = {item.profile for item in world_process if item.selected}
+        self.assertTrue({"world", "process"} <= selected)
+
+        chapters = "\n\n".join(
+            f"第{index}章 标题\n她说完后离开。" for index in ("一", "二", "三")
+        )
+        recurrence = {item.profile for item in detect_audit_profiles(chapters) if item.selected}
+        self.assertTrue({"momentum", "recurrence"} <= recurrence)
+
+        long_draft = "\n\n".join(["她看着门，想起上一章的争执。" * 30] * 12)
+        salience = {item.profile for item in detect_audit_profiles(long_draft) if item.selected}
+        self.assertIn("salience", salience)
+
+    def test_source_grounding_requires_sources_and_serious_document(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            source = root / "source.md"
+            draft.write_text("研究方法和结果见文献[1]。", encoding="utf-8")
+            source.write_text("研究样本为120人，结果仅适用于本地区。", encoding="utf-8")
+            prompt = compile_audit_prompt(
+                str(draft),
+                profiles=["sources"],
+                source_paths=[str(source)],
+                document_type="academic-paper",
+                source_budget=1000,
+            )
+            with self.assertRaisesRegex(ValueError, "requires one or more --source"):
+                compile_audit_prompt(
+                    str(draft),
+                    profiles=["sources"],
+                    document_type="academic-paper",
+                )
+            with self.assertRaisesRegex(ValueError, "limited to serious"):
+                compile_audit_prompt(
+                    str(draft),
+                    profiles=["sources"],
+                    source_paths=[str(source)],
+                    document_type="fiction",
+                )
+        self.assertIn("Audit Module: source-grounding", prompt)
+        self.assertIn("Supplied Factual Sources", prompt)
+        self.assertIn("Source: source.md", prompt)
+
+    def test_source_grounding_auto_activates_only_for_serious_generation(self):
+        with TemporaryDirectory() as directory:
+            source = Path(directory) / "source.md"
+            source.write_text("The measured result was 18 percent.", encoding="utf-8")
+            academic = compile_prompt(
+                "academic-paper",
+                "Write the results section.",
+                source_paths=[str(source)],
+            )
+            fiction = compile_prompt(
+                "fiction",
+                "Write the next scene.",
+                source_paths=[str(source)],
+            )
+        self.assertIn("Technique Module: source-grounding", academic)
+        self.assertIn("Supplied Factual Sources", academic)
+        self.assertNotIn("Technique Module: source-grounding", fiction)
+        self.assertNotIn("Supplied Factual Sources", fiction)
+
     def test_auto_detection_sends_cinematic_opening_stack_to_texture(self):
         decisions = detect_audit_profiles(
             "第一章 抵达\n傍晚六点半，临港机场二号航站楼，落日照着玻璃。"
@@ -463,6 +575,32 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("| `style-match` | yes |", without_manifest)
         self.assertIn("| `style-match` | yes |", with_manifest)
         self.assertIn("style-match", [stage.profile for stage in stages])
+
+    def test_pipeline_sources_are_serious_only_and_isolated(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "paper.md"
+            source = root / "study.md"
+            draft.write_text("研究方法和结果见文献[1]。", encoding="utf-8")
+            source.write_text("SOURCE_ONLY_MARKER: 样本为120人。", encoding="utf-8")
+            written, stages = write_audit_pipeline(
+                str(draft),
+                str(root / "pipeline"),
+                auto=True,
+                source_paths=[str(source)],
+                document_type="academic-paper",
+            )
+            source_stage = next(stage for stage in stages if stage.profile == "sources")
+            logic_stage = next(stage for stage in stages if stage.profile == "logic")
+            source_prompt = (written / f"{source_stage.order:02d}-sources.md").read_text(
+                encoding="utf-8"
+            )
+            logic_prompt = (written / f"{logic_stage.order:02d}-logic.md").read_text(
+                encoding="utf-8"
+            )
+        self.assertIn("SOURCE_ONLY_MARKER", source_prompt)
+        self.assertNotIn("SOURCE_ONLY_MARKER", logic_prompt)
+        self.assertEqual([stage.profile for stage in stages].count("sources"), 1)
 
     def test_cli_reports_missing_draft_without_traceback(self):
         stderr = StringIO()

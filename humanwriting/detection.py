@@ -10,12 +10,17 @@ PIPELINE_PROFILES = [
     "relationship",
     "voice",
     "serial",
+    "world",
+    "process",
     "momentum",
+    "salience",
+    "recurrence",
     "physical",
     "ai-trace",
     "texture",
     "style-match",
     "numbers",
+    "sources",
     "proofread",
 ]
 CORE_AUTO_PROFILES = {"logic", "ai-trace", "proofread"}
@@ -102,6 +107,25 @@ FORMULAIC_INTROSPECTION_PATTERN = re.compile(
     r"不是那种.{0,45}而是|像是.{0,35}(?:又像是|却又像)|"
     r"(?:他|她|我)不知道为什么|(?:他|她|我)?莫名(?:地|其妙|就)?|"
     r"说不清(?:是什么|为什么)|无法形容(?:的|这种)",
+)
+WORLD_STRONG_PATTERN = re.compile(
+    r"世界观|架空|世界规则|时代背景|历史背景|科技水平|制度设定|"
+    r"(?:唐|宋|元|明|清)朝|民国|古代|赛博朋克|蒸汽朋克|修仙|魔法体系|星际|"
+    r"\b(?:worldbuilding|world rules?|alternate history|historical setting|"
+    r"cyberpunk|steampunk|magic system)\b",
+    re.IGNORECASE,
+)
+PROCESS_PATTERN = re.compile(
+    r"调查|侦查|研发|实验|谈判|会谈|审讯|诊断|手术|施工|经营|贷款|招标|"
+    r"审判|训练|修炼|炼制|战斗|破案|制作|推演|取证|审批|"
+    r"\b(?:investigat(?:e|ion)|research|experiment|negotiat(?:e|ion)|interrogation|"
+    r"diagnosis|surgery|construction|trial|training|crafting|battle plan|approval)\b",
+    re.IGNORECASE,
+)
+PROCESS_RESULT_PATTERN = re.compile(
+    r"终于|成功|失败|完成|解决|达成|通过|获批|查明|证明|结果|结论|"
+    r"\b(?:finally|succeeded|failed|completed|solved|approved|result|conclusion)\b",
+    re.IGNORECASE,
 )
 
 
@@ -206,17 +230,61 @@ def _momentum_reason(text: str) -> tuple[bool, str]:
     )
 
 
+def _world_reason(text: str) -> tuple[bool, str]:
+    match = WORLD_STRONG_PATTERN.search(text)
+    if not match:
+        return False, "No explicit era, world-rule, technology-system, or speculative-setting cue found."
+    return True, f"Detected explicit world-constraint cue: {match.group(0)!r}."
+
+
+def _process_reason(text: str) -> tuple[bool, str]:
+    cues = list(PROCESS_PATTERN.finditer(text))
+    has_result = bool(PROCESS_RESULT_PATTERN.search(text))
+    selected = len(cues) >= 2 or (bool(cues) and has_result)
+    if not selected:
+        return False, "No sustained consequential process or process-to-result cue found."
+    return True, (
+        f"Detected consequential process cues={len(cues)} and "
+        f"result cue={'yes' if has_result else 'no'}."
+    )
+
+
+def _salience_reason(text: str) -> tuple[bool, str]:
+    paragraphs = [part for part in re.split(r"\n\s*\n", text) if part.strip()]
+    narrative = bool(NARRATIVE_PATTERN.search(text) or CHARACTER_PATTERN.search(text))
+    selected = narrative and len(text) >= 4000 and len(paragraphs) >= 12
+    if not selected:
+        return False, "Draft is not a sufficiently long narrative for a separate attention-budget pass."
+    return True, (
+        f"Detected long narrative suitable for attention budgeting: "
+        f"characters={len(text)}, paragraphs={len(paragraphs)}."
+    )
+
+
+def _recurrence_reason(text: str) -> tuple[bool, str]:
+    headings = len(CHAPTER_HEADING_PATTERN.findall(text))
+    if headings < 3:
+        return False, "Fewer than three chapter headings; structural recurrence cannot be established."
+    return True, f"Detected {headings} chapters for cross-chapter structural fingerprinting."
+
+
 def detect_audit_profiles(
     draft: str,
     reference_active: bool = False,
     context_active: bool = False,
+    source_active: bool = False,
+    serious_document: bool = False,
 ) -> list[ProfileDecision]:
     optional = {
         "character": _match_reason(CHARACTER_PATTERN, draft, "character-action or voice"),
         "relationship": _match_reason(RELATIONSHIP_PATTERN, draft, "dialogue or relationship"),
         "voice": _voice_reason(draft, context_active),
         "serial": _serial_reason(draft, context_active),
+        "world": _world_reason(draft),
+        "process": _process_reason(draft),
         "momentum": _momentum_reason(draft),
+        "salience": _salience_reason(draft),
+        "recurrence": _recurrence_reason(draft),
         "physical": _match_reason(PHYSICAL_PATTERN, draft, "space, movement, appearance, or prop"),
         "texture": _texture_reason(draft),
         "numbers": _match_reason(NUMBER_PATTERN, draft, "exact-number"),
@@ -225,6 +293,16 @@ def detect_audit_profiles(
             "Explicit reference material or style direction was supplied."
             if reference_active
             else "No explicit reference material or style direction was supplied.",
+        ),
+        "sources": (
+            source_active and serious_document,
+            "Supplied factual sources and a serious document type were detected."
+            if source_active and serious_document
+            else (
+                "Source files were supplied, but the draft is not a serious factual document."
+                if source_active
+                else "No factual --source files were supplied."
+            ),
         ),
     }
     decisions: list[ProfileDecision] = []

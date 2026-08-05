@@ -35,3 +35,8 @@ Objects: enamel mug, bus station loudspeaker, work-unit notice board
 ## Revision Check
 
 Could this passage happen anywhere, in any decade, to anyone? If yes, add one precise anchor.
+
+When revising from a supplied sample or culturally situated draft, preserve its
+address forms, assumptions, social temperature, local categories, and patterns of
+indirection unless the user requests adaptation. Do not replace them with a generic
+global professional register merely because it reads more smoothly.

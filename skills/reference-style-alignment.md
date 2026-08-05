@@ -25,6 +25,8 @@ Extract evidence for these dimensions before drafting or auditing:
 - Scene description order: space -> object -> action, or another recurring sequence
 - Character description: action, body, clothing, interior thought, social observation
 - Dialogue cadence: turn length, interruption, silence, address forms, subtext
+- Cultural signature: local categories, address logic, shared assumptions, social
+  temperature, indirectness, and what the sample leaves unexplained
 - Emotional method: label, embodiment, contradiction, restraint, or retrospective comment
 - Transition method and closure pressure
 - Genre permissions and deliberate imperfections
@@ -37,6 +39,8 @@ invent a trait because it would sound attractive.
 - Treat project context and continuity ledgers as factual authority.
 - Treat reference material as style evidence only unless the same file is explicitly
   supplied as project context.
+- Preserve culturally situated distinctions instead of normalizing them toward a
+  generic international, corporate, or workshop-polished register.
 - Do not copy names, events, world rules, relationships, arguments, or conclusions.
 - Do not reuse distinctive phrases, signature metaphors, or recognizable sentence chains.
 - When only a named style is supplied and no sample exists, convert it into broad,

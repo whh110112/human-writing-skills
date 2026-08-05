@@ -36,11 +36,23 @@ Also record:
 
 ## Audit Method
 
-1. Build a chronological event table.
-2. Mark each event's cause, required knowledge, resource, rule, and consequence.
-3. Separate confirmed contradiction from missing explanation and intentional mystery.
-4. Check whether a later paragraph quietly repairs or changes the fact.
-5. Recommend the smallest bridge, setup, reordered event, limited inference, or consequence.
+1. Divide long drafts into overlapping scene or chapter windows. Do not rely on one
+   end-of-document impression.
+2. Build a chronological event table for each window.
+3. Mark each event's cause, required knowledge, resource, rule, and consequence.
+4. Reconcile window tables into one ledger, then search for cross-window conflicts.
+5. For every suspected contradiction, quote or locate both claims and assign a
+   confidence level: confirmed, probable, ambiguous, or insufficient evidence.
+6. Separate confirmed contradiction from missing explanation and intentional mystery.
+7. Check whether a later paragraph quietly repairs or changes the fact.
+8. Recommend the smallest bridge, setup, reordered event, limited inference, or consequence.
+
+Use this evidence-pair format for long drafts:
+
+```text
+claim A and location -> claim B and location -> governing rule
+-> transition or exception found -> verdict -> confidence
+```
 
 Do not repair every mystery. A withheld explanation is valid when the event remains
 possible and the text signals uncertainty.
@@ -50,8 +62,10 @@ possible and the text signals uncertainty.
 ```text
 Logic and Causality Audit
 - Evidence chain:
+- Conflicting evidence pairs and locations:
 - Confirmed contradictions:
 - Missing but plausible bridges:
 - Intentional mysteries to preserve:
+- Confidence and unresolved evidence:
 - Minimal repair and best insertion point:
 ```

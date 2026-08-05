@@ -62,6 +62,11 @@ debt into the next relevant beat.
    - add a complication
 4. Preserve deliberate stillness only when the stillness creates tension, voice,
    or observation that changes how the reader sees the scene.
+5. For long drafts, compare non-neighboring paragraph summaries. Flag a semantic
+   echo when narration, dialogue, and internal thought repeat the same fact or feeling
+   without changing its evidence, owner, consequence, or interpretation.
+6. If the passage is an expansion, compare added attention with added state change.
+   Route scene-level word-allocation problems to `attention-budget-audit`.
 
 ## Output Check
 
