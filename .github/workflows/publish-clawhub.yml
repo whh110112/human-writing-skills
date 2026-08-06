@@ -21,6 +21,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -60,9 +61,21 @@ jobs:
           VERSION: ${{ steps.release.outputs.version }}
           CHANGELOG: ${{ steps.release.outputs.changelog }}
         run: |
+          set -u
+          skill="human-writing-skills"
+          cli=(npx --yes clawhub@0.23.3 --no-input)
+
           npx --yes clawhub@0.23.3 login --token "$CLAWHUB_TOKEN"
-          npx --yes clawhub@0.23.3 --no-input skill publish . \
-            --slug human-writing-skills \
+
+          if "${cli[@]}" inspect "$skill" --version "$VERSION" --json >/dev/null 2>&1; then
+            "${cli[@]}" skill tag "$skill" "$VERSION" --tag latest --yes
+            echo "ClawHub version $VERSION already exists; latest now points to it."
+            exit 0
+          fi
+
+          set +e
+          publish_output=$("${cli[@]}" skill publish . \
+            --slug "$skill" \
             --name "Human Writing Skills" \
             --owner whh110112 \
             --version "$VERSION" \
@@ -70,4 +83,28 @@ jobs:
             --tags latest \
             --source-repo "$GITHUB_REPOSITORY" \
             --source-commit "$GITHUB_SHA" \
-            --source-ref "$GITHUB_REF_NAME"
+            --source-ref "$GITHUB_REF_NAME" 2>&1)
+          publish_status=$?
+          set -e
+          printf '%s\n' "$publish_output"
+
+          if [[ $publish_status -eq 0 ]]; then
+            exit 0
+          fi
+          if [[ "$publish_output" != *"already exists"* ]]; then
+            exit "$publish_status"
+          fi
+
+          # ClawHub may create the version successfully, then return a duplicate-version
+          # error during an internal retry before the public read API becomes consistent.
+          for attempt in {1..8}; do
+            if "${cli[@]}" inspect "$skill" --version "$VERSION" --json >/dev/null 2>&1; then
+              "${cli[@]}" skill tag "$skill" "$VERSION" --tag latest --yes
+              echo "Verified ClawHub version $VERSION after an eventually consistent publish."
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo "ClawHub reported a duplicate version, but $VERSION never became readable." >&2
+          exit "$publish_status"
