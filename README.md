@@ -21,6 +21,8 @@ AI writing often fails in predictable ways:
 | Problem | What this project adds |
 | --- | --- |
 | Generic "AI voice" | Concrete revision checks for rhythm, specificity, and empty phrasing |
+| Repeated not-X/is-Y, is-X/not-Y, or chained Chinese 比 frames | Family- and density-based checks that preserve necessary correction and real comparison |
+| Fluent-looking sentences drop a word, object, or connector clause | A separate final pass over predicate slots, parallel structure, and references |
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
@@ -65,7 +67,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `scene-entry-audit` | exact-time/location/weather/outfit opening bundles before pressure-bearing action |
 | `natural-measurement` | false precision: tiny exact measures and counted micro-actions in narrative prose |
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
-| `formulaic-structure-audit` | triplets, symmetrical frames, and paragraphs that resolve too neatly |
+| `formulaic-structure-audit` | triplets, bidirectional contrast frames, chained comparisons, and overly neat closure |
 | `prose-progress-audit` | static paragraphs and pressure-bearing interactions abandoned before uptake or explicit deferral |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
@@ -75,7 +77,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `occupancy-capacity` | over-occupied or mode-ambiguous seats, benches, beds, stools, aisles, and surfaces |
 | `appearance-prop-continuity` | clothing, shoes, props, injuries, and daily-detail drift |
 | `physical-continuity-audit` | final checks for position, movement gates, wardrobe, and props |
-| `proofreading-audit` | final typo, punctuation, naming, repetition, layout, and formatting checks |
+| `proofreading-audit` | final omissions, predicate slots, stranded connectors, references, punctuation, naming, and layout |
 | `style-matrix` | the mistake of applying one generic "human voice" to every genre |
 | `editor-loop` | one-shot drafting without a critical human-editor pass |
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
@@ -302,11 +304,15 @@ ordinary `--deep-review` does not load them.
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
 | `numbers` | False precision in action and emotion |
-| `proofread` | Typos, punctuation, naming, layout, and mechanical errors |
+| `proofread` | Omissions, sentence slots, stranded connectors, references, punctuation, naming, and layout |
 | `style-match` | Drift from explicitly supplied reference material; unavailable without a reference signal |
 | `sources` | Claim grounding against factual sources; requires a serious document and `--source` |
 
 Profiles can be combined, for example `--profile relationship --profile ai-trace`.
+
+Ordinary generation loads only a lightweight sentence-completeness guard. Full
+omission, missing-object, stranded-connector, and reference checks load only in the
+`proofread` profile or pipeline proofreading stage, preserving the generation token budget.
 
 ### Multi-Stage Pipeline
 
@@ -393,7 +399,7 @@ The `--deep-review` flag adds the compact review plus:
 
 - `relationship-stance-audit`: check speaker, listener, referenced party, secrecy, stance, rank, and audience permissions
 - `cliche-phrase-audit`: check stock phrases, generic body cues, empty emotion labels, and dead transitions
-- `formulaic-structure-audit`: check triplets, symmetrical frames, and paragraphs that close too neatly
+- `formulaic-structure-audit`: check triplets, bidirectional contrasts, chained comparisons, and paragraphs that close too neatly
 - `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure
 - `natural-measurement`: check false precision in fiction, webnovels, and self-media
 

@@ -18,8 +18,10 @@ without earned context, repeats across outputs, or substitutes for observation.
 - Empty atmosphere: "空气仿佛凝固", "时间在这一刻静止"
 - Cinematic setup bundles: exact clock + named place + colored light/weather + full
   outfit + generalized feeling before the first consequential action
-- Vague self-interpretation: repeated "不知道为什么", "莫名", "不是那种……而是……",
-  or "像是……又像是……" without a changed choice
+- Vague self-interpretation: repeated "不知道为什么", "莫名", "不是……是……",
+  "是……不是……", or "像是……又像是……" without a changed choice
+- Comparison ladders: repeated "比……，比……" clauses that stack intensity but do
+  not maintain one comparison criterion or produce a new consequence
 -万能转场: "与此同时", "另一边", "很快", "下一秒" used without causal bridge
 
 ### English and general prose
@@ -45,6 +47,9 @@ without earned context, repeats across outputs, or substitutes for observation.
    - a causal bridge from the previous beat
 4. Preserve a phrase only when it is intentional for parody, voice, genre
    convention, or character idiolect.
+5. For contrast and comparison frames, preserve necessary correction, source-based
+   comparison, and character rebuttal. Flag recurrence and decorative use, not the
+   mere presence of "不是", "是", or "比".
 
 ## Repair Patterns
 

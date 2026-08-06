@@ -17,6 +17,8 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | 常见问题 | 项目提供的办法 |
 | --- | --- |
 | 文字空泛、对称、像模板 | 用具体的修订检查项压掉套话和泛泛表达 |
+| 反复“不是……是……”“是……不是……”或“比……比……” | 检查句式家族与复现密度，保留必要纠错和真实比较，重写装饰性框架 |
+| 句子表面流畅却漏字、漏宾语或连接成分 | 用句法槽位、并列对称和指代回查做独立终校 |
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
@@ -64,7 +66,7 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | `scene-entry-audit` | 检查精确时间、地点、光线天气、全套穿着和概括情绪同时挤在开场 |
 | `natural-measurement` | 虚假精确：小说里不合语境的微小精确量化和机械计数 |
 | `cliche-phrase-audit` | 论坛常吐槽的塑料套话、万能身体动作、空洞情绪标签和死转场 |
-| `formulaic-structure-audit` | 过于整齐的三连式、对称结构、每段都收得太干净的 AI 形状 |
+| `formulaic-structure-audit` | 过于整齐的三连式、双向“不是/是”对举、连续“比”比较和每段干净收束 |
 | `prose-progress-audit` | 段落没有新增状态，或关键台词/动作尚未被接收就切换话题与场景 |
 | `imperfect-prose` | 文字太干净、太对称、太像统一润色 |
 | `vocal-rhythm` | 朗读时节奏单调、缺少呼吸点 |
@@ -74,7 +76,7 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | `occupancy-capacity` | 检查座位、长椅、床、板凳、过道等物理资源是否超容量或形态不明 |
 | `appearance-prop-continuity` | 防止服装、鞋子、道具、伤口等日常细节漂移 |
 | `physical-continuity-audit` | 输出前检查座位、站位、移动过渡、服装道具一致性 |
-| `proofreading-audit` | 最后检查错别字、标点、称谓、重复、排版和格式一致性 |
+| `proofreading-audit` | 最后检查错漏字、谓词必需成分、悬空连接词、指代、标点、称谓和排版 |
 | `style-matrix` | 避免把一种“人类口吻”套到所有文体上 |
 | `editor-loop` | 建立挑剔编辑式的审查与局部重写流程 |
 | `ai-trace-rubric` | 把“还像 AI”拆成可诊断、可修复的维度 |
@@ -294,11 +296,14 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 | `relationship` | 关系立场、当前听众、信息权限、称谓和秘密泄露 |
 | `ai-trace` | 套话、公式结构、段落无推进和其他 AI 痕迹 |
 | `numbers` | 动作与情绪中的假精确数字 |
-| `proofread` | 错别字、标点、称谓、排版和机械错误 |
+| `proofread` | 错漏字、句法槽位、悬空连接词、指代、标点、称谓和排版 |
 | `style-match` | 对照明确输入的参考资料检查文风漂移；没有参考信号时不可使用 |
 | `sources` | 对照明确来源核验严肃文本主张；需要 `--source` 和严肃文体 |
 
 Profile 可以重复组合，例如 `--profile relationship --profile ai-trace`。
+
+普通生成只加载一句轻量句法完整性检查。完整的漏字、缺宾语、悬空连接词和指代审查仅在
+`proofread` 或流水线校对阶段加载，避免长期占用生成 Token。
 
 ### 多阶段流水线
 
@@ -385,7 +390,7 @@ python -m humanwriting.cli build `
 
 - `relationship-stance-audit`：检查说话人、听话人、被提及第三方之间的关系立场、秘密和信息权限
 - `cliche-phrase-audit`：检查高频套话、塑料身体动作、空洞情绪标签和万能转场
-- `formulaic-structure-audit`：检查三连式、过度对称、每段都收束得太完整的公式结构
+- `formulaic-structure-audit`：检查三连式、双向对举、连续“比”比较和每段都收束得太完整的公式结构
 - `prose-progress-audit`：检查每段是否真的推进了事实、关系、证据、动作或压力
 - `natural-measurement`：小说、网文和自媒体中检查不合语境的假精确数字
 

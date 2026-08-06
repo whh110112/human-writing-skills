@@ -26,6 +26,8 @@ long-form writing into executable audit modules.
 | Chapters change wording but repeat the same opening, turn, and hook | Chapter functions form a copied architecture | `chapter-pattern-audit` |
 | Long-form drift | Facts, relationships, space, props, and hooks are not tracked | `relationship-state`, `spatial-blocking`, `physical-continuity-audit` |
 | False precision | Human perception is written like measurement data | `natural-measurement` |
+| Repeated not-X/is-Y, is-X/not-Y, or chained Chinese 比 comparisons | Symmetry and escalation substitute for evidence or judgment | `formulaic-structure-audit`, `cliche-phrase-audit` |
+| Fluent-looking sentences omit a word, object, or connector clause | No final predicate-slot, parallel-structure, or reference pass | `proofreading-audit`, deterministic `lint` |
 
 ## How the New Modules Help
 
@@ -40,11 +42,14 @@ habit, or causal bridge.
 
 ### Formulaic Structure Audit
 
-`formulaic-structure-audit` checks for overused triplets, symmetrical contrasts,
-identical paragraph cadence, and paragraphs that close too neatly.
+`formulaic-structure-audit` checks for overused triplets, forward and reverse
+contrasts, chained comparison criteria, identical paragraph cadence, and paragraphs
+that close too neatly.
 
 The repair is purposeful asymmetry: keep necessary order, vary paragraph function,
-and let some pressure carry into the next beat.
+and let some pressure carry into the next beat. Necessary correction, legal exclusion,
+sourced comparison, and character rebuttal remain valid. Ambiguous omissions move to
+the final proofread pass instead of being guessed during style rewriting.
 
 ### Prose Progress Audit
 

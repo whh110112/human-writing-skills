@@ -124,6 +124,8 @@ the one thing this passage must change. During drafting, preserve established fa
 After drafting, revise once for cadence, concrete detail, physical state, and continuity.
 Use exact measurements, counts, and numbers when the context earns them; otherwise
 prefer felt, relational, or scene-specific scale.
+Before final output, check that each sentence has the subjects, objects, complements,
+and referents its verbs and connectors require; preserve deliberate spoken ellipsis.
 """
 
 

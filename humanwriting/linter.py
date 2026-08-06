@@ -41,6 +41,27 @@ FORMULAIC_INTROSPECTION_PATTERN = re.compile(
     r"(?:他|她|我)不知道为什么|(?:他|她|我)?莫名(?:地|其妙|就)?|"
     r"说不清(?:是什么|为什么)|无法形容(?:的|这种)"
 )
+FORMULAIC_CONTRAST_PATTERN = re.compile(
+    r"(?:不只是|不仅仅是|不是)[^。！？!?\n]{1,80}?[，,；;]?\s*(?:而|却|更)?是|"
+    r"(?:算是|更像是|是)[^。！？!?\n]{1,80}?[，,；;]\s*(?:而)?不是",
+    re.IGNORECASE,
+)
+COMPARISON_NONMARKER_PREFIXES = ("同比", "环比", "占比", "配比", "可比", "性价比")
+COMPARISON_NONMARKER_SUFFIXES = (
+    "比如",
+    "比例",
+    "比赛",
+    "比较",
+    "比方",
+    "比喻",
+    "比重",
+    "比值",
+    "比率",
+    "比分",
+    "比特",
+    "比肩",
+    "比邻",
+)
 
 
 @dataclass(frozen=True)
@@ -143,14 +164,14 @@ RULES = [
     PatternRule(
         "STR001",
         "formulaic-contrast",
-        "high",
+        "medium",
         re.compile(
-            r"(?:不只是|不仅仅是|不是).{1,80}?(?:而是|更是)|"
-            r"\b(?:it|this) (?:is|isn't|is not) not just .{1,100}?\bbut\b|"
+            FORMULAIC_CONTRAST_PATTERN.pattern
+            + r"|\b(?:it|this) (?:is|isn't|is not) not just .{1,100}?\bbut\b|"
             r"\bnot just .{1,100}?\bbut also\b",
             re.IGNORECASE,
         ),
-        "State the actual claim directly instead of using a not-X-but-Y reveal.",
+        "Check whether the contrast is logically necessary; otherwise state the observation or evidence directly.",
     ),
     PatternRule(
         "TRANS001",
@@ -231,6 +252,17 @@ RULES = [
         "Verify that the narrator or character has a reason to know this exact micro-measurement.",
         excluded_styles=frozenset({"academic-paper", "news-report"}),
     ),
+    PatternRule(
+        "SYN001",
+        "possible-omission",
+        "medium",
+        re.compile(
+            r"(?:把|被|让|使|给|向|往|从|对|对于|跟|与|和|或|但|却|而|"
+            r"因为|所以|如果|虽然|不仅|不但|为了|通过|根据|关于|比)"
+            r"\s*(?=[。！？!?；;]|$)"
+        ),
+        "A function word or connector is left without its required constituent; restore the missing slot or confirm an intentional fragment.",
+    ),
 ]
 
 
@@ -284,6 +316,29 @@ def _paragraph_spans(text: str) -> list[tuple[int, int, str]]:
         for match in re.finditer(r"\S.*?(?=\n\s*\n|\Z)", text, re.DOTALL)
         if match.group(0).strip()
     ]
+
+
+def _sentence_spans(text: str) -> list[tuple[int, int, str]]:
+    return [
+        (match.start(), match.end(), match.group(0))
+        for match in re.finditer(r"[^。！？!?\n]+[。！？!?]?", text)
+        if match.group(0).strip()
+    ]
+
+
+def _comparative_bi_offsets(sentence: str) -> list[int]:
+    offsets: list[int] = []
+    for match in re.finditer("比", sentence):
+        index = match.start()
+        if any(sentence.startswith(term, index) for term in COMPARISON_NONMARKER_SUFFIXES):
+            continue
+        if any(
+            sentence[max(0, index - len(term) + 1) : index + 1] == term
+            for term in COMPARISON_NONMARKER_PREFIXES
+        ):
+            continue
+        offsets.append(index)
+    return offsets
 
 
 def _coefficient_of_variation(values: list[int]) -> float:
@@ -384,6 +439,43 @@ def lint_text(
                 first_dash,
                 first_dash + 1,
                 "Em-dash density is high; verify that each dash marks a real interruption or turn.",
+            )
+        )
+
+    if style not in {"academic-paper", "news-report"}:
+        if "STR002" not in allowed and "comparison-ladder" not in allowed:
+            for start, end, sentence in _sentence_spans(masked):
+                comparison_offsets = _comparative_bi_offsets(sentence)
+                if len(comparison_offsets) < 2:
+                    continue
+                findings.append(
+                    _finding_from_span(
+                        text,
+                        "STR002",
+                        "comparison-ladder",
+                        "medium",
+                        start + comparison_offsets[0],
+                        min(end, start + comparison_offsets[-1] + 24),
+                        "This sentence chains multiple 比-comparisons; keep one shared criterion, split unlike criteria, or state the observed change directly.",
+                    )
+                )
+
+    contrast_matches = list(FORMULAIC_CONTRAST_PATTERN.finditer(masked))
+    if (
+        len(contrast_matches) >= 3
+        and "STR003" not in allowed
+        and "formulaic-frame-density" not in allowed
+    ):
+        first = contrast_matches[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "STR003",
+                "formulaic-frame-density",
+                "high",
+                first.start(),
+                first.end(),
+                "Not-X/is-Y contrast frames recur across the passage; preserve only distinctions that change fact, logic, or voice and rewrite the rest from evidence.",
             )
         )
 

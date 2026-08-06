@@ -353,7 +353,13 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: character-consistency-audit", character)
         self.assertNotIn("Audit Module: logic-causality-audit", character)
         self.assertIn("Audit Module: proofreading-audit", proofread)
+        self.assertIn("Missing-Word And Sentence-Skeleton Pass", proofread)
         self.assertNotIn("Audit Module: ai-trace-rubric", proofread)
+
+    def test_generation_uses_light_omission_guard_without_full_proofread_module(self):
+        prompt = compile_prompt("fiction", "Continue the scene.")
+        self.assertIn("subjects, objects, complements", prompt)
+        self.assertNotIn("Audit Module: proofreading-audit", prompt)
 
     def test_voice_serial_momentum_and_texture_profiles_are_isolated(self):
         with TemporaryDirectory() as directory:

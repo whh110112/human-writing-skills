@@ -2,7 +2,7 @@
 
 ## Aim
 
-Provide a qualitative scoring pass that identifies where a draft still feels machine-shaped.
+Locate machine-shaped prose and rank repairs.
 
 Score each dimension from 0 to 3:
 
@@ -15,24 +15,25 @@ Score each dimension from 0 to 3:
 
 | Dimension | Warning Sign | Repair Direction |
 | --- | --- | --- |
-| Cognitive smoothness | Every transition is complete and safe | Add controlled drift, doubt, or fragile inference |
-| Generic diction | Sentences could fit any topic | Replace with object, place, action, or speaker-specific detail |
-| Cliche phrase cluster | Stock turns of phrase, body cues, fate inflation, or dead transitions recur | Replace with scene evidence, character-specific action, or a plain sentence |
-| Formulaic structure | Paragraphs arrive in neat threes, symmetrical contrasts, or identical cadence | Break the frame, vary paragraph function, and add purposeful asymmetry |
-| Polished stagnation | The prose sounds finished while the same premise is restated | Summarize each paragraph; cut, merge, or add a real state change |
-| Emotional flatness | Emotion is named but not embodied | Add action, body signal, sensory distortion, contradiction |
-| Rhythm monotony | Sentences move at one speed | Add breath variation, short brakes, altered cadence |
-| Context drift | Facts, stakes, or timeline blur | Update and obey the continuity ledger |
-| Relationship stance drift | A character mentions, praises, criticizes, compares, or exposes the wrong person for the current audience | Audit speaker -> listener -> referenced party; add motive, change target, code the mention, or add consequence |
-| Weak beat bridge | Paragraphs or scenes sit beside each other instead of causing each other | Reconnect residue, micro-turn, proof detail, and exit pressure |
-| Orphaned interaction | A consequential line or action is abandoned before uptake | Add speech, action, legible silence, interruption, or explicit deferral; avoid mechanical ping-pong |
-| Relationship reset | Trust, boundaries, secrets, or leverage reset after charged scenes | Track who knows, wants, hides, owes, refuses, and can withdraw |
-| False precision | Tiny exact measures or counted micro-actions appear where no person would measure | Keep useful facts; soften decorative numbers into felt, relational, or plot-relevant detail |
-| Physical drift | Position, clothing, props, or injuries change without transition | Add spatial blocking, appearance/prop state, or movement gate |
-| Occupancy conflict | A seat, bench, stool, bed, aisle, or surface holds impossible or unclear occupants | Add capacity evidence, transform the resource, split zones, or move occupants |
-| Cultural vacuum | No era, place, class, or community signal | Add one precise cultural anchor |
-| Over-clean prose | No hesitation, revision, roughness, or pressure | Add genre-appropriate imperfection |
-| Closure addiction | Every thought resolves neatly | Leave one productive open question or unresolved pressure |
+| Cognitive smoothness | Every transition is safe and complete | Add doubt, drift, or fragile inference |
+| Generic diction | Sentences fit any topic | Use specific objects, places, actions, or voice |
+| Cliche phrase cluster | Stock phrases, cues, or transitions recur | Use scene evidence, specific action, or plain speech |
+| Formulaic structure | Neat threes, repeated contrast frames, chained "比", identical cadence | Keep necessary distinctions; use direct evidence, one comparison criterion, and asymmetry |
+| Polished stagnation | Paragraphs restate one premise | Cut, merge, or change the state |
+| Emotional flatness | Emotion is named, not embodied | Use action, body signal, sensation, or contradiction |
+| Rhythm monotony | One speed throughout | Vary breath, brakes, and cadence |
+| Context drift | Facts, stakes, or timeline blur | Obey the ledger |
+| Relationship stance drift | A reference conflicts with speaker, listener, or audience | Audit the triad; motivate, code, redirect, or add consequence |
+| Weak beat bridge | Adjacent beats do not cause each other | Carry residue into a turn and exit pressure |
+| Orphaned interaction | Consequential speech or action gets no uptake | Add speech, action, silence, interruption, or deferral |
+| Relationship reset | Trust, secrets, boundaries, or leverage reset | Track knowledge, wants, debts, refusals, and exit rights |
+| False precision | Unmeasured micro-actions get exact numbers | Keep useful facts; use felt or plot-relevant scale elsewhere |
+| Physical drift | Position, clothing, props, or injuries jump | Restore state or a change gate |
+| Occupancy conflict | A resource has impossible or unclear occupants | Establish capacity, transformation, zones, or movement |
+| Cultural vacuum | Era, place, class, and community vanish | Add one precise anchor |
+| Over-clean prose | No hesitation, revision, roughness, or pressure | Add genre-valid imperfection |
+| Closure addiction | Every thought resolves | Leave useful pressure open |
+| Sentence incompleteness | A verb, connector, parallel clause, or reference loses a required slot | Restore recoverable words; report ambiguity |
 
 ## Output Format
 

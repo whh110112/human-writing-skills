@@ -23,6 +23,8 @@ Use an iterative workflow instead of expecting one perfect generation. Draft, di
    - If two or more dimensions remain weak, run one more local rewrite.
 
 5. Final Output
+   - Check sentence skeletons for missing subjects, objects, complements, head nouns,
+     and connector clauses; keep intentional dialogue ellipsis.
    - Return the polished passage.
    - Include notes only when the user asks for them.
 

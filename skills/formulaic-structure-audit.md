@@ -11,8 +11,10 @@ or argued into existence.
 - Paragraphs have similar length and internal rhythm.
 - Ideas arrive in neat threes without the subject demanding three parts.
 - Every paragraph ends by resolving itself.
-- The draft leans on symmetrical frames: "not X, but Y", "first/second/third",
-  "when X, when Y, when Z".
+- The draft leans on symmetrical frames: "not X, but Y", "X is Y, not Z",
+  "first/second/third", or "when X, when Y, when Z".
+- One sentence chains several comparisons with the same surface marker, such as
+  repeated Chinese "比", even when the compared criteria do not belong together.
 - Transitions are complete but bloodless: each connection is explained, yet no
   object, pressure, action, or voice carries the reader across.
 - Sentences make the same move repeatedly: setup, contrast, abstract conclusion.
@@ -31,6 +33,8 @@ or argued into existence.
    - unresolved pressure
 2. Mark repeated structure. If three adjacent paragraphs have the same function
    or cadence, merge, cut, or disturb one.
+   Count structure families, not exact phrases: forward contrast, reverse contrast,
+   repeated comparative clauses, setup-contrast-summary, and neat three-part escalation.
 3. Check endings. If every paragraph lands cleanly, leave one paragraph with
    a productive pressure, question, sensory residue, or contradiction.
 4. Replace symmetrical rhetoric with scene-specific movement:
@@ -41,12 +45,27 @@ or argued into existence.
 5. Read aloud for breath. Long sentences need a reason; short sentences need a
    surrounding rhythm that makes them hit.
 
+## Contrast And Comparison Decision
+
+Do not ban contrast or comparison. For every marked frame, identify its job:
+
+- factual correction or legal/scientific exclusion: usually keep it
+- character-specific rebuttal: keep when the speaker would naturally frame it that way
+- emotional reveal or emphasis: often state the changed perception or action directly
+- ornamental escalation: cut the weaker side
+- several unlike "比" criteria: choose one criterion or split them into separate evidence
+
+Rewriting "不是" as "并非" or deleting one "比" without changing the sentence logic is
+not a repair. Change the information path, not only the connective.
+
 ## Repair Patterns
 
 | Formulaic Shape | Repair |
 | --- | --- |
 | Three balanced claims | Keep the strongest two; make the third a complication or example |
 | "Not X, but Y" | State the actual observation without the frame |
+| "X is Y, not Z" | Keep only if Z is a live alternative; otherwise show the evidence for Y |
+| Repeated "比...比..." | Keep one shared comparison axis, split unlike axes, or replace the ladder with an observed consequence |
 | Smooth transition | Use an object, action, quote, or unresolved question as bridge |
 | Clean paragraph closure | Let one consequence remain open |
 | Abstract conclusion | Return to a concrete detail that has changed |

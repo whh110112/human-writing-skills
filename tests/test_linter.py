@@ -46,6 +46,34 @@ class LinterTests(unittest.TestCase):
         self.assertNotIn("PREC001", {finding.rule_id for finding in academic.findings})
         self.assertNotIn("PREC001", {finding.rule_id for finding in forensic_fiction.findings})
 
+    def test_reports_bidirectional_contrast_and_comparison_ladder(self):
+        text = (
+            "这不是谨慎，是拖延。那是拒绝，不是犹豫。"
+            "走廊比昨夜更窄，比她记忆里更长。"
+        )
+        report = lint_text(text, style="fiction")
+        rule_ids = {finding.rule_id for finding in report.findings}
+        self.assertIn("STR001", rule_ids)
+        self.assertIn("STR002", rule_ids)
+
+    def test_reports_repeated_contrast_density(self):
+        text = "这不是谨慎，是拖延。那是拒绝，不是犹豫。他不是镇定，而是麻木。"
+        report = lint_text(text, style="fiction")
+        self.assertIn("STR003", {finding.rule_id for finding in report.findings})
+
+    def test_comparison_ladder_respects_serious_style_and_nonmarkers(self):
+        serious = lint_text("实验组比对照组高，比基线低。", style="academic-paper")
+        nonmarkers = lint_text("同比和环比数据用于比较比例。", style="fiction")
+        self.assertNotIn("STR002", {finding.rule_id for finding in serious.findings})
+        self.assertNotIn("STR002", {finding.rule_id for finding in nonmarkers.findings})
+
+    def test_reports_high_confidence_omission_symptom(self):
+        report = lint_text("他刚想把。她原本打算从。", style="fiction")
+        omissions = [finding for finding in report.findings if finding.rule_id == "SYN001"]
+        self.assertEqual(len(omissions), 2)
+        allowed = lint_text("他刚想把。", style="fiction", allow={"possible-omission"})
+        self.assertNotIn("SYN001", {finding.rule_id for finding in allowed.findings})
+
     def test_json_output_contains_structured_spans(self):
         report = lint_text("In today's fast-paced world, let's dive in.")
         payload = json.loads(format_lint_report(report, "json"))
