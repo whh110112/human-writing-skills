@@ -33,6 +33,9 @@ Do not write a transition until the chain is clear.
 - Move from setting to character through attention: what the character notices first
   should reveal what they fear, want, hide, or misunderstand.
 - Use time jumps only after naming the residue that survives the jump.
+- Do not replace a time jump with a standalone clock, time-of-day, place, mood, or
+  action heading. Let the last live detail from the earlier beat encounter the first
+  changed condition of the later beat.
 - When changing scenes, preserve one bridge element: a sound, physical sensation,
   unfinished question, object, threat, promise, or altered relationship.
 - Prefer "because this changed" over "then this happened." A beat should alter the
@@ -52,6 +55,7 @@ Do not write a transition until the chain is clear.
   when no concrete bridge exists
 - opening every new paragraph with abstract summary or emotional labels
 - cutting to a new scene that forgets the previous scene's cost, posture, or object
+- using a mini-heading as a substitute for the causal, temporal, or perceptual bridge
 - abandoning a pressure-bearing line or action without reception, consequence, or
   deliberately carried interaction debt
 - resolving the scene's emotional meaning immediately after showing it

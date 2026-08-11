@@ -9,9 +9,39 @@ from pathlib import Path
 
 SEVERITY_WEIGHT = {"low": 2, "medium": 5, "high": 9}
 NARRATIVE_STYLES = {"fiction", "webnovel", "self-media"}
+FICTION_STYLES = {"fiction", "webnovel"}
 CHAPTER_HEADING_PATTERN = re.compile(
-    r"(?m)^\s*(?:#{1,6}\s*)?(?:第\s*[一二三四五六七八九十百零〇\d]+\s*[章节回卷]|"
-    r"chapter\s+\d+)[^\n]*$",
+    r"(?m)^\s*(?:#{1,6}\s*)?(?:第\s*[一二三四五六七八九十百零〇\d]+\s*[章节回卷話话](?:\s+[^\n]{1,60})?|"
+    r"(?:chapter|chapitre|cap[ií]tulo|capitulum|الفصل)\s+[^\n]{1,80})$",
+    re.IGNORECASE,
+)
+MARKDOWN_HEADING_PATTERN = re.compile(
+    r"(?m)^[ \t]{0,3}(?P<marks>#{1,6})[ \t]+(?P<label>[^#\n].*?)[ \t]*$"
+)
+BOLD_STANDALONE_HEADING_PATTERN = re.compile(
+    r"(?m)^[ \t]*(?:\*\*|__)(?P<label>[^\n]{1,80}?)(?:\*\*|__)[ \t]*$"
+)
+STANDALONE_PARAGRAPH_PATTERN = re.compile(
+    r"(?ms)(?:(?<=\n\n)|\A)[ \t]*(?P<label>[^\n]{1,60}?)[ \t]*(?=\n\n|\Z)"
+)
+TIME_CARD_PATTERN = re.compile(
+    r"^(?:"
+    r"(?:次日|翌日|第二天|当天|同日)?(?:清晨|早晨|上午|中午|下午|傍晚|晚上|夜里|深夜)"
+    r"(?:\s*[零一二两三四五六七八九十百\d:：点时分半]+)?|"
+    r"[零一二两三四五六七八九十百\d]+(?:天|小时|周|个月|年)(?:后|以后)|"
+    r"(?:the\s+)?(?:next\s+)?(?:morning|afternoon|evening|night|dawn|noon|midnight)|"
+    r"later\s+that\s+day|\d+\s+(?:minutes?|hours?|days?|weeks?|months?|years?)\s+later|"
+    r"(?:翌朝|翌日|午前|午後|朝|昼|夕方|夜|深夜|その夜)(?:\s*\d{1,2}(?::\d{2}|時(?:\d{1,2}分)?)?)?|"
+    r"(?:le\s+lendemain|ce\s+matin|cet\s+apr[eè]s-midi|ce\s+soir|le\s+matin|"
+    r"l['’]apr[eè]s-midi|le\s+soir|la\s+nuit|midi|minuit)|"
+    r"(?:a\s+la\s+ma[nñ]ana|por\s+la\s+tarde|por\s+la\s+noche|al\s+d[ií]a\s+siguiente|"
+    r"esa\s+tarde|esa\s+noche|ma[nñ]ana|tarde|noche|mediod[ií]a)|"
+    r"(?:de\s+manh[ãa]|[àa]\s+tarde|[àa]\s+noite|no\s+dia\s+seguinte|"
+    r"na\s+manh[ãa]\s+seguinte|manh[ãa]|tarde|noite|meio-dia)|"
+    r"(?:في\s+الصباح|صباحًا?|بعد\s+الظهر|في\s+المساء|مساءً|في\s+الليل|"
+    r"في\s+اليوم\s+التالي|عند\s+الظهر|منتصف\s+الليل)|"
+    r"(?:mane|meridie|vespere|nocte|postridie|postero\s+die|sequenti\s+die)"
+    r")(?:\s*[-—:：]\s*[^\n]{1,24})?$",
     re.IGNORECASE,
 )
 SCENE_OPENING_CUE_PATTERNS = {
@@ -445,6 +475,58 @@ def _chapter_opening_spans(text: str, width: int = 700) -> list[tuple[int, int]]
     ]
 
 
+def _narrative_heading_findings(
+    text: str,
+    masked: str,
+    allowed: set[str],
+) -> list[LintFinding]:
+    findings: list[LintFinding] = []
+    occupied: list[tuple[int, int]] = []
+
+    def add_finding(start: int, end: int, label: str) -> None:
+        if CHAPTER_HEADING_PATTERN.fullmatch(label.strip()):
+            return
+        is_time_card = bool(TIME_CARD_PATTERN.fullmatch(label.strip()))
+        rule_id = "HEAD002" if is_time_card else "HEAD001"
+        category = "narrative-time-card" if is_time_card else "narrative-mini-heading"
+        if rule_id in allowed or category in allowed:
+            return
+        message = (
+            "This standalone time label substitutes for a narrative transition; carry prior "
+            "residue through elapsed time into the first new action, or use an intentional "
+            "scene-break marker when a hard cut is the point."
+            if is_time_card
+            else "This mini-heading segments narrative prose; remove it unless the requested "
+            "form requires headings, then bridge scenes through cause, residue, elapsed time, "
+            "perception, or changed pressure."
+        )
+        findings.append(
+            _finding_from_span(text, rule_id, category, "high", start, end, message)
+        )
+        occupied.append((start, end))
+
+    for match in MARKDOWN_HEADING_PATTERN.finditer(masked):
+        line = match.group(0).strip()
+        if CHAPTER_HEADING_PATTERN.fullmatch(line):
+            continue
+        if match.start() == len(masked) - len(masked.lstrip()) and match.group("marks") == "#":
+            continue
+        add_finding(match.start(), match.end(), match.group("label"))
+
+    for match in BOLD_STANDALONE_HEADING_PATTERN.finditer(masked):
+        if any(match.start() < end and match.end() > start for start, end in occupied):
+            continue
+        add_finding(match.start(), match.end(), match.group("label"))
+
+    for match in STANDALONE_PARAGRAPH_PATTERN.finditer(masked):
+        if any(match.start() < end and match.end() > start for start, end in occupied):
+            continue
+        label = match.group("label").strip()
+        if TIME_CARD_PATTERN.fullmatch(label):
+            add_finding(match.start(), match.end(), label)
+    return findings
+
+
 def _scene_opening_cues(fragment: str) -> set[str]:
     return {
         name
@@ -528,6 +610,9 @@ def lint_text(
                 "Em-dash density is high; verify that each dash marks a real interruption or turn.",
             )
         )
+
+    if style in FICTION_STYLES:
+        findings.extend(_narrative_heading_findings(text, masked, allowed))
 
     if style not in {"academic-paper", "news-report"}:
         if "STR002" not in allowed and "comparison-ladder" not in allowed:

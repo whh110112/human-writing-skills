@@ -8,14 +8,23 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-TRANSITIONS_ZH = re.compile(
-    r"首先|其次|最后|此外|另外|然而|因此|所以|与此同时|综上所述|总而言之|值得注意的是"
-)
-TRANSITIONS_EN = re.compile(
-    r"\b(?:firstly|secondly|finally|moreover|furthermore|however|therefore|"
-    r"meanwhile|in conclusion|to summarize|it is worth noting)\b",
-    re.IGNORECASE,
-)
+TRANSITIONS_BY_LANGUAGE = {
+    "zh": re.compile(r"首先|其次|最后|此外|另外|然而|因此|所以|与此同时|综上所述|总而言之|值得注意的是"),
+    "ja": re.compile(r"まず|次に|最後に|さらに|しかし|したがって|そのため|一方で|要するに|結論として"),
+    "en": re.compile(r"\b(?:firstly|secondly|finally|moreover|furthermore|however|therefore|meanwhile|in conclusion|to summarize|it is worth noting)\b", re.IGNORECASE),
+    "fr": re.compile(r"\b(?:premi[eè]rement|deuxi[eè]mement|enfin|en outre|cependant|donc|par cons[eé]quent|en conclusion|en r[eé]sum[eé])\b", re.IGNORECASE),
+    "es": re.compile(r"\b(?:primero|en segundo lugar|finalmente|adem[aá]s|sin embargo|por lo tanto|mientras tanto|en conclusi[oó]n|en resumen)\b", re.IGNORECASE),
+    "pt": re.compile(r"\b(?:primeiro|em segundo lugar|finalmente|al[eé]m disso|no entanto|portanto|enquanto isso|em conclus[aã]o|em resumo)\b", re.IGNORECASE),
+    "la": re.compile(r"\b(?:primum|deinde|denique|praeterea|tamen|igitur|interea|in summa)\b", re.IGNORECASE),
+    "ar": re.compile(r"(?:أولاً|أولا|ثانياً|ثانيا|أخيراً|أخيرا|بالإضافة إلى ذلك|ومع ذلك|لذلك|في الختام|باختصار)"),
+}
+LATIN_LANGUAGE_MARKERS = {
+    "en": re.compile(r"\b(?:the|and|that|with|from|this|is|are|of|to|in)\b", re.IGNORECASE),
+    "fr": re.compile(r"\b(?:le|la|les|des|une|et|dans|avec|pour|est|sont|du)\b", re.IGNORECASE),
+    "es": re.compile(r"\b(?:el|la|los|las|una|y|en|con|para|es|son|del|que)\b", re.IGNORECASE),
+    "pt": re.compile(r"\b(?:o|a|os|as|uma|e|em|com|para|é|são|do|que)\b", re.IGNORECASE),
+    "la": re.compile(r"\b(?:et|in|est|sunt|cum|ad|de|non|qui|quae|quod|per)\b", re.IGNORECASE),
+}
 
 
 @dataclass(frozen=True)
@@ -45,19 +54,32 @@ class StyleStatistics:
 
 
 def _detect_language(text: str) -> str:
-    cjk = len(re.findall(r"[\u3400-\u9fff]", text))
+    han = len(re.findall(r"[\u3400-\u9fff]", text))
+    kana = len(re.findall(r"[\u3040-\u30ff]", text))
+    arabic = len(re.findall(r"[\u0600-\u06ff]", text))
     latin = len(re.findall(r"[A-Za-z]", text))
-    if cjk >= max(20, latin):
+    if kana >= 4 and kana >= latin // 2:
+        return "ja"
+    if arabic >= max(10, latin):
+        return "ar"
+    if han >= max(20, latin) and kana < 4:
         return "zh"
-    if latin >= max(20, cjk * 2):
-        return "en"
+    if latin >= max(20, (han + kana + arabic) * 2):
+        scores = {
+            language: len(pattern.findall(text))
+            for language, pattern in LATIN_LANGUAGE_MARKERS.items()
+        }
+        language, score = max(scores.items(), key=lambda item: item[1])
+        return language if score >= 2 else "latin"
     return "mixed"
 
 
 def _tokens(text: str, language: str) -> list[str]:
     if language == "zh":
         return re.findall(r"[\u3400-\u9fff]|[A-Za-z0-9]+", text.lower())
-    return re.findall(r"[\w'-]+", text.lower(), re.UNICODE)
+    if language == "ja":
+        return re.findall(r"[\u3400-\u9fff]|[\u3040-\u309f]|[\u30a0-\u30ff]|[A-Za-z0-9]+", text.lower())
+    return re.findall(r"[^\W_]+(?:['’\-][^\W_]+)*", text.lower(), re.UNICODE)
 
 
 def _sentence_lengths(text: str, language: str) -> list[int]:
@@ -108,8 +130,8 @@ def analyze_style_statistics(text: str, style: str = "general") -> StyleStatisti
     paragraph_cv = (
         _coefficient_of_variation(paragraph_lengths) if len(paragraph_lengths) >= 3 else None
     )
-    transition_pattern = TRANSITIONS_ZH if language == "zh" else TRANSITIONS_EN
-    transition_count = len(transition_pattern.findall(text))
+    transition_pattern = TRANSITIONS_BY_LANGUAGE.get(language)
+    transition_count = len(transition_pattern.findall(text)) if transition_pattern else 0
     transition_density = transition_count * 1000 / max(len(tokens), 1)
 
     warnings: list[str] = []

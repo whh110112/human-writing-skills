@@ -36,10 +36,10 @@ human-writing-skills pipeline --draft article.md --auto --with-stats --output-di
 
 The report includes sentence and paragraph length variation, moving-average
 type-token ratio (MATTR), repeated trigram ratio, and explicit-transition density.
-For Chinese, tokens used by MATTR are primarily individual CJK characters, so the
-value must not be compared directly with English word-token MATTR. Short samples
-are marked low confidence. Raw type-token ratio is intentionally omitted because
-it changes sharply with sample length.
+For Chinese and Japanese, MATTR uses character-oriented Han/kana tokens; Latin-script
+and Arabic profiles use Unicode word-like tokens. Values from different tokenization
+families must not be compared directly. Short samples are marked low confidence. Raw
+type-token ratio is intentionally omitted because it changes sharply with sample length.
 
 These metrics are editing diagnostics, not evidence of AI authorship. Compare a
 draft with its own genre, language, and intended voice rather than a universal
@@ -66,4 +66,3 @@ self-media, and general prose. Necessary data comparisons in news and academic
 writing are suppressed. The repair is contextual: keep distinct facts with a clear
 comparison axis; rewrite decorative escalation into one observation, action, image,
 or consequence. `fix` does not delete these structures automatically.
-

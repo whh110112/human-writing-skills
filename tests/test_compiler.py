@@ -73,6 +73,8 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Relationship state", prompt)
         self.assertIn("Fiction Skill", prompt)
         self.assertIn("pressure-bearing line or action", prompt)
+        self.assertIn("replace unrequested scene mini-headings or time cards", prompt)
+        self.assertIn("prior residue", prompt)
         self.assertIn("Write the next scene.", prompt)
         self.assertNotIn("Technique Module: reference-style-alignment", prompt)
 

@@ -112,6 +112,59 @@ class LinterTests(unittest.TestCase):
         self.assertIn("ALIAS001", {finding.rule_id for finding in fiction.findings})
         self.assertNotIn("ALIAS001", {finding.rule_id for finding in news.findings})
 
+    def test_narrative_mini_headings_and_multilingual_time_cards_are_flagged(self):
+        samples = (
+            "上午她一直守着电话。\n\n## 下午\n\n门终于响了。",
+            "He kept the receipt.\n\n### The confrontation\n\nShe opened the door.",
+            "朝は雨だった。\n\n午後\n\n彼女は駅を出た。",
+            "Il attendit sans répondre.\n\nL’après-midi\n\nLa porte s’ouvrit.",
+            "Ella guardó la carta.\n\nPor la tarde\n\nVolvió a la estación.",
+            "Ela não largou a chave.\n\nÀ noite\n\nA campainha tocou.",
+            "احتفظت بالرسالة.\n\nفي المساء\n\nفُتح الباب.",
+            "Epistulam servavit.\n\nVespere\n\nIanua aperta est.",
+        )
+        for text in samples:
+            with self.subTest(text=text):
+                rule_ids = {item.rule_id for item in lint_text(text, style="fiction").findings}
+                self.assertTrue({"HEAD001", "HEAD002"} & rule_ids)
+
+    def test_narrative_heading_rules_preserve_titles_chapters_and_serious_sections(self):
+        titled_fiction = lint_text(
+            "# The Long Road\n\n## Chapter 1 Arrival\n\nShe missed the train.",
+            style="fiction",
+        )
+        news = lint_text(
+            "## Afternoon update\n\nThe agency released the revised count.",
+            style="news-report",
+        )
+        natural_bridge = lint_text(
+            "她把上午没写完的地址压在杯底。到下午雨停时，墨迹已经洇成一团。",
+            style="fiction",
+        )
+        self.assertFalse({"HEAD001", "HEAD002"} & {item.rule_id for item in titled_fiction.findings})
+        self.assertFalse({"HEAD001", "HEAD002"} & {item.rule_id for item in news.findings})
+        self.assertFalse({"HEAD001", "HEAD002"} & {item.rule_id for item in natural_bridge.findings})
+        for chapter in (
+            "## 第二章 雨停以后",
+            "## 第三話 帰還",
+            "## Chapitre premier Le retour",
+            "## Capítulo uno El regreso",
+            "## Capítulo um O retorno",
+            "## Capitulum primum Reditus",
+            "## الفصل الأول العودة",
+        ):
+            with self.subTest(chapter=chapter):
+                report = lint_text(f"# Book\n\n{chapter}\n\nText.", style="fiction")
+                self.assertFalse({"HEAD001", "HEAD002"} & {item.rule_id for item in report.findings})
+
+    def test_narrative_heading_rules_are_allowlisted(self):
+        report = lint_text(
+            "上午没有回信。\n\n下午\n\n门铃响了。",
+            style="fiction",
+            allow={"narrative-time-card"},
+        )
+        self.assertNotIn("HEAD002", {item.rule_id for item in report.findings})
+
     def test_json_output_contains_structured_spans(self):
         report = lint_text("In today's fast-paced world, let's dive in.")
         payload = json.loads(format_lint_report(report, "json"))

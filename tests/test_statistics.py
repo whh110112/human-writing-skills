@@ -26,6 +26,19 @@ class StatisticsTests(unittest.TestCase):
             analyze_style_statistics(uniform).sentence_length_cv,
         )
 
+    def test_detects_supported_multilingual_profiles(self):
+        samples = {
+            "ja": "彼女は駅を出た。午後の雨は弱くなった。しかし、手紙はまだ濡れていた。",
+            "fr": "La lettre est restée sur la table. Elle est humide, mais le texte est encore lisible.",
+            "es": "La carta está sobre la mesa. Los bordes están mojados, pero ella todavía puede leerla.",
+            "pt": "Uma carta está sobre a mesa. Os cantos estão molhados, mas ela ainda pode ler o texto.",
+            "ar": "بقيت الرسالة على الطاولة. كان الورق مبللاً، ومع ذلك ظل النص مقروءاً.",
+            "la": "Epistula in mensa est. Charta umida est, tamen verba adhuc legi possunt.",
+        }
+        for expected, text in samples.items():
+            with self.subTest(language=expected):
+                self.assertEqual(analyze_style_statistics(text).language, expected)
+
     def test_json_output_is_structured(self):
         payload = json.loads(format_style_statistics(analyze_style_statistics("短句。再来一句。"), "json"))
         self.assertIn("sentence_length_cv", payload)

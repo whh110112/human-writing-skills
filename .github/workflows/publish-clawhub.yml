@@ -82,7 +82,7 @@ jobs:
             --changelog "$CHANGELOG" \
             --tags latest \
             --categories creative,communication,development \
-            --topics humanizer,writing,editing,chinese-writing,long-form-writing \
+            --topics humanizer,writing,editing,multilingual-writing,long-form-writing \
             --source-repo "$GITHUB_REPOSITORY" \
             --source-commit "$GITHUB_SHA" \
             --source-ref "$GITHUB_REF_NAME" 2>&1)

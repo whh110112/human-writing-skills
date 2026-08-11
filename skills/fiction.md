@@ -24,6 +24,9 @@ Create prose that feels observed rather than generated. Let character desire, sc
   bodily state, risk, promise, or misread intention.
 - Move scenes by changed pressure, not by neutral summary. A scene should alter what a
   character knows, wants, can risk, or can no longer pretend.
+- Do not insert unrequested time, place, mood, or action mini-headings inside narrative
+  prose. Carry scene changes through prior residue, elapsed consequence, perception,
+  or the first consequential action in the new time and place.
 
 ## Avoid
 
@@ -34,6 +37,7 @@ Create prose that feels observed rather than generated. Let character desire, sc
 - dialogue that ignores the previous turn or sounds detached from the speaker's goal
 - important speech or action abandoned without response, consequence, or carried debt
 - sudden changes in character knowledge or motivation
+- presentation-style scene labels such as a standalone time or place replacing prose
 
 ## Revision Check
 

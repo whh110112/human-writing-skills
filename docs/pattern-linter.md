@@ -35,6 +35,14 @@ English copulas (`COPULA001`), decorative participles (`ING001`), false-range de
 (`ALIAS001`), and repeated formatting templates (`FORMAT001`-`FORMAT003`). Most are
 density-based so one justified use does not become a ban.
 
+For `fiction` and `webnovel`, `HEAD001` flags unrequested Markdown or standalone-bold
+mini-headings inside narrative flow. `HEAD002` flags standalone time cards in Chinese,
+English, Japanese, French, Spanish, Portuguese, Arabic, and Latin. A work title and
+real chapter heading are preserved; news, academic, argumentative, and self-media
+section headings are outside these rules. The repair must restore a prose bridge from
+prior residue through elapsed change to the first new action. Use an allowlist for an
+explicit log, dossier, epistolary, screenplay, or titled-section form.
+
 These are misuse checks, not banned characters. Keep factual correction, legal
 exclusion, source-based comparison, character rebuttal, and intentional fragments.
 Repair the information path instead of mechanically replacing a connective.

@@ -125,6 +125,8 @@ summary paragraphs that merely restate the prompt, and precision that does not f
 the genre or narrator.
 Do not stack parallel comparisons merely to intensify; keep multiple comparison clauses
 only when each carries a distinct and necessary fact.
+In fiction and webnovels, replace unrequested scene mini-headings or time cards with
+a prose bridge from prior residue to elapsed change and the first new action.
 
 Before drafting, identify the active context, genre promise, reader expectation, and
 the one thing this passage must change. During drafting, preserve established facts.

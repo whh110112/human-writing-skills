@@ -16,6 +16,8 @@ out of ordinary generation unless the user asks for this pass.
 - repeated contrast, comparison, rhetorical setup, or negative-list reveal frames
 - formatting that performs empty emphasis: dense bold labels, decorative emoji,
   repeated inline headings, or uniform punch-line endings
+- fiction or webnovels divided by unrequested time, place, mood, or action mini-headings,
+  including standalone time cards that replace an actual transition
 
 ## Decision Rule
 
@@ -27,6 +29,12 @@ For repeated Chinese `比` clauses, preserve sourced or logically necessary comp
 In narrative or reflective prose, keep one comparison axis and one decisive image;
 rewrite decorative ladders from the observed consequence. Never delete a clause if
 doing so removes a distinct fact.
+
+In narrative prose, preserve true work and chapter titles. Allow headings when the
+requested form is explicitly sectional, epistolary, documentary, log-based, or
+screenplay-like. Otherwise replace a mini-heading with a bridge: prior residue ->
+elapsed cause or changed condition -> first new action or perception. A deliberate
+hard cut may use a scene-break marker, but the next sentence must orient the reader.
 
 ## Output
 

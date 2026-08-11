@@ -1,6 +1,6 @@
 # Advanced Human Writing Skills
 
-> Reusable writing `SKILLS` for AI agents that need natural prose, genre-aware style, and long-form continuity.
+> Reusable multilingual writing `SKILLS` for natural prose, genre-aware style, and long-form continuity.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
@@ -8,7 +8,7 @@
 
 [中文说明](README.zh-CN.md) | English
 
-Advanced Human Writing Skills is an open-source, modular skill pack and lightweight prompt compiler for natural Chinese and English AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
+Advanced Human Writing Skills is an open-source, modular skill pack and lightweight prompt compiler for natural multilingual AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
 
 It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
@@ -25,6 +25,7 @@ AI writing often fails in predictable ways:
 | Rewriting silently changes facts, uncertainty, or causal meaning | An opt-in original-text fidelity pass with a claim ledger and invention checks |
 | Fluent-looking sentences drop a word, object, or connector clause | A separate final pass over predicate slots, parallel structure, and references |
 | Surface AI patterns recur across a passage | Genre-aware checks for vague attribution, inflated significance, false ranges, synonym cycling, formatting habits, and comparison ladders |
+| Fiction is chopped up by time/place mini-headings | Narrative-only checks that preserve titles and chapters but require scene changes to move through prose |
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
@@ -85,7 +86,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
 | `reference-style-alignment` | explicit reference material into transferable voice features without copying content |
 | `rewrite-fidelity` | meaning drift, invented specificity, reversed polarity, and altered uncertainty when an original is supplied |
-| `surface-pattern-audit` | recurrent surface pattern families, including decorative comparison ladders, without global phrase bans |
+| `surface-pattern-audit` | recurrent surface patterns, decorative comparison ladders, and narrative mini-headings without global bans |
 | `protected-content` | accidental changes to numbers, citations, equations, URLs, code, quotes, and required terms |
 | `source-grounding` | claim-to-source checks for serious documents with explicit factual sources |
 
@@ -102,6 +103,16 @@ human-writing-skills build --style fiction --context examples/story-ledger.md --
 ```
 
 You can also run directly from the source checkout with `python -m humanwriting.cli ...`. The `build` command prints an instruction pack that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.
+
+## Multilingual Scope
+
+The skill instructions have no Chinese-only gate: they can guide fiction and serious
+prose in English, Japanese, French, Spanish, Portuguese, Arabic, Latin, and other
+languages supported by the selected model. Deterministic lexical rules are naturally
+language-specific, while structural continuity and review remain language-agnostic.
+The narrative heading scanner recognizes time cards across the languages above, and
+`stats` profiles Han, kana, Arabic, and several Latin-script language families. Use
+genre context and human review for mixed-language or low-resource text.
 
 ## Example Output Shape
 
@@ -369,6 +380,11 @@ Protected-content instructions auto-load only for academic papers, news reports,
 and strongly identified legal or technical documents. Fiction, webnovels, casual
 Q&A, playful text, and self-media do not auto-load them; use `--protect-content`
 or `--protect-term` to override this gate.
+
+With `--style fiction` or `--style webnovel`, `lint` also flags unrequested narrative
+mini-headings and multilingual standalone time cards. It preserves work/chapter titles
+and does not apply the rule to news or academic section headings. The repair restores
+a prose transition; it does not merely delete the label and join two disconnected blocks.
 
 ```powershell
 human-writing-skills lint --draft my-chapter.md --style fiction

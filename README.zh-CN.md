@@ -1,6 +1,6 @@
 # Advanced Human Writing Skills
 
-> 让 AI 写作代理读取可复用的 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
+> 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
@@ -8,7 +8,7 @@
 
 中文说明 | [English](README.md)
 
-Advanced Human Writing Skills 是一个开源、模块化的中英文 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
+Advanced Human Writing Skills 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
 
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
@@ -21,6 +21,7 @@ Advanced Human Writing Skills 是一个开源、模块化的中英文 AI 写作�
 | 改写时悄悄改变事实、语气强度、不确定性或因果 | 仅在提供原文时启用语义保真账本与新增细节检查 |
 | 句子表面流畅却漏字、漏宾语或连接成分 | 用句法槽位、并列对称和指代回查做独立终校 |
 | 模糊归因、意义拔高、假范围、同义词轮换和排版套路反复出现 | 按文体和密度审查表层模式，不搞全局禁词 |
+| 小说被“下午”“某地”“新的决定”等小标题切碎 | 只对叙事文体检查，保留作品名和章节名，要求用正文完成场景过渡 |
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
@@ -84,7 +85,7 @@ Advanced Human Writing Skills 是一个开源、模块化的中英文 AI 写作�
 | `ai-trace-rubric` | 把“还像 AI”拆成可诊断、可修复的维度 |
 | `reference-style-alignment` | 只在明确提供参考资料或文风要求时，提炼可迁移的声音与写法，不复制内容 |
 | `rewrite-fidelity` | 提供原文时检查意义漂移、凭空具体化、正反颠倒和不确定性变化 |
-| `surface-pattern-audit` | 按文体审查表层模式家族，包括装饰性连续比较，但不全局封禁句式 |
+| `surface-pattern-audit` | 按文体审查表层模式、装饰性连续比较和叙事小标题，但不全局封禁句式 |
 | `protected-content` | 防止润色时误改数字、引文、公式、链接、代码、原话和指定术语 |
 | `source-grounding` | 严肃文本有明确来源时，核对主张、出处、适用范围和不确定性 |
 
@@ -101,6 +102,14 @@ human-writing-skills build --style webnovel --context examples/story-ledger.md -
 ```
 
 也可以不安装，继续使用 `python -m humanwriting.cli ...`。`build` 命令会输出一份可以直接复制给 Codex、ChatGPT、Claude、本地大模型或其他写作代理的指令包。
+
+## 多语言范围
+
+技能指令没有中文限定，可以用于模型所支持的英文、日文、法文、西班牙文、
+葡萄牙文、阿拉伯文、拉丁文及其他语言的小说和严肃写作。确定性词汇规则天然会
+受语言影响，但连续性、物理状态、人物关系、场景衔接和大部分审稿标准与语言无关。
+叙事标题扫描已经覆盖上述语言的常见时间卡，`stats` 也能区分汉字、假名、阿拉伯
+文字和多种拉丁字母语言。混合语言或低资源语言仍应结合文体和人工复核。
 
 ## 指令包长什么样
 
@@ -356,6 +365,10 @@ human-writing-skills pipeline `
 内容保护只对论文、新闻以及具有充分证据的法律/技术文档自动加载。小说、网文、
 普通问答、搞怪文本和自媒体默认不加载；需要例外时使用 `--protect-content` 或
 `--protect-term` 明确开启。
+
+使用 `--style fiction` 或 `--style webnovel` 时，`lint` 还会检查未要求的叙事小标题
+和多语言独立时间卡。作品名、章节名不会误报，新闻与论文的结构标题也不受影响。
+修复要求补回自然的正文过渡，而不是删掉“下午”后把两个断裂段落硬接起来。
 
 ```powershell
 human-writing-skills lint --draft my-chapter.md --style fiction

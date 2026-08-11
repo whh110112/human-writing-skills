@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Humanize, write, rewrite, or audit natural Chinese and English prose with genre-aware voice, long-form continuity, semantic fidelity to supplied originals, character-fit dialogue, physical and relationship consistency, deterministic AI-tone pattern linting, optional style statistics, and source-grounded serious writing. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, proofreading, supplied-sample style calibration, and detailed manuscript review.
+description: Humanize, write, rewrite, or audit natural multilingual prose with genre-aware voice, long-form continuity, semantic fidelity to supplied originals, character-fit dialogue, natural scene transitions, physical and relationship consistency, deterministic AI-tone pattern linting, optional style statistics, and source-grounded serious writing. Use for fiction, webnovels, essays, news, self-media, academic prose, chapter continuation, proofreading, supplied-sample style calibration, and detailed manuscript review in Chinese, English, Japanese, French, Spanish, Portuguese, Arabic, Latin, and other model-supported languages.
 ---
 
 # Advanced Human Writing Skills
@@ -18,6 +18,7 @@ chapters, and continuity ledgers separate from optional style references.
 3. Treat user facts and `--context` as authoritative. Never borrow facts from a
    style sample. When `--original` is supplied for a rewrite, activate
    `rewrite-fidelity` and preserve meaning without preserving awkward wording.
+   In fiction and webnovels, do not let time/place mini-headings replace scene bridges.
 4. Activate `reference-style-alignment` only when the user supplies reference
    material, gives an explicit style direction, or directly asks to match a style.
 5. Treat `--source` as factual evidence only. Activate `source-grounding` only for
