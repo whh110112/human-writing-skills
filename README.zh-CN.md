@@ -1,4 +1,4 @@
-# Human Writing Skills
+# Advanced Human Writing Skills
 
 > 让 AI 写作代理读取可复用的 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
@@ -8,7 +8,7 @@
 
 中文说明 | [English](README.md)
 
-Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。
+Advanced Human Writing Skills 是一个开源、模块化的中英文 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
 
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
@@ -18,7 +18,9 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | --- | --- |
 | 文字空泛、对称、像模板 | 用具体的修订检查项压掉套话和泛泛表达 |
 | 反复“不是……是……”“是……不是……”或“比……比……” | 检查句式家族与复现密度，保留必要纠错和真实比较，重写装饰性框架 |
+| 改写时悄悄改变事实、语气强度、不确定性或因果 | 仅在提供原文时启用语义保真账本与新增细节检查 |
 | 句子表面流畅却漏字、漏宾语或连接成分 | 用句法槽位、并列对称和指代回查做独立终校 |
+| 模糊归因、意义拔高、假范围、同义词轮换和排版套路反复出现 | 按文体和密度审查表层模式，不搞全局禁词 |
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
@@ -81,6 +83,8 @@ Human Writing Skills 是一个开源的 AI 写作技能包，也带有一个轻�
 | `editor-loop` | 建立挑剔编辑式的审查与局部重写流程 |
 | `ai-trace-rubric` | 把“还像 AI”拆成可诊断、可修复的维度 |
 | `reference-style-alignment` | 只在明确提供参考资料或文风要求时，提炼可迁移的声音与写法，不复制内容 |
+| `rewrite-fidelity` | 提供原文时检查意义漂移、凭空具体化、正反颠倒和不确定性变化 |
+| `surface-pattern-audit` | 按文体审查表层模式家族，包括装饰性连续比较，但不全局封禁句式 |
 | `protected-content` | 防止润色时误改数字、引文、公式、链接、代码、原话和指定术语 |
 | `source-grounding` | 严肃文本有明确来源时，核对主张、出处、适用范围和不确定性 |
 
@@ -133,6 +137,27 @@ human-writing-skills audit `
 模块会提炼视角、句长节奏、词汇层级、意象密度、场景和人物描写方法、对白
 节拍、情绪表达和转场方式。剧情事实仍以 `--context` 为准，不得复制参考资料的
 人名、事件或标志性句子。详见 [docs/reference-style.zh-CN.md](docs/reference-style.zh-CN.md)。
+
+## 原文改写保真
+
+只有改写现有文字并且必须保持原意时才传入 `--original`。它会为生成或审稿单独
+加载语义保真模块；普通创作不会承担这部分 Token。
+
+```powershell
+human-writing-skills build `
+  --style self-media `
+  --original original.md `
+  --task "在不增加事实、不强化结论的前提下改得更清楚。"
+
+human-writing-skills audit `
+  --draft revised.md `
+  --original original.md `
+  --profile fidelity
+```
+
+`--original` 是改写语义依据，`--reference` 只提供文风依据，`--source` 只为严肃
+文本提供事实证据。三种材料隔离加载，避免范文改写事实，也避免原文被误当成模仿
+目标。详见 [docs/editing-tools.zh-CN.md](docs/editing-tools.zh-CN.md)。
 
 ## 严肃文本来源依据
 
@@ -297,6 +322,7 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 | `ai-trace` | 套话、公式结构、段落无推进和其他 AI 痕迹 |
 | `numbers` | 动作与情绪中的假精确数字 |
 | `proofread` | 错漏字、句法槽位、悬空连接词、指代、标点、称谓和排版 |
+| `fidelity` | 原意、实体、正反、不确定性、时间顺序、归因和新增细节；必须提供 `--original` |
 | `style-match` | 对照明确输入的参考资料检查文风漂移；没有参考信号时不可使用 |
 | `sources` | 对照明确来源核验严肃文本主张；需要 `--source` 和严肃文体 |
 
@@ -317,15 +343,15 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 需要账本；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。清单会说明每项选择和跳过原因。
+每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
 
 - 详细说明：[docs/audit-pipeline.zh-CN.md](docs/audit-pipeline.zh-CN.md)
 
 ### 确定性保护工具
 
-`lint` 会给出规则编号、行列和原文证据；`verify` 会比较改写前后受保护的数字、
-引文、公式、链接、代码和术语。痕迹分数只是透明的编辑启发式，不是 AI 作者
-身份鉴定。
+`lint` 会给出规则编号、行列和原文证据；`stats` 提供可选的分布统计；`fix`
+只预览保守的机械修复；`verify` 会比较改写前后受保护的数字、引文、公式、链接、
+代码和术语。分数与统计只是透明的编辑启发式，不是 AI 作者身份鉴定。
 
 内容保护只对论文、新闻以及具有充分证据的法律/技术文档自动加载。小说、网文、
 普通问答、搞怪文本和自媒体默认不加载；需要例外时使用 `--protect-content` 或
@@ -333,10 +359,13 @@ human-writing-skills pipeline `
 
 ```powershell
 human-writing-skills lint --draft my-chapter.md --style fiction
+human-writing-skills stats --draft my-chapter.md --style fiction
+human-writing-skills fix --draft my-chapter.md --preview
 human-writing-skills verify --source original.md --candidate revised.md --protect-term "星港计划"
 ```
 
 - 痕迹扫描：[docs/pattern-linter.zh-CN.md](docs/pattern-linter.zh-CN.md)
+- 改写保真、统计和保守修复：[docs/editing-tools.zh-CN.md](docs/editing-tools.zh-CN.md)
 - 内容保护：[docs/protected-content.zh-CN.md](docs/protected-content.zh-CN.md)
 
 ### 数字必要性审查
@@ -391,6 +420,7 @@ python -m humanwriting.cli build `
 - `relationship-stance-audit`：检查说话人、听话人、被提及第三方之间的关系立场、秘密和信息权限
 - `cliche-phrase-audit`：检查高频套话、塑料身体动作、空洞情绪标签和万能转场
 - `formulaic-structure-audit`：检查三连式、双向对举、连续“比”比较和每段都收束得太完整的公式结构
+- `surface-pattern-audit`：按文体检查意义拔高、模糊归因、假范围、词汇轮换、排版套路和装饰性连续比较
 - `prose-progress-audit`：检查每段是否真的推进了事实、关系、证据、动作或压力
 - `natural-measurement`：小说、网文和自媒体中检查不合语境的假精确数字
 

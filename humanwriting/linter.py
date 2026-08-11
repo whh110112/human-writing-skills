@@ -62,6 +62,24 @@ COMPARISON_NONMARKER_SUFFIXES = (
     "比肩",
     "比邻",
 )
+INFLATED_CLUSTER_PATTERN = re.compile(
+    r"赋能|助力|深耕|打造|构建|全方位|多维度|新篇章|新征程|持续推进|"
+    r"\b(?:delve|tapestry|vibrant|crucial|robust|seamless|transformative|"
+    r"multifaceted|pivotal|showcasing|underscores?|testament|evolving landscape)\b",
+    re.IGNORECASE,
+)
+ALIAS_CYCLING_GROUPS = (
+    re.compile(r"主人公|主角|中心人物|核心人物|男主|女主"),
+    re.compile(r"\b(?:protagonist|main character|central figure|hero|heroine)\b", re.IGNORECASE),
+)
+INLINE_HEADER_PATTERN = re.compile(
+    r"(?m)^\s*[-*+]\s+(?:\*\*[^*\n]{1,47}[:：]\*\*|\*\*[^*\n]{1,48}\*\*\s*[:：])"
+)
+DECORATIVE_EMOJI_PATTERN = re.compile(
+    "[\U0001F300-\U0001FAFF\u2600-\u27BF]",
+    re.UNICODE,
+)
+TITLE_CASE_HEADING_PATTERN = re.compile(r"(?m)^#{1,6}\s+([A-Z][A-Za-z0-9'-]*(?:\s+[A-Z][A-Za-z0-9'-]*){2,})\s*$")
 
 
 @dataclass(frozen=True)
@@ -228,6 +246,75 @@ RULES = [
             re.IGNORECASE,
         ),
         "Replace promotional adjectives with observable proof.",
+    ),
+    PatternRule(
+        "SIGN001",
+        "significance-inflation",
+        "medium",
+        re.compile(
+            r"标志着.{0,36}(?:重要|关键|崭新|新)(?:时刻|阶段|篇章)|"
+            r"(?:彰显|凸显|体现)了?.{0,32}(?:重要性|深远意义|时代价值)|"
+            r"为.{0,40}奠定了?(?:坚实)?基础|"
+            r"\b(?:marks? a (?:pivotal|historic|significant) moment|serves? as a testament|"
+            r"reflects? broader trends?|sets? the stage for)\b",
+            re.IGNORECASE,
+        ),
+        "State the event and evidence first; keep wider significance only when the passage proves it.",
+    ),
+    PatternRule(
+        "ATTR001",
+        "vague-attribution",
+        "medium",
+        re.compile(
+            r"(?:有|一些|多位)?(?:专家|业内人士|观察人士|分析人士)(?:普遍)?(?:认为|指出|表示)|"
+            r"(?:相关|多项|有)研究(?:普遍)?(?:表明|显示)|(?:相关|多方)数据显示|"
+            r"\b(?:experts? (?:believe|argue|say)|observers? (?:note|suggest)|"
+            r"industry reports? (?:say|suggest)|studies (?:show|suggest))\b",
+            re.IGNORECASE,
+        ),
+        "Name the source and supported claim, or remove the borrowed authority.",
+    ),
+    PatternRule(
+        "CHALLENGE001",
+        "formulaic-challenge-closure",
+        "medium",
+        re.compile(
+            r"尽管.{0,90}(?:挑战|困难|问题).{0,120}(?:仍然|依然|仍|继续).{0,36}(?:发展|前行|繁荣|增长|迈进)|"
+            r"\bdespite.{0,100}challenges?.{0,120}(?:continues? to|remains?)\b",
+            re.IGNORECASE | re.DOTALL,
+        ),
+        "Replace the challenge wrapper with the specific constraint, response, and unresolved result.",
+    ),
+    PatternRule(
+        "COPULA001",
+        "elaborate-copula",
+        "low",
+        re.compile(
+            r"\b(?:serves? as|stands? as|boasts?|holds? the distinction of being)\b",
+            re.IGNORECASE,
+        ),
+        "Check whether a simple is, has, or direct verb would carry the same meaning more clearly.",
+    ),
+    PatternRule(
+        "ING001",
+        "decorative-participle",
+        "low",
+        re.compile(
+            r",\s*(?:highlighting|showcasing|underscoring|reflecting|symbolizing|ensuring)\b",
+            re.IGNORECASE,
+        ),
+        "Verify that the appended analysis adds evidence rather than announcing significance.",
+    ),
+    PatternRule(
+        "RANGE001",
+        "range-rhetoric",
+        "medium",
+        re.compile(
+            r"从[^，。！？\n]{1,36}到[^，。！？\n]{1,36}[，,；;]\s*从[^，。！？\n]{1,36}到|"
+            r"\bfrom\s+[^,.;]{1,50}\s+to\s+[^,.;]{1,50}[,;]\s*from\s+[^,.;]{1,50}\s+to\b",
+            re.IGNORECASE,
+        ),
+        "Check whether both ranges share a meaningful axis; otherwise list the actual covered items.",
     ),
     PatternRule(
         "HEDGE001",
@@ -448,17 +535,114 @@ def lint_text(
                 comparison_offsets = _comparative_bi_offsets(sentence)
                 if len(comparison_offsets) < 2:
                     continue
+                rule_id = "STR004" if len(comparison_offsets) >= 3 else "STR002"
+                category = (
+                    "comparison-ladder-density" if rule_id == "STR004" else "comparison-ladder"
+                )
+                if rule_id in allowed or category in allowed:
+                    continue
                 findings.append(
                     _finding_from_span(
                         text,
-                        "STR002",
-                        "comparison-ladder",
-                        "medium",
+                        rule_id,
+                        category,
+                        "high" if rule_id == "STR004" else "medium",
                         start + comparison_offsets[0],
                         min(end, start + comparison_offsets[-1] + 24),
-                        "This sentence chains multiple 比-comparisons; keep one shared criterion, split unlike criteria, or state the observed change directly.",
+                        (
+                            "This sentence stacks three or more 比-comparisons; rewrite the decorative ladder before delivery while preserving distinct facts."
+                            if rule_id == "STR004"
+                            else "This sentence chains multiple 比-comparisons; keep one shared criterion, split unlike criteria, or state the observed change directly."
+                        ),
                     )
                 )
+
+    inflated_matches = list(INFLATED_CLUSTER_PATTERN.finditer(masked))
+    if (
+        len(inflated_matches) >= 4
+        and "LEX003" not in allowed
+        and "inflated-vocabulary-density" not in allowed
+    ):
+        first = inflated_matches[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "LEX003",
+                "inflated-vocabulary-density",
+                "high" if len(inflated_matches) >= 7 else "medium",
+                first.start(),
+                inflated_matches[min(len(inflated_matches) - 1, 3)].end(),
+                "Inflated or prestige vocabulary clusters in this passage; replace the cluster with claims, actors, and observable proof.",
+            )
+        )
+
+    if style in NARRATIVE_STYLES:
+        for alias_pattern in ALIAS_CYCLING_GROUPS:
+            aliases = list(dict.fromkeys(match.group(0).lower() for match in alias_pattern.finditer(masked)))
+            if (
+                len(aliases) >= 3
+                and "ALIAS001" not in allowed
+                and "synonym-cycling" not in allowed
+            ):
+                first = alias_pattern.search(masked)
+                if first:
+                    findings.append(
+                        _finding_from_span(
+                            text,
+                            "ALIAS001",
+                            "synonym-cycling",
+                            "medium",
+                            first.start(),
+                            first.end(),
+                            "Several labels rename the same narrative role; repeat the established name or title unless the label changes viewpoint.",
+                        )
+                    )
+                break
+
+    inline_headers = list(INLINE_HEADER_PATTERN.finditer(masked))
+    if len(inline_headers) >= 3 and "FORMAT001" not in allowed and "inline-header-density" not in allowed:
+        first = inline_headers[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "FORMAT001",
+                "inline-header-density",
+                "low",
+                first.start(),
+                first.end(),
+                "Repeated bold-label bullets may be template scaffolding; keep them only when the document is genuinely reference-oriented.",
+            )
+        )
+
+    emoji_matches = list(DECORATIVE_EMOJI_PATTERN.finditer(masked))
+    if len(emoji_matches) >= 3 and "FORMAT002" not in allowed and "decorative-emoji-density" not in allowed:
+        first = emoji_matches[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "FORMAT002",
+                "decorative-emoji-density",
+                "low",
+                first.start(),
+                first.end(),
+                "Decorative emoji recur; verify that the channel and audience expect them.",
+            )
+        )
+
+    title_headings = list(TITLE_CASE_HEADING_PATTERN.finditer(masked))
+    if len(title_headings) >= 3 and "FORMAT003" not in allowed and "title-case-heading-density" not in allowed:
+        first = title_headings[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "FORMAT003",
+                "title-case-heading-density",
+                "low",
+                first.start(),
+                first.end(),
+                "English headings repeatedly use title case; confirm the publication's house style instead of normalizing automatically.",
+            )
+        )
 
     contrast_matches = list(FORMULAIC_CONTRAST_PATTERN.finditer(masked))
     if (

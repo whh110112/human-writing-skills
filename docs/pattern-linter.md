@@ -11,12 +11,13 @@ human-writing-skills lint --draft chapter.md --allow PREC001 --fail-score 35
 
 Checks include inflated vocabulary, generic body cues, empty atmosphere, formulaic
 contrast, dead transitions, chatbot residue, promotional language, stacked hedging,
-false precision, unusually uniform sentence rhythm, and excessive dash density.
-`STR001` covers both not-X/is-Y and is-X/not-Y frames. `STR002` finds sentences
-that chain multiple Chinese 比 comparisons, while `STR003` escalates only when
-contrast frames recur densely across a passage. News and academic profiles suppress
-the comparison-ladder rule. `SYN001` reports high-confidence omission symptoms where
-a connector or function word is stranded at sentence end; the model-based proofread
+false precision, vague attribution, false ranges, synonym cycling, formatting habits,
+uniform sentence rhythm, and excessive dash density. `STR001` covers both not-X/is-Y
+and is-X/not-Y frames. Two valid Chinese `比` clauses trigger medium `STR002`; three
+or more trigger high `STR004` outside academic and news styles. `STR003` escalates
+when contrast frames recur densely across a passage. This is contextual review, not
+automatic deletion. `SYN001` reports high-confidence omission symptoms where a
+connector or function word is stranded at sentence end; the model-based proofread
 pass handles ambiguous missing constituents through predicate slots, parallel clauses,
 and reference resolution.
 For narrative styles it also checks dense comparison clusters (`IMG001`), four-or-more
@@ -27,6 +28,13 @@ cinematic opening bundles (`OPEN002`), repeated vague introspection
 these rules for news or academic writing. Code, URLs, and Markdown
 quotations are masked.
 
+Additional surface families include significance inflation (`SIGN001`), vague
+attribution (`ATTR001`), formulaic challenge closures (`CHALLENGE001`), elaborate
+English copulas (`COPULA001`), decorative participles (`ING001`), false-range density
+(`RANGE001`), inflated lexical clusters (`LEX003`), narrative synonym cycling
+(`ALIAS001`), and repeated formatting templates (`FORMAT001`-`FORMAT003`). Most are
+density-based so one justified use does not become a ban.
+
 These are misuse checks, not banned characters. Keep factual correction, legal
 exclusion, source-based comparison, character rebuttal, and intentional fragments.
 Repair the information path instead of mechanically replacing a connective.
@@ -35,3 +43,6 @@ The score is transparent and deterministic, but it is not evidence of AI
 authorship. Review every evidence span in context and allowlist intentional usage.
 `pipeline` writes the same preflight as `00-pattern-lint.md` and JSON before its
 model-based stages.
+
+For optional distributional statistics and conservative mechanical fixes, see
+[editing-tools.md](editing-tools.md).

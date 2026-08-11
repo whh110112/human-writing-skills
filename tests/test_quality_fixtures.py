@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -20,6 +21,21 @@ class QualityFixtureTests(unittest.TestCase):
 
         self.assertGreater(draft_report.score, reference_report.score)
         self.assertTrue({"LEX002", "EMO001"} <= {item.rule_id for item in draft_report.findings})
+
+    def test_cross_genre_calibration_cases_rank_template_text_higher(self):
+        cases = json.loads(
+            (ROOT / "tests" / "fixtures" / "quality" / "calibration-cases.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        for case in cases:
+            with self.subTest(case=case["name"]):
+                natural = lint_text(case["natural"], style=case["style"])
+                template = lint_text(case["template"], style=case["style"])
+                self.assertGreater(template.score, natural.score)
+                self.assertTrue(
+                    set(case["expected"]) <= {finding.rule_id for finding in template.findings}
+                )
 
 
 if __name__ == "__main__":

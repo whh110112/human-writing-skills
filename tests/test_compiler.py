@@ -57,6 +57,8 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("attention-budget-audit", list_module_skills())
         self.assertIn("chapter-pattern-audit", list_module_skills())
         self.assertIn("source-grounding", list_module_skills())
+        self.assertIn("rewrite-fidelity", list_module_skills())
+        self.assertIn("surface-pattern-audit", list_module_skills())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -101,6 +103,23 @@ class CompilerTests(unittest.TestCase):
         prompt = compile_prompt("fiction", "Write a quiet scene by the river.")
         self.assertNotIn("Technique Module: reference-style-alignment", prompt)
         self.assertNotIn("Reference Style Material", prompt)
+
+    def test_original_activates_fidelity_without_style_or_source_contamination(self):
+        with TemporaryDirectory() as directory:
+            original = Path(directory) / "original.md"
+            original.write_text("约有一半参与者表示不确定。", encoding="utf-8")
+            prompt = compile_prompt(
+                "self-media",
+                "润色这段原文，不要增加事实。",
+                original_path=str(original),
+            )
+            plain = compile_prompt("self-media", "写一篇新文章。")
+        self.assertIn("Technique Module: rewrite-fidelity", prompt)
+        self.assertIn("Original Text For Fidelity", prompt)
+        self.assertIn("约有一半", prompt)
+        self.assertNotIn("Reference Style Material", prompt)
+        self.assertNotIn("Supplied Factual Sources", prompt)
+        self.assertNotIn("Technique Module: rewrite-fidelity", plain)
 
     def test_explicit_task_style_request_activates_reference_module(self):
         prompt = compile_prompt("fiction", "参考冷峻克制的文风写下一场戏。")
@@ -157,6 +176,22 @@ class CompilerTests(unittest.TestCase):
             draft.write_text("A short draft.", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "requires --reference"):
                 compile_audit_prompt(str(draft), profiles=["style-match"])
+
+    def test_fidelity_profile_requires_and_isolates_original(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "original.md"
+            candidate = root / "candidate.md"
+            original.write_text("他可能在周五离开。", encoding="utf-8")
+            candidate.write_text("他确定会在周五离开。", encoding="utf-8")
+            prompt = compile_audit_prompt(
+                str(candidate), profiles=["fidelity"], original_path=str(original)
+            )
+            with self.assertRaisesRegex(ValueError, "requires --original"):
+                compile_audit_prompt(str(candidate), profiles=["fidelity"])
+        self.assertIn("Audit Module: rewrite-fidelity", prompt)
+        self.assertIn("Original Text For Fidelity", prompt)
+        self.assertNotIn("Audit Module: ai-trace-rubric", prompt)
 
     def test_compile_prompt_can_add_modules(self):
         prompt = compile_prompt(
@@ -581,6 +616,41 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("| `style-match` | yes |", without_manifest)
         self.assertIn("| `style-match` | yes |", with_manifest)
         self.assertIn("style-match", [stage.profile for stage in stages])
+
+    def test_pipeline_adds_one_fidelity_stage_only_with_original(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "original.md"
+            draft = root / "draft.md"
+            original.write_text("约有一半用户表示不确定。", encoding="utf-8")
+            draft.write_text("80%的用户表示满意。", encoding="utf-8")
+            _, stages = write_audit_pipeline(
+                str(draft),
+                str(root / "pipeline"),
+                auto=True,
+                original_path=str(original),
+            )
+            fidelity = [stage for stage in stages if stage.profile == "fidelity"]
+            self.assertEqual(len(fidelity), 1)
+            self.assertIn("约有一半", fidelity[0].prompt)
+            self.assertTrue(
+                all("约有一半" not in stage.prompt for stage in stages if stage.profile != "fidelity")
+            )
+
+    def test_pipeline_writes_statistics_only_when_requested(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            draft.write_text("第一句很短。第二句也很短。第三句仍然很短。" * 4, encoding="utf-8")
+            plain, _ = write_audit_pipeline(str(draft), str(root / "plain"), stages=["ai-trace"])
+            measured, _ = write_audit_pipeline(
+                str(draft),
+                str(root / "measured"),
+                stages=["ai-trace"],
+                with_stats=True,
+            )
+            self.assertFalse((plain / "00-style-stats.json").exists())
+            self.assertTrue((measured / "00-style-stats.json").exists())
 
     def test_pipeline_sources_are_serious_only_and_isolated(self):
         with TemporaryDirectory() as directory:

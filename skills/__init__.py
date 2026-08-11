@@ -1,1 +1,1 @@
-"""Packaged Markdown resources for Human Writing Skills."""
+"""Packaged Markdown resources for Advanced Human Writing Skills."""

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Human Writing Skills"
-  short_description: "Natural prose, long-form continuity, world logic, and focused audits"
-  default_prompt: "Use $human-writing-skills with only the relevant modules while preserving facts, world rules, continuity, earned outcomes, scene pressure, character-fit dialogue, and supplied-source boundaries."
+  display_name: "Advanced Human Writing Skills"
+  short_description: "Natural Chinese/English prose, fidelity, continuity, and focused audits"
+  default_prompt: "Use $human-writing-skills with only the relevant modules while preserving facts, rewrite meaning, world rules, continuity, earned outcomes, scene pressure, character-fit dialogue, and supplied-source boundaries."

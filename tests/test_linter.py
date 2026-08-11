@@ -61,6 +61,14 @@ class LinterTests(unittest.TestCase):
         report = lint_text(text, style="fiction")
         self.assertIn("STR003", {finding.rule_id for finding in report.findings})
 
+    def test_three_comparisons_escalate_and_two_remain_reviewable(self):
+        two = lint_text("风比刚才冷，比走廊里更硬。", style="fiction")
+        three = lint_text("风比刚才冷，比走廊硬，比她记忆里的冬天更长。", style="fiction")
+        self.assertIn("STR002", {finding.rule_id for finding in two.findings})
+        self.assertNotIn("STR004", {finding.rule_id for finding in two.findings})
+        severe = next(finding for finding in three.findings if finding.rule_id == "STR004")
+        self.assertEqual(severe.severity, "high")
+
     def test_comparison_ladder_respects_serious_style_and_nonmarkers(self):
         serious = lint_text("实验组比对照组高，比基线低。", style="academic-paper")
         nonmarkers = lint_text("同比和环比数据用于比较比例。", style="fiction")
@@ -73,6 +81,36 @@ class LinterTests(unittest.TestCase):
         self.assertEqual(len(omissions), 2)
         allowed = lint_text("他刚想把。", style="fiction", allow={"possible-omission"})
         self.assertNotIn("SYN001", {finding.rule_id for finding in allowed.findings})
+
+    def test_reports_extended_surface_pattern_families(self):
+        text = (
+            "有专家认为，这标志着一个关键时刻。"
+            "尽管项目面临很多挑战，它仍然继续向前发展。"
+            "本书从星系到药物，从记忆到桥梁。"
+        )
+        rule_ids = {finding.rule_id for finding in lint_text(text).findings}
+        self.assertTrue({"ATTR001", "SIGN001", "CHALLENGE001", "RANGE001"} <= rule_ids)
+
+    def test_reports_density_without_banning_single_words_or_formats(self):
+        clustered = lint_text("赋能产业，助力增长，深耕市场，开启新篇章。")
+        single = lint_text("这项工具可以助力校对。")
+        formatted = lint_text(
+            "- **目标：** 完成审核\n- **范围：** 两章\n- **结果：** 修改三处\n"
+            "## Product Strategy Review\n## Market Risk Analysis\n## Customer Value Report\n"
+        )
+        self.assertIn("LEX003", {finding.rule_id for finding in clustered.findings})
+        self.assertNotIn("LEX003", {finding.rule_id for finding in single.findings})
+        self.assertTrue(
+            {"FORMAT001", "FORMAT003"}
+            <= {finding.rule_id for finding in formatted.findings}
+        )
+
+    def test_reports_narrative_synonym_cycling_only_for_narrative_styles(self):
+        text = "主人公推门。主角停了一下。中心人物最后走进雨里。"
+        fiction = lint_text(text, style="fiction")
+        news = lint_text(text, style="news-report")
+        self.assertIn("ALIAS001", {finding.rule_id for finding in fiction.findings})
+        self.assertNotIn("ALIAS001", {finding.rule_id for finding in news.findings})
 
     def test_json_output_contains_structured_spans(self):
         report = lint_text("In today's fast-paced world, let's dive in.")

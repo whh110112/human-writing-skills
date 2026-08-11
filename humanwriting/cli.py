@@ -6,11 +6,13 @@ from pathlib import Path
 
 from .compiler import compile_audit_prompt, compile_prompt
 from .detection import PIPELINE_PROFILES
+from .fixer import fix_file, format_fix_report
 from .linter import format_lint_report, lint_file
 from .pipeline import write_audit_pipeline
 from .protection import compare_protected_files, format_protection_report
 from .reference import DEFAULT_REFERENCE_BUDGET
 from .source import DEFAULT_SOURCE_BUDGET
+from .statistics import analyze_style_file, format_style_statistics
 from .skills import list_module_skills, list_skills, list_style_skills
 
 
@@ -92,6 +94,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Add dynamic number necessity review for false precision.",
     )
     build.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
+    build.add_argument(
+        "--original",
+        help="Original text file for a rewrite. Activates semantic-fidelity protection.",
+    )
     build.add_argument("--task", required=True, help="Writing task to perform.")
     build.add_argument(
         "--protect-content",
@@ -110,6 +116,10 @@ def build_parser() -> argparse.ArgumentParser:
     audit = subparsers.add_parser("audit", help="Build a forensic audit pack for an existing draft.")
     audit.add_argument("--draft", required=True, help="Markdown/text file containing the draft to audit.")
     audit.add_argument("--context", help="Optional Markdown continuity ledger or source notes.")
+    audit.add_argument(
+        "--original",
+        help="Pre-rewrite original. Automatically adds the fidelity profile.",
+    )
     audit.add_argument(
         "--module",
         action="append",
@@ -166,6 +176,10 @@ def build_parser() -> argparse.ArgumentParser:
     pipeline.add_argument("--draft", required=True, help="Markdown/text draft to audit.")
     pipeline.add_argument("--context", help="Optional continuity ledger or source notes.")
     pipeline.add_argument(
+        "--original",
+        help="Pre-rewrite original. Adds one isolated fidelity stage.",
+    )
+    pipeline.add_argument(
         "--output-dir",
         help="Output directory. Defaults to <draft-name>-audit-pipeline.",
     )
@@ -199,6 +213,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help="Allowed lint rule id or category. Can be repeated.",
+    )
+    pipeline.add_argument(
+        "--with-stats",
+        action="store_true",
+        help="Also write optional deterministic style-statistics preflight files.",
     )
     selection = pipeline.add_mutually_exclusive_group()
     selection.add_argument(
@@ -240,6 +259,51 @@ def build_parser() -> argparse.ArgumentParser:
         "--fail-score",
         type=int,
         help="Return exit code 1 when the transparent pattern score reaches this value.",
+    )
+
+    stats = subparsers.add_parser(
+        "stats",
+        help="Report optional language-aware style statistics without authorship claims.",
+    )
+    stats.add_argument("--draft", required=True, help="Markdown/text file to inspect.")
+    stats.add_argument(
+        "--style",
+        choices=["general", *list_style_skills()],
+        default="general",
+        help="Genre tolerance profile.",
+    )
+    stats.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format.",
+    )
+
+    fix = subparsers.add_parser(
+        "fix",
+        help="Preview conservative mechanical fixes; semantic rewriting is never automatic.",
+    )
+    fix.add_argument("--draft", required=True, help="Markdown/text file to inspect.")
+    fix_mode = fix.add_mutually_exclusive_group()
+    fix_mode.add_argument(
+        "--preview",
+        action="store_true",
+        help="Preview only. This is the default when no write option is supplied.",
+    )
+    fix_mode.add_argument(
+        "--apply",
+        action="store_true",
+        help="Write the conservative candidate back to the original file.",
+    )
+    fix.add_argument(
+        "--output",
+        help="Write the conservative candidate to a separate file.",
+    )
+    fix.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Preview/report format.",
     )
 
     verify = subparsers.add_parser(
@@ -294,6 +358,7 @@ def main(argv: list[str] | None = None) -> int:
                 reference_budget=args.reference_budget,
                 source_paths=args.source,
                 source_budget=args.source_budget,
+                original_path=args.original,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
             )
@@ -316,6 +381,7 @@ def main(argv: list[str] | None = None) -> int:
                 reference_budget=args.reference_budget,
                 source_paths=args.source,
                 source_budget=args.source_budget,
+                original_path=args.original,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
                 document_type=args.document_type,
@@ -339,11 +405,13 @@ def main(argv: list[str] | None = None) -> int:
                 reference_budget=args.reference_budget,
                 source_paths=args.source,
                 source_budget=args.source_budget,
+                original_path=args.original,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
                 document_type=args.document_type,
                 lint_style=args.lint_style,
                 lint_allow=set(args.lint_allow),
+                with_stats=args.with_stats,
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
@@ -360,6 +428,26 @@ def main(argv: list[str] | None = None) -> int:
         print(format_lint_report(report, args.format), end="")
         if args.fail_score is not None and report.score >= args.fail_score:
             return 1
+        return 0
+
+    if args.command == "stats":
+        try:
+            report = analyze_style_file(args.draft, style=args.style)
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(format_style_statistics(report, args.format), end="")
+        return 0
+
+    if args.command == "fix":
+        if args.preview and args.output:
+            parser.error("--preview cannot be combined with --output.")
+        if args.apply and args.output:
+            parser.error("--apply cannot be combined with --output.")
+        try:
+            report = fix_file(args.draft, output_path=args.output, apply=args.apply)
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(format_fix_report(report, args.format), end="")
         return 0
 
     if args.command == "verify":

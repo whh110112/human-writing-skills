@@ -6,9 +6,11 @@ from pathlib import Path
 from .compiler import compile_audit_prompt, read_optional
 from .detection import PIPELINE_PROFILES, ProfileDecision, detect_audit_profiles
 from .linter import format_lint_report, lint_file
+from .original import build_original_pack
 from .protection import detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
+from .statistics import analyze_style_file, format_style_statistics
 
 
 @dataclass(frozen=True)
@@ -24,6 +26,7 @@ def select_pipeline_profiles(
     stages: list[str] | None = None,
     auto: bool = False,
     reference_active: bool = False,
+    original_active: bool = False,
     context_active: bool = False,
     source_active: bool = False,
     serious_document: bool = False,
@@ -35,6 +38,8 @@ def select_pipeline_profiles(
             raise ValueError(f"Unknown pipeline stage: {', '.join(sorted(unknown))}")
         if "style-match" in selected and not reference_active:
             raise ValueError("The style-match stage requires --reference or --reference-style.")
+        if "fidelity" in selected and not original_active:
+            raise ValueError("The fidelity stage requires --original with the pre-rewrite text.")
         if "sources" in selected and not source_active:
             raise ValueError("The sources stage requires one or more --source files.")
         if "sources" in selected and not serious_document:
@@ -49,6 +54,8 @@ def select_pipeline_profiles(
             )
             if profile == "style-match" and not reference_active:
                 reason = "No explicit reference material or style direction was supplied."
+            if profile == "fidelity" and not original_active:
+                reason = "No pre-rewrite --original file was supplied."
             if profile == "sources" and not source_active:
                 reason = "No factual --source files were supplied."
             elif profile == "sources" and not serious_document:
@@ -59,6 +66,7 @@ def select_pipeline_profiles(
         decisions = detect_audit_profiles(
             draft,
             reference_active=reference_active,
+            original_active=original_active,
             context_active=context_active,
             source_active=source_active,
             serious_document=serious_document,
@@ -77,15 +85,20 @@ def select_pipeline_profiles(
             "recurrence",
             "texture",
             "sources",
+            "fidelity",
         }
         if profile == "style-match":
             include = reference_active
+        if profile == "fidelity":
+            include = original_active
         if profile == "sources":
             include = source_active and serious_document
         if include:
             reason = "Included in the established broad pipeline."
         elif profile == "style-match":
             reason = "No explicit reference material or style direction was supplied."
+        elif profile == "fidelity":
+            reason = "An original was supplied." if original_active else "No pre-rewrite --original file was supplied."
         elif profile == "sources" and not source_active:
             reason = "No factual --source files were supplied."
         elif profile == "sources":
@@ -108,6 +121,7 @@ def build_audit_pipeline(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     source_paths: list[str] | None = None,
     source_budget: int = DEFAULT_SOURCE_BUDGET,
+    original_path: str | None = None,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
@@ -120,12 +134,14 @@ def build_audit_pipeline(
         budget=reference_budget,
     )
     source_pack = build_source_pack(source_paths, source_budget)
+    original_pack = build_original_pack(original_path)
     serious_document, _ = detect_serious_document(draft, document_type=document_type)
     selected, decisions = select_pipeline_profiles(
         draft,
         stages=stages,
         auto=auto,
         reference_active=reference_pack.active,
+        original_active=original_pack.active,
         context_active=context_active,
         source_active=source_pack.active,
         serious_document=serious_document,
@@ -150,6 +166,7 @@ def build_audit_pipeline(
                 reference_budget=reference_budget,
                 source_paths=source_paths if profile == "sources" else None,
                 source_budget=source_budget,
+                original_path=original_path if profile == "fidelity" else None,
                 protect_content=protect_content,
                 protect_terms=protect_terms,
                 document_type=document_type,
@@ -172,11 +189,13 @@ def write_audit_pipeline(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     source_paths: list[str] | None = None,
     source_budget: int = DEFAULT_SOURCE_BUDGET,
+    original_path: str | None = None,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
     lint_style: str = "general",
     lint_allow: set[str] | None = None,
+    with_stats: bool = False,
 ) -> tuple[Path, list[AuditStage]]:
     pipeline, decisions = build_audit_pipeline(
         draft_path,
@@ -188,6 +207,7 @@ def write_audit_pipeline(
         reference_budget=reference_budget,
         source_paths=source_paths,
         source_budget=source_budget,
+        original_path=original_path,
         protect_content=protect_content,
         protect_terms=protect_terms,
         document_type=document_type,
@@ -202,6 +222,15 @@ def write_audit_pipeline(
     (output / "00-pattern-lint.json").write_text(
         format_lint_report(lint_report, "json"), encoding="utf-8"
     )
+    stats_report = None
+    if with_stats:
+        stats_report = analyze_style_file(draft_path, style=lint_style)
+        (output / "00-style-stats.md").write_text(
+            format_style_statistics(stats_report, "markdown"), encoding="utf-8"
+        )
+        (output / "00-style-stats.json").write_text(
+            format_style_statistics(stats_report, "json"), encoding="utf-8"
+        )
 
     rows = []
     for stage in pipeline:
@@ -224,6 +253,11 @@ def write_audit_pipeline(
             "Start with `00-pattern-lint.md` for deterministic evidence spans. Its score is",
             "a transparent editing heuristic, not evidence of AI authorship.",
             f"Pattern lint style: `{lint_style}`; score: `{lint_report.score}`; findings: `{len(lint_report.findings)}`.",
+            (
+                f"Optional style statistics: enabled; warnings: `{len(stats_report.warnings)}`."
+                if stats_report is not None
+                else "Optional style statistics: disabled; use `--with-stats` when needed."
+            ),
             "",
             "| Order | Profile | Why selected | Prompt file |",
             "| --- | --- | --- | --- |",
@@ -239,7 +273,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match -> numbers -> sources -> proofreading.",
+            "optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity -> numbers -> sources -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

@@ -19,6 +19,7 @@ PIPELINE_PROFILES = [
     "ai-trace",
     "texture",
     "style-match",
+    "fidelity",
     "numbers",
     "sources",
     "proofread",
@@ -271,6 +272,7 @@ def _recurrence_reason(text: str) -> tuple[bool, str]:
 def detect_audit_profiles(
     draft: str,
     reference_active: bool = False,
+    original_active: bool = False,
     context_active: bool = False,
     source_active: bool = False,
     serious_document: bool = False,
@@ -293,6 +295,12 @@ def detect_audit_profiles(
             "Explicit reference material or style direction was supplied."
             if reference_active
             else "No explicit reference material or style direction was supplied.",
+        ),
+        "fidelity": (
+            original_active,
+            "An explicit pre-rewrite original was supplied."
+            if original_active
+            else "No pre-rewrite --original file was supplied.",
         ),
         "sources": (
             source_active and serious_document,

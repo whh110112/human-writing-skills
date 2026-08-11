@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from .original import build_original_pack
 from .protection import build_protection_manifest, detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
@@ -51,12 +52,14 @@ NARRATIVE_REVIEW_MODULES = [
 DEEP_REVIEW_MODULES = [
     "cliche-phrase-audit",
     "formulaic-structure-audit",
+    "surface-pattern-audit",
     "prose-progress-audit",
 ]
 AI_TRACE_AUDIT_MODULES = [
     "ai-trace-rubric",
     "cliche-phrase-audit",
     "formulaic-structure-audit",
+    "surface-pattern-audit",
     "prose-progress-audit",
 ]
 RELATIONSHIP_AUDIT_MODULES = [
@@ -89,6 +92,7 @@ TEXTURE_AUDIT_MODULES = [
 PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
 REFERENCE_STYLE_AUDIT_MODULES = ["reference-style-alignment"]
 SOURCE_AUDIT_MODULES = ["source-grounding"]
+FIDELITY_AUDIT_MODULES = ["rewrite-fidelity"]
 PROTECTED_CONTENT_MODULES = ["protected-content"]
 AUDIT_PROFILES = {
     "full",
@@ -109,6 +113,7 @@ AUDIT_PROFILES = {
     "proofread",
     "style-match",
     "sources",
+    "fidelity",
 }
 
 
@@ -118,6 +123,8 @@ Write with a human editor's priorities: intention, specificity, continuity, and 
 Avoid generic filler, repetitive sentence frames, inflated transitions, empty certainty,
 summary paragraphs that merely restate the prompt, and precision that does not fit
 the genre or narrator.
+Do not stack parallel comparisons merely to intensify; keep multiple comparison clauses
+only when each carries a distinct and necessary fact.
 
 Before drafting, identify the active context, genre promise, reader expectation, and
 the one thing this passage must change. During drafting, preserve established facts.
@@ -183,6 +190,7 @@ def compile_prompt(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     source_paths: list[str] | None = None,
     source_budget: int = DEFAULT_SOURCE_BUDGET,
+    original_path: str | None = None,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
 ) -> str:
@@ -198,6 +206,7 @@ def compile_prompt(
         budget=reference_budget,
     )
     source_pack = build_source_pack(source_paths, source_budget)
+    original_pack = build_original_pack(original_path)
     dialogue_generation_active = (
         style in DIALOGUE_GENERATION_STYLES
         and bool(DIALOGUE_GENERATION_PATTERN.search(task))
@@ -233,6 +242,8 @@ def compile_prompt(
         append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
     if source_pack.active and auto_protection:
         append_missing(selected_modules, SOURCE_AUDIT_MODULES)
+    if original_pack.active:
+        append_missing(selected_modules, FIDELITY_AUDIT_MODULES)
     if strict_continuity:
         append_missing(
             selected_modules,
@@ -264,6 +275,8 @@ def compile_prompt(
         blocks.append(reference_pack.block)
     if source_pack.active and auto_protection:
         blocks.append(source_pack.block)
+    if original_pack.active:
+        blocks.append(original_pack.block)
     if protection_active:
         blocks.append(f"# Protection Activation\n\n{protection_reason}")
         protected_source = "\n".join(part for part in [context, task] if part)
@@ -290,6 +303,7 @@ def compile_audit_prompt(
     reference_budget: int = DEFAULT_REFERENCE_BUDGET,
     source_paths: list[str] | None = None,
     source_budget: int = DEFAULT_SOURCE_BUDGET,
+    original_path: str | None = None,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
@@ -305,8 +319,11 @@ def compile_audit_prompt(
         budget=reference_budget,
     )
     source_pack = build_source_pack(source_paths, source_budget)
+    original_pack = build_original_pack(original_path)
     if reference_pack.active:
         requested_profiles.add("style-match")
+    if original_pack.active:
+        requested_profiles.add("fidelity")
     if number_sense:
         requested_profiles.add("numbers")
     serious_document, serious_document_reason = detect_serious_document(
@@ -320,6 +337,8 @@ def compile_audit_prompt(
         raise ValueError(f"Unknown audit profile: {', '.join(sorted(unknown_profiles))}")
     if "style-match" in requested_profiles and not reference_pack.active:
         raise ValueError("The style-match profile requires --reference or --reference-style.")
+    if "fidelity" in requested_profiles and not original_pack.active:
+        raise ValueError("The fidelity profile requires --original with the pre-rewrite text.")
     if "serial" in requested_profiles and not context:
         raise ValueError("The serial profile requires --context with prior chapters or a continuity ledger.")
     if "sources" in requested_profiles and not source_pack.active:
@@ -345,6 +364,7 @@ def compile_audit_prompt(
     proofread_enabled = bool(requested_profiles & {"full", "proofread"})
     style_match_enabled = "style-match" in requested_profiles
     sources_enabled = "sources" in requested_profiles
+    fidelity_enabled = "fidelity" in requested_profiles
 
     if logic_enabled:
         append_missing(selected_modules, LOGIC_AUDIT_MODULES)
@@ -380,6 +400,8 @@ def compile_audit_prompt(
         append_missing(selected_modules, REFERENCE_STYLE_AUDIT_MODULES)
     if sources_enabled:
         append_missing(selected_modules, SOURCE_AUDIT_MODULES)
+    if fidelity_enabled:
+        append_missing(selected_modules, FIDELITY_AUDIT_MODULES)
     protection_requested = protect_content or bool(protect_terms) or any(
         module.name == "protected-content" for module in selected_modules
     )
@@ -410,6 +432,8 @@ def compile_audit_prompt(
         blocks.append(reference_pack.block)
     if sources_enabled:
         blocks.append(source_pack.block)
+    if fidelity_enabled:
+        blocks.append(original_pack.block)
     if protection_active:
         blocks.append(f"# Protection Activation\n\n{protection_reason}")
         blocks.append(build_protection_manifest(draft, protect_terms))
@@ -507,6 +531,11 @@ def compile_audit_prompt(
         task_lines.append(
             "For source grounding, map each material claim to a supplied source location, distinguish "
             "existence from support, and mark anything requiring external verification instead of guessing."
+        )
+    if fidelity_enabled:
+        task_lines.append(
+            "For rewrite fidelity, compare original and candidate claim units; flag omitted, broadened, "
+            "reversed, reattributed, reordered, or invented meaning and propose the smallest repair."
         )
     blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"

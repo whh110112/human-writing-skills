@@ -1,4 +1,4 @@
-# Human Writing Skills
+# Advanced Human Writing Skills
 
 > Reusable writing `SKILLS` for AI agents that need natural prose, genre-aware style, and long-form continuity.
 
@@ -8,7 +8,7 @@
 
 [中文说明](README.zh-CN.md) | English
 
-Human Writing Skills is an open-source skill pack and lightweight prompt compiler for AI-assisted writing.
+Advanced Human Writing Skills is an open-source, modular skill pack and lightweight prompt compiler for natural Chinese and English AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
 
 It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
@@ -22,7 +22,9 @@ AI writing often fails in predictable ways:
 | --- | --- |
 | Generic "AI voice" | Concrete revision checks for rhythm, specificity, and empty phrasing |
 | Repeated not-X/is-Y, is-X/not-Y, or chained Chinese 比 frames | Family- and density-based checks that preserve necessary correction and real comparison |
+| Rewriting silently changes facts, uncertainty, or causal meaning | An opt-in original-text fidelity pass with a claim ledger and invention checks |
 | Fluent-looking sentences drop a word, object, or connector clause | A separate final pass over predicate slots, parallel structure, and references |
+| Surface AI patterns recur across a passage | Genre-aware checks for vague attribution, inflated significance, false ranges, synonym cycling, formatting habits, and comparison ladders |
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
@@ -82,6 +84,8 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `editor-loop` | one-shot drafting without a critical human-editor pass |
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
 | `reference-style-alignment` | explicit reference material into transferable voice features without copying content |
+| `rewrite-fidelity` | meaning drift, invented specificity, reversed polarity, and altered uncertainty when an original is supplied |
+| `surface-pattern-audit` | recurrent surface pattern families, including decorative comparison ladders, without global phrase bans |
 | `protected-content` | accidental changes to numbers, citations, equations, URLs, code, quotes, and required terms |
 | `source-grounding` | claim-to-source checks for serious documents with explicit factual sources |
 
@@ -135,6 +139,29 @@ The compiler extracts point of view, rhythm, register, imagery, description,
 dialogue cadence, emotion handling, and transitions. Plot facts still come from
 `--context`; names, events, and distinctive phrases must not be copied from the
 reference. See [docs/reference-style.md](docs/reference-style.md).
+
+## Original-Text Fidelity
+
+Use `--original` only when revising an existing text and meaning must remain stable.
+It activates a dedicated fidelity module for rewrite and review; ordinary drafting
+does not pay this token cost.
+
+```powershell
+human-writing-skills build `
+  --style self-media `
+  --original original.md `
+  --task "Rewrite for clarity without adding facts or strengthening claims."
+
+human-writing-skills audit `
+  --draft revised.md `
+  --original original.md `
+  --profile fidelity
+```
+
+`--original` is semantic authority, `--reference` is style evidence, and `--source`
+is factual evidence for serious documents. They are deliberately isolated so a
+style sample cannot rewrite facts and an original cannot silently become a style
+target. See [docs/editing-tools.md](docs/editing-tools.md).
 
 ## Serious-Document Sources
 
@@ -305,6 +332,7 @@ ordinary `--deep-review` does not load them.
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
 | `numbers` | False precision in action and emotion |
 | `proofread` | Omissions, sentence slots, stranded connectors, references, punctuation, naming, and layout |
+| `fidelity` | Meaning, entity, polarity, uncertainty, chronology, attribution, and invention checks; requires `--original` |
 | `style-match` | Drift from explicitly supplied reference material; unavailable without a reference signal |
 | `sources` | Claim grounding against factual sources; requires a serious document and `--source` |
 
@@ -326,15 +354,16 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` requires context, `salience` requires a long narrative of at least 4,000 characters, `recurrence` requires at least three chapters, and `sources` requires both a serious document and explicit factual sources. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` requires context, `fidelity` requires an original, `salience` requires a long narrative of at least 4,000 characters, `recurrence` requires at least three chapters, and `sources` requires both a serious document and explicit factual sources. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 
 ### Deterministic Safeguards
 
-Use `lint` for evidence-located pattern checks and `verify` to catch protected
-facts changed during rewriting. The lint score is an editing heuristic, not
-authorship proof.
+Use `lint` for evidence-located pattern checks, `stats` for optional distributional
+diagnostics, `fix` for conservative mechanical cleanup, and `verify` to catch
+protected facts changed during rewriting. Scores and statistics are editing
+heuristics, not authorship proof.
 
 Protected-content instructions auto-load only for academic papers, news reports,
 and strongly identified legal or technical documents. Fiction, webnovels, casual
@@ -343,10 +372,13 @@ or `--protect-term` to override this gate.
 
 ```powershell
 human-writing-skills lint --draft my-chapter.md --style fiction
+human-writing-skills stats --draft my-chapter.md --style fiction
+human-writing-skills fix --draft my-chapter.md --preview
 human-writing-skills verify --source original.md --candidate revised.md --protect-term "Project Atlas"
 ```
 
 - Pattern lint: [docs/pattern-linter.md](docs/pattern-linter.md)
+- Fidelity, statistics, and conservative fixes: [docs/editing-tools.md](docs/editing-tools.md)
 - Protected content: [docs/protected-content.md](docs/protected-content.md)
 
 ### Number Sense
@@ -400,6 +432,7 @@ The `--deep-review` flag adds the compact review plus:
 - `relationship-stance-audit`: check speaker, listener, referenced party, secrecy, stance, rank, and audience permissions
 - `cliche-phrase-audit`: check stock phrases, generic body cues, empty emotion labels, and dead transitions
 - `formulaic-structure-audit`: check triplets, bidirectional contrasts, chained comparisons, and paragraphs that close too neatly
+- `surface-pattern-audit`: check recurring significance, attribution, range, lexical, formatting, and decorative comparison patterns in genre context
 - `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure
 - `natural-measurement`: check false precision in fiction, webnovels, and self-media
 

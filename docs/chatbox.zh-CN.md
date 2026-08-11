@@ -1,4 +1,4 @@
-# 在 Chatbox 中使用 Human Writing Skills
+# 在 Chatbox 中使用 Advanced Human Writing Skills
 
 这份说明用于解决两个问题：
 
@@ -185,7 +185,7 @@ human-writing-skills pipeline `
 - 长输出后，只有当我要求“更新账本”时，才输出 Ledger Update。
 - 如果我输入“更新账本”，你只更新账本，不要继续正文。
 
-接下来我会粘贴 Human Writing Skills 生成的指令包。
+接下来我会粘贴 Advanced Human Writing Skills 生成的指令包。
 ```
 
 ## 现实边界

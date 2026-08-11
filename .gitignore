@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 dist/
 build/
+.tmp-wheel/
 *.egg-info/
 .DS_Store
 .learnings/

@@ -30,13 +30,16 @@ human-writing-skills pipeline `
 7. `proofread`：错别字、标点、称谓、排版和机械错误
 
 为节约上下文，`voice`、`serial`、`world`、`process`、`momentum`、`salience`、
-`recurrence`、`texture` 和 `sources` 不属于默认完整流水线。只有显式选择或使用
+`recurrence`、`texture`、`fidelity` 和 `sources` 不属于默认完整流水线。只有显式选择或使用
 `--auto` 命中条件时才会生成。
 
 输出目录里的每个 Markdown 都是一份完整但单一职责的提示词。应在新的 Chatbox 会话、独立 API 请求或没有上一阶段聊天记忆的模型会话中分别运行。
 
 目录还会生成确定性预检 `00-pattern-lint.md` 和 JSON，包含命中位置和透明分数，
 但不据此判断作者身份。
+
+只有传入 `--with-stats` 才会额外生成 `00-style-stats.md` 和 JSON。统计默认关闭，
+只作编辑诊断，不作作者身份判断。
 
 ## 动态按需加载
 
@@ -69,6 +72,7 @@ human-writing-skills pipeline `
 - 有电影式开场堆料、公式化内心解释、密集比喻、资料倾倒、连续短段或展示后再解释：`texture`
 - 有带单位的精确数字：`numbers`
 - 明确传入 `--reference` 或 `--reference-style`：`style-match`
+- 明确传入改写前原文 `--original`：`fidelity`
 - 严肃文体与一个以上 `--source` 同时存在：`sources`
 
 `voice` 会对照人物稳定语言基线、当场目的、知识与角色约束、听众、回应衔接和
@@ -95,6 +99,9 @@ human-writing-skills pipeline `
 显式选择 `--stage serial` 时必须同时提供 `--context`，否则命令会拒绝运行，防止
 模型凭空补造前情。
 
+显式选择 `--stage fidelity` 时必须同时提供 `--original`。只有这个阶段会收到改写
+前原文，它检查语义是否保留，不把原文自动当作文风范本。
+
 显式选择 `--stage sources` 时必须同时提供 `--source`，并将 `--document-type`
 设为论文、新闻、法律或技术文档，或者让自动识别获得足够的严肃文体证据。来源
 文件只进入 `sources` 阶段，不进入小说审稿和文风对齐阶段。
@@ -104,7 +111,7 @@ human-writing-skills pipeline `
 先改结构，后改文字：
 
 ```text
-确定性扫描 -> 逻辑 -> 人物/关系/声音/前情/世界/过程/推进 -> 注意力/跨章结构 -> 物理 -> AI 痕迹/文字质地 -> 文风对齐 -> 数字 -> 来源 -> 校对
+确定性扫描 -> 可选统计 -> 逻辑 -> 人物/关系/声音/前情/世界/过程/推进 -> 注意力/跨章结构 -> 物理 -> AI 痕迹/文字质地 -> 文风对齐/语义保真 -> 数字 -> 来源 -> 校对
 ```
 
 逻辑或剧情结构发生重写后，应重新运行受影响的后续阶段。不要先校对一段随后会被整体删除的文字。

@@ -76,11 +76,13 @@ jobs:
           set +e
           publish_output=$("${cli[@]}" skill publish . \
             --slug "$skill" \
-            --name "Human Writing Skills" \
+            --name "Advanced Human Writing Skills" \
             --owner whh110112 \
             --version "$VERSION" \
             --changelog "$CHANGELOG" \
             --tags latest \
+            --categories creative,communication,development \
+            --topics humanizer,writing,editing,chinese-writing,long-form-writing \
             --source-repo "$GITHUB_REPOSITORY" \
             --source-commit "$GITHUB_SHA" \
             --source-ref "$GITHUB_REF_NAME" 2>&1)
