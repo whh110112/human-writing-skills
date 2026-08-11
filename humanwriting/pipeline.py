@@ -40,6 +40,8 @@ def select_pipeline_profiles(
             raise ValueError("The style-match stage requires --reference or --reference-style.")
         if "fidelity" in selected and not original_active:
             raise ValueError("The fidelity stage requires --original with the pre-rewrite text.")
+        if "preservation" in selected and not original_active:
+            raise ValueError("The preservation stage requires --original with the pre-rewrite text.")
         if "sources" in selected and not source_active:
             raise ValueError("The sources stage requires one or more --source files.")
         if "sources" in selected and not serious_document:
@@ -55,6 +57,8 @@ def select_pipeline_profiles(
             if profile == "style-match" and not reference_active:
                 reason = "No explicit reference material or style direction was supplied."
             if profile == "fidelity" and not original_active:
+                reason = "No pre-rewrite --original file was supplied."
+            if profile == "preservation" and not original_active:
                 reason = "No pre-rewrite --original file was supplied."
             if profile == "sources" and not source_active:
                 reason = "No factual --source files were supplied."
@@ -86,6 +90,7 @@ def select_pipeline_profiles(
             "texture",
             "sources",
             "fidelity",
+            "preservation",
         }
         if profile == "style-match":
             include = reference_active
@@ -99,6 +104,8 @@ def select_pipeline_profiles(
             reason = "No explicit reference material or style direction was supplied."
         elif profile == "fidelity":
             reason = "An original was supplied." if original_active else "No pre-rewrite --original file was supplied."
+        elif profile == "preservation":
+            reason = "Optional high-cost source-to-rewrite voice comparison."
         elif profile == "sources" and not source_active:
             reason = "No factual --source files were supplied."
         elif profile == "sources":
@@ -166,7 +173,7 @@ def build_audit_pipeline(
                 reference_budget=reference_budget,
                 source_paths=source_paths if profile == "sources" else None,
                 source_budget=source_budget,
-                original_path=original_path if profile == "fidelity" else None,
+                original_path=original_path if profile in {"fidelity", "preservation"} else None,
                 protect_content=protect_content,
                 protect_terms=protect_terms,
                 document_type=document_type,
@@ -273,7 +280,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity -> numbers -> sources -> proofreading.",
+            "optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

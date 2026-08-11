@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .compiler import compile_audit_prompt, compile_prompt
+from .compiler import compile_audit_prompt, compile_humanize_prompt, compile_prompt
 from .detection import PIPELINE_PROFILES
 from .fixer import fix_file, format_fix_report
 from .linter import format_lint_report, lint_file
@@ -112,6 +112,58 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_reference_arguments(build)
     add_source_arguments(build)
+
+    humanize = subparsers.add_parser(
+        "humanize",
+        help="Build a focused rewrite prompt that reduces formulaic AI tone without flattening voice.",
+    )
+    humanize.add_argument("--draft", required=True, help="Original Markdown/text file to humanize.")
+    humanize.add_argument(
+        "--style",
+        required=True,
+        choices=list_style_skills(),
+        help="Genre contract for the rewrite.",
+    )
+    humanize.add_argument(
+        "--mode",
+        choices=["quick", "deep"],
+        default="quick",
+        help="Quick loads the minimum rewrite stack; deep adds structural editor passes.",
+    )
+    humanize.add_argument(
+        "--task",
+        help="Optional rewrite direction. The default preserves language, genre, meaning, and voice.",
+    )
+    humanize.add_argument("--context", help="Optional continuity ledger or prior chapters.")
+    humanize.add_argument(
+        "--module",
+        action="append",
+        default=[],
+        help="Optional extra technique module. Can be repeated.",
+    )
+    humanize.add_argument(
+        "--strict-continuity",
+        action="store_true",
+        help="Add occupancy, spatial blocking, and appearance/prop rewrite guards.",
+    )
+    humanize.add_argument(
+        "--with-examples",
+        action="store_true",
+        help="Load the on-demand before/after example library.",
+    )
+    humanize.add_argument(
+        "--protect-content",
+        action="store_true",
+        help="Explicitly protect factual spans; serious document styles enable this automatically.",
+    )
+    humanize.add_argument(
+        "--protect-term",
+        action="append",
+        default=[],
+        help="Exact term the rewrite must preserve. Can be repeated.",
+    )
+    add_reference_arguments(humanize)
+    add_source_arguments(humanize)
 
     audit = subparsers.add_parser("audit", help="Build a forensic audit pack for an existing draft.")
     audit.add_argument("--draft", required=True, help="Markdown/text file containing the draft to audit.")
@@ -359,6 +411,30 @@ def main(argv: list[str] | None = None) -> int:
                 source_paths=args.source,
                 source_budget=args.source_budget,
                 original_path=args.original,
+                protect_content=args.protect_content,
+                protect_terms=args.protect_term,
+            )
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(prompt, end="")
+        return 0
+
+    if args.command == "humanize":
+        try:
+            prompt = compile_humanize_prompt(
+                draft_path=args.draft,
+                style=args.style,
+                mode=args.mode,
+                task=args.task,
+                context_path=args.context,
+                modules=args.module,
+                strict_continuity=args.strict_continuity,
+                with_examples=args.with_examples,
+                reference_paths=args.reference,
+                reference_style=args.reference_style,
+                reference_budget=args.reference_budget,
+                source_paths=args.source,
+                source_budget=args.source_budget,
                 protect_content=args.protect_content,
                 protect_terms=args.protect_term,
             )

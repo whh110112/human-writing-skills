@@ -26,6 +26,22 @@ human-writing-skills pipeline --draft revised.md --original original.md --auto -
 归因和限制条件，并标出遗漏、扩大、反转、错归因、乱序和凭空新增。它保护的是
 意思，不要求保留原文的病句或啰嗦表达。
 
+## 快捷 Humanize 与声音保护
+
+```powershell
+human-writing-skills humanize --draft original.md --style fiction --mode quick
+human-writing-skills humanize --draft original.md --style fiction --mode deep
+human-writing-skills audit --draft revised.md --original original.md --profile preservation
+```
+
+`quick` 只加载表层模式、原意保真和 `voice-ambiguity-preservation`；`deep`
+才追加套话、公式结构、段落推进、不完美语流和编辑循环。除非显式传入
+`--with-examples`，示例库不会占用 prompt。
+
+`preservation` 会对照原文检查有意义的含混、重复、母题、迟疑、潜台词、人物
+口吻和未结互动压力。它必须提供 `--original`，不会进入自动流水线，并且要把这些
+特征与指代不清、漏字和真实语病区分开。
+
 ## 可选文体统计
 
 ```powershell

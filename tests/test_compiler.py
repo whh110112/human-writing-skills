@@ -1,11 +1,11 @@
 import unittest
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from humanwriting.cli import main
-from humanwriting.compiler import compile_audit_prompt, compile_prompt
+from humanwriting.compiler import compile_audit_prompt, compile_humanize_prompt, compile_prompt
 from humanwriting.detection import detect_audit_profiles
 from humanwriting.pipeline import write_audit_pipeline
 from humanwriting.skills import (
@@ -18,6 +18,21 @@ from humanwriting.skills import (
 
 
 class CompilerTests(unittest.TestCase):
+    def test_skill_metadata_covers_primary_discovery_queries(self):
+        root = Path(__file__).resolve().parents[1]
+        skill = root.joinpath("SKILL.md").read_text(encoding="utf-8")
+        for term in (
+            "AI humanizer",
+            "humanize AI text",
+            "de-AI writing",
+            "fiction and novels",
+            "story continuity",
+            "去AI味",
+            "小说续写",
+            "长文一致性",
+        ):
+            self.assertIn(term.lower(), skill.lower())
+
     def test_lists_builtin_skills(self):
         skills = list_skills()
         self.assertIn("fiction", skills)
@@ -59,6 +74,85 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("source-grounding", list_module_skills())
         self.assertIn("rewrite-fidelity", list_module_skills())
         self.assertIn("surface-pattern-audit", list_module_skills())
+        self.assertIn("voice-ambiguity-preservation", list_module_skills())
+        self.assertIn("humanize-examples", list_module_skills())
+
+    def test_quick_humanize_loads_only_the_focused_rewrite_stack(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("她说不清。也许不是怕，只是不想开门。", encoding="utf-8")
+            prompt = compile_humanize_prompt(str(draft), style="fiction")
+        self.assertIn("Technique Module: surface-pattern-audit", prompt)
+        self.assertIn("Technique Module: voice-ambiguity-preservation", prompt)
+        self.assertIn("Technique Module: rewrite-fidelity", prompt)
+        self.assertNotIn("Technique Module: humanize-examples", prompt)
+        self.assertNotIn("Technique Module: formulaic-structure-audit", prompt)
+        self.assertNotIn("Technique Module: cliche-phrase-audit", prompt)
+        self.assertIn("same language and genre", prompt)
+        self.assertIn("useful ambiguity", prompt)
+
+    def test_deep_humanize_and_examples_are_independently_gated(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("这是一个值得注意的故事。", encoding="utf-8")
+            deep = compile_humanize_prompt(str(draft), style="self-media", mode="deep")
+            examples = compile_humanize_prompt(
+                str(draft),
+                style="self-media",
+                with_examples=True,
+            )
+        self.assertIn("Technique Module: formulaic-structure-audit", deep)
+        self.assertIn("Technique Module: prose-progress-audit", deep)
+        self.assertIn("Technique Module: imperfect-prose", deep)
+        self.assertNotIn("Technique Module: humanize-examples", deep)
+        self.assertIn("Technique Module: humanize-examples", examples)
+        self.assertNotIn("Technique Module: formulaic-structure-audit", examples)
+
+    def test_humanize_prompt_budgets_keep_quick_materially_smaller(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("她停在门口，说不清自己在等什么。", encoding="utf-8")
+            quick = compile_humanize_prompt(str(draft), style="fiction")
+            deep = compile_humanize_prompt(str(draft), style="fiction", mode="deep")
+        self.assertLess(len(quick), 15000)
+        self.assertLess(len(deep), 30000)
+        self.assertLess(len(quick), len(deep) * 0.6)
+
+    def test_humanize_rejects_an_empty_draft(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("   ", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "non-empty --draft"):
+                compile_humanize_prompt(str(draft), style="fiction")
+
+    def test_preservation_profile_requires_original_and_stays_isolated(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "original.md"
+            revised = root / "revised.md"
+            original.write_text("我没生气。算了，我不说了。", encoding="utf-8")
+            revised.write_text("我没有生气，只是不想继续讨论。", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "requires --original"):
+                compile_audit_prompt(str(revised), profiles=["preservation"])
+            prompt = compile_audit_prompt(
+                str(revised),
+                profiles=["preservation"],
+                original_path=str(original),
+            )
+        self.assertIn("Selected profiles: preservation", prompt)
+        self.assertIn("Audit Module: voice-ambiguity-preservation", prompt)
+        self.assertNotIn("Audit Module: rewrite-fidelity", prompt)
+        self.assertIn("Original Text For Rewrite Comparison", prompt)
+
+    def test_humanize_cli_builds_a_prompt(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("此外，这是一个重要的时刻。", encoding="utf-8")
+            output = StringIO()
+            with redirect_stdout(output):
+                code = main(["humanize", "--draft", str(draft), "--style", "fiction"])
+        self.assertEqual(code, 0)
+        self.assertIn("Technique Module: voice-ambiguity-preservation", output.getvalue())
 
     def test_load_skill_content(self):
         skill = load_skill("news-report")
@@ -117,7 +211,7 @@ class CompilerTests(unittest.TestCase):
             )
             plain = compile_prompt("self-media", "写一篇新文章。")
         self.assertIn("Technique Module: rewrite-fidelity", prompt)
-        self.assertIn("Original Text For Fidelity", prompt)
+        self.assertIn("Original Text For Rewrite Comparison", prompt)
         self.assertIn("约有一半", prompt)
         self.assertNotIn("Reference Style Material", prompt)
         self.assertNotIn("Supplied Factual Sources", prompt)
@@ -192,7 +286,7 @@ class CompilerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "requires --original"):
                 compile_audit_prompt(str(candidate), profiles=["fidelity"])
         self.assertIn("Audit Module: rewrite-fidelity", prompt)
-        self.assertIn("Original Text For Fidelity", prompt)
+        self.assertIn("Original Text For Rewrite Comparison", prompt)
         self.assertNotIn("Audit Module: ai-trace-rubric", prompt)
 
     def test_compile_prompt_can_add_modules(self):
@@ -638,6 +732,35 @@ class CompilerTests(unittest.TestCase):
             self.assertTrue(
                 all("约有一半" not in stage.prompt for stage in stages if stage.profile != "fidelity")
             )
+
+    def test_pipeline_preservation_is_explicit_and_original_gated(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "original.md"
+            draft = root / "draft.md"
+            original.write_text("我没生气。算了，我不说了。", encoding="utf-8")
+            draft.write_text("我没有生气，只是不想讨论。", encoding="utf-8")
+            _, automatic = write_audit_pipeline(
+                str(draft),
+                str(root / "auto"),
+                auto=True,
+                original_path=str(original),
+            )
+            _, explicit = write_audit_pipeline(
+                str(draft),
+                str(root / "explicit"),
+                stages=["preservation"],
+                original_path=str(original),
+            )
+            with self.assertRaisesRegex(ValueError, "requires --original"):
+                write_audit_pipeline(
+                    str(draft),
+                    str(root / "missing"),
+                    stages=["preservation"],
+                )
+        self.assertNotIn("preservation", [stage.profile for stage in automatic])
+        self.assertEqual([stage.profile for stage in explicit], ["preservation"])
+        self.assertIn("Audit Module: voice-ambiguity-preservation", explicit[0].prompt)
 
     def test_pipeline_writes_statistics_only_when_requested(self):
         with TemporaryDirectory() as directory:

@@ -27,6 +27,24 @@ causality, comparison axes, attribution, and constraints. It reports omitted,
 broadened, reversed, reattributed, reordered, or invented meaning. It does not ask
 the model to preserve awkward wording.
 
+## Quick Humanize And Voice Preservation
+
+```powershell
+human-writing-skills humanize --draft original.md --style fiction --mode quick
+human-writing-skills humanize --draft original.md --style fiction --mode deep
+human-writing-skills audit --draft revised.md --original original.md --profile preservation
+```
+
+`quick` loads surface-pattern review, rewrite fidelity, and
+`voice-ambiguity-preservation`. `deep` additionally loads high-cost cliche,
+formulaic-structure, prose-progress, imperfect-prose, and editor-loop guidance.
+Examples remain absent unless `--with-examples` is passed.
+
+The preservation audit compares the original with the rewrite for useful ambiguity,
+intentional repetition, motifs, hesitation, subtext, speaker markers, and unresolved
+interaction pressure. It requires `--original`, stays out of automatic pipelines,
+and must distinguish those features from unclear reference or missing grammar.
+
 ## Optional Style Statistics
 
 ```powershell

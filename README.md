@@ -1,4 +1,4 @@
-# Advanced Human Writing Skills
+# Advanced Human Writing & AI Humanizer
 
 > Reusable multilingual writing `SKILLS` for natural prose, genre-aware style, and long-form continuity.
 
@@ -8,7 +8,7 @@
 
 [中文说明](README.zh-CN.md) | English
 
-Advanced Human Writing Skills is an open-source, modular skill pack and lightweight prompt compiler for natural multilingual AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
+Advanced Human Writing & AI Humanizer is an open-source, modular skill pack and lightweight prompt compiler for natural multilingual AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
 
 It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
@@ -23,6 +23,7 @@ AI writing often fails in predictable ways:
 | Generic "AI voice" | Concrete revision checks for rhythm, specificity, and empty phrasing |
 | Repeated not-X/is-Y, is-X/not-Y, or chained Chinese 比 frames | Family- and density-based checks that preserve necessary correction and real comparison |
 | Rewriting silently changes facts, uncertainty, or causal meaning | An opt-in original-text fidelity pass with a claim ledger and invention checks |
+| Humanizing washes out hesitation, motifs, subtext, or speaker identity | A source-backed preservation ledger that separates useful ambiguity from real defects |
 | Fluent-looking sentences drop a word, object, or connector clause | A separate final pass over predicate slots, parallel structure, and references |
 | Surface AI patterns recur across a passage | Genre-aware checks for vague attribution, inflated significance, false ranges, synonym cycling, formatting habits, and comparison ladders |
 | Fiction is chopped up by time/place mini-headings | Narrative-only checks that preserve titles and chapters but require scene changes to move through prose |
@@ -86,6 +87,8 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `ai-trace-rubric` | vague feedback like "sounds AI" without diagnosis |
 | `reference-style-alignment` | explicit reference material into transferable voice features without copying content |
 | `rewrite-fidelity` | meaning drift, invented specificity, reversed polarity, and altered uncertainty when an original is supplied |
+| `voice-ambiguity-preservation` | over-clean rewrites that erase useful ambiguity, repetition, motifs, hesitation, subtext, or speaker markers |
+| `humanize-examples` | an explicit-only before/after repair library; never loaded as a source or default style sample |
 | `surface-pattern-audit` | recurrent surface patterns, decorative comparison ladders, and narrative mini-headings without global bans |
 | `protected-content` | accidental changes to numbers, citations, equations, URLs, code, quotes, and required terms |
 | `source-grounding` | claim-to-source checks for serious documents with explicit factual sources |
@@ -100,9 +103,32 @@ python -m pip install .
 human-writing-skills list --kind style
 human-writing-skills list --kind module
 human-writing-skills build --style fiction --context examples/story-ledger.md --task "Write the next scene."
+human-writing-skills humanize --draft chapter.md --style fiction --mode quick
 ```
 
-You can also run directly from the source checkout with `python -m humanwriting.cli ...`. The `build` command prints an instruction pack that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.
+You can also run directly from the source checkout with `python -m humanwriting.cli ...`. The `build` and `humanize` commands print instruction packs that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.
+
+## Quick Humanize
+
+`humanize` is the low-friction rewrite route. It treats `--draft` as the original,
+keeps the same language and genre by default, and preserves meaning before changing
+surface style.
+
+```powershell
+# Minimum stack: surface patterns + fidelity + voice/ambiguity preservation
+human-writing-skills humanize --draft chapter.md --style fiction
+
+# Add structural editor passes only when the draft needs them
+human-writing-skills humanize --draft article.md --style self-media --mode deep
+
+# Examples remain opt-in and are never treated as factual or stylistic source material
+human-writing-skills humanize --draft chapter.md --style fiction --with-examples
+```
+
+`quick` does not load cliche, formulaic-structure, paragraph-progress, or editor-loop
+modules. `deep` adds those high-cost passes. `humanize-examples` loads only with
+`--with-examples`; `voice-ambiguity-preservation` loads only for supplied-text
+humanization or an explicit preservation audit.
 
 ## Multilingual Scope
 
@@ -296,7 +322,7 @@ The narrative controls use progressive disclosure. Generation adds
 speech-centered scene such as dialogue, negotiation, a meeting, interrogation, or
 argument. Narration-only and serious-document tasks do not trigger it. The `voice`,
 `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`, `texture`, and
-`sources` audit profiles remain outside broad `full` review:
+`sources` and `preservation` audit profiles remain outside broad `full` review:
 
 ```powershell
 human-writing-skills build --style fiction --task "Write a negotiation in which both speakers want different outcomes."
@@ -344,6 +370,7 @@ ordinary `--deep-review` does not load them.
 | `numbers` | False precision in action and emotion |
 | `proofread` | Omissions, sentence slots, stranded connectors, references, punctuation, naming, and layout |
 | `fidelity` | Meaning, entity, polarity, uncertainty, chronology, attribution, and invention checks; requires `--original` |
+| `preservation` | Useful ambiguity, repetition, motifs, hesitation, subtext, and speaker identity; requires `--original` and explicit selection |
 | `style-match` | Drift from explicitly supplied reference material; unavailable without a reference signal |
 | `sources` | Claim grounding against factual sources; requires a serious document and `--source` |
 
@@ -365,7 +392,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` requires context, `fidelity` requires an original, `salience` requires a long narrative of at least 4,000 characters, `recurrence` requires at least three chapters, and `sources` requires both a serious document and explicit factual sources. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` requires context, `fidelity` requires an original, `salience` requires a long narrative of at least 4,000 characters, `recurrence` requires at least three chapters, and `sources` requires both a serious document and explicit factual sources. The higher-cost `preservation` comparison is explicit-only: use `--stage preservation --original original.md`. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 

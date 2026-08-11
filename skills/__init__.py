@@ -1,1 +1,1 @@
-"""Packaged Markdown resources for Advanced Human Writing Skills."""
+"""Packaged Markdown resources for Advanced Human Writing & AI Humanizer."""

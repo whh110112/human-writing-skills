@@ -20,6 +20,7 @@ PIPELINE_PROFILES = [
     "texture",
     "style-match",
     "fidelity",
+    "preservation",
     "numbers",
     "sources",
     "proofread",
@@ -299,6 +300,12 @@ def detect_audit_profiles(
         "fidelity": (
             original_active,
             "An explicit pre-rewrite original was supplied."
+            if original_active
+            else "No pre-rewrite --original file was supplied.",
+        ),
+        "preservation": (
+            False,
+            "High-cost source-to-rewrite voice comparison; select it explicitly when needed."
             if original_active
             else "No pre-rewrite --original file was supplied.",
         ),

@@ -31,7 +31,7 @@ human-writing-skills pipeline `
 
 为节约上下文，`voice`、`serial`、`world`、`process`、`momentum`、`salience`、
 `recurrence`、`texture`、`fidelity` 和 `sources` 不属于默认完整流水线。只有显式选择或使用
-`--auto` 命中条件时才会生成。
+`--auto` 命中条件时才会生成。`preservation` 属于高成本原文对照，始终只接受显式选择。
 
 输出目录里的每个 Markdown 都是一份完整但单一职责的提示词。应在新的 Chatbox 会话、独立 API 请求或没有上一阶段聊天记忆的模型会话中分别运行。
 
@@ -73,6 +73,7 @@ human-writing-skills pipeline `
 - 有带单位的精确数字：`numbers`
 - 明确传入 `--reference` 或 `--reference-style`：`style-match`
 - 明确传入改写前原文 `--original`：`fidelity`
+- 显式选择并传入改写前原文：`preservation`；自动模式不会加入
 - 严肃文体与一个以上 `--source` 同时存在：`sources`
 
 `voice` 会对照人物稳定语言基线、当场目的、知识与角色约束、听众、回应衔接和
@@ -101,6 +102,9 @@ human-writing-skills pipeline `
 
 显式选择 `--stage fidelity` 时必须同时提供 `--original`。只有这个阶段会收到改写
 前原文，它检查语义是否保留，不把原文自动当作文风范本。
+
+显式选择 `--stage preservation` 同样必须提供 `--original`。它对照有意义的含混、
+重复、母题、迟疑、潜台词、人物口吻和未结压力，避免把所有毛边都误判成错误。
 
 显式选择 `--stage sources` 时必须同时提供 `--source`，并将 `--document-type`
 设为论文、新闻、法律或技术文档，或者让自动识别获得足够的严肃文体证据。来源

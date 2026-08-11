@@ -1,4 +1,4 @@
 interface:
-  display_name: "Advanced Human Writing Skills"
-  short_description: "Natural multilingual prose, fidelity, continuity, and focused audits"
-  default_prompt: "Use $human-writing-skills with only the relevant modules while preserving facts, rewrite meaning, natural scene transitions, world rules, continuity, earned outcomes, character-fit dialogue, and supplied-source boundaries."
+  display_name: "Advanced Human Writing & AI Humanizer"
+  short_description: "Multilingual AI humanizer with continuity and voice protection"
+  default_prompt: "Use $human-writing-skills with only the relevant modules to humanize or write natural prose while preserving facts, useful ambiguity, character voice, scene continuity, rewrite meaning, world rules, and supplied-source boundaries."

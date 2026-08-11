@@ -1,6 +1,6 @@
-# Using Advanced Human Writing Skills in Chatbox
+# Using Advanced Human Writing & AI Humanizer in Chatbox
 
-This guide explains how to use Advanced Human Writing Skills with Chatbox while reducing context loss during long writing sessions.
+This guide explains how to use Advanced Human Writing & AI Humanizer with Chatbox while reducing context loss during long writing sessions.
 
 Chatbox can use this project because the project outputs plain text prompt packs. You do not need a plugin integration. Generate a prompt pack with the CLI, then paste it into Chatbox as a system prompt or as the first message of a new conversation.
 
@@ -19,7 +19,7 @@ In long conversations, older messages may fall outside the model's context windo
 1. Choose a model with a large context window.
 2. Increase Chatbox's maximum context messages for long writing sessions.
 3. Create a new conversation for each project, book, article series, or major chapter.
-4. Put the compiled Advanced Human Writing Skills prompt pack in the system prompt when possible.
+4. Put the compiled Advanced Human Writing & AI Humanizer prompt pack in the system prompt when possible.
 5. If the UI you use does not expose a system prompt field, paste the prompt pack as the first message and ask the model to treat it as standing instructions.
 6. Keep a separate continuity ledger and update it after each major output.
 
@@ -184,7 +184,7 @@ Rules:
 - After each long draft, output a short "Ledger Update" section only when I ask for it.
 - If I type "更新账本", update the ledger instead of continuing the draft.
 
-I will now paste the compiled Advanced Human Writing Skills prompt pack.
+I will now paste the compiled Advanced Human Writing & AI Humanizer prompt pack.
 ```
 
 ## Practical Limits

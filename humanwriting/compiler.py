@@ -93,7 +93,20 @@ PROOFREAD_AUDIT_MODULES = ["proofreading-audit"]
 REFERENCE_STYLE_AUDIT_MODULES = ["reference-style-alignment"]
 SOURCE_AUDIT_MODULES = ["source-grounding"]
 FIDELITY_AUDIT_MODULES = ["rewrite-fidelity"]
+PRESERVATION_AUDIT_MODULES = ["voice-ambiguity-preservation"]
 PROTECTED_CONTENT_MODULES = ["protected-content"]
+HUMANIZE_QUICK_MODULES = [
+    "surface-pattern-audit",
+    "voice-ambiguity-preservation",
+]
+HUMANIZE_DEEP_MODULES = [
+    "editor-loop",
+    "ai-trace-rubric",
+    "cliche-phrase-audit",
+    "formulaic-structure-audit",
+    "prose-progress-audit",
+    "imperfect-prose",
+]
 AUDIT_PROFILES = {
     "full",
     "logic",
@@ -114,6 +127,7 @@ AUDIT_PROFILES = {
     "style-match",
     "sources",
     "fidelity",
+    "preservation",
 }
 
 
@@ -293,6 +307,64 @@ def compile_prompt(
     return "\n\n---\n\n".join(blocks) + "\n"
 
 
+def compile_humanize_prompt(
+    draft_path: str,
+    style: str,
+    mode: str = "quick",
+    task: str | None = None,
+    context_path: str | None = None,
+    modules: list[str] | None = None,
+    strict_continuity: bool = False,
+    with_examples: bool = False,
+    reference_paths: list[str] | None = None,
+    reference_style: str | None = None,
+    reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
+    protect_content: bool = False,
+    protect_terms: list[str] | None = None,
+) -> str:
+    draft = read_optional(draft_path)
+    if not draft:
+        raise ValueError("The humanize command requires a non-empty --draft file.")
+    if mode not in {"quick", "deep"}:
+        raise ValueError("Humanize mode must be 'quick' or 'deep'.")
+
+    selected = list(modules or [])
+    for name in HUMANIZE_QUICK_MODULES:
+        if name not in selected:
+            selected.append(name)
+    if mode == "deep":
+        for name in HUMANIZE_DEEP_MODULES:
+            if name not in selected:
+                selected.append(name)
+    if with_examples and "humanize-examples" not in selected:
+        selected.append("humanize-examples")
+
+    rewrite_task = task or (
+        "Rewrite the supplied draft in the same language and genre. Preserve its facts, "
+        "claim scope, useful ambiguity, intentional repetition, recurring motifs, speaker "
+        "identity, unresolved interaction pressure, and continuity. Repair only evidenced "
+        "AI-shaped wording, formulaic structure, missing grammatical slots, and clarity "
+        "problems. Return only the revised text."
+    )
+    return compile_prompt(
+        style=style,
+        task=rewrite_task,
+        context_path=context_path,
+        modules=selected,
+        strict_continuity=strict_continuity,
+        reference_paths=reference_paths,
+        reference_style=reference_style,
+        reference_budget=reference_budget,
+        source_paths=source_paths,
+        source_budget=source_budget,
+        original_path=draft_path,
+        protect_content=protect_content,
+        protect_terms=protect_terms,
+    )
+
+
 def compile_audit_prompt(
     draft_path: str,
     context_path: str | None = None,
@@ -324,7 +396,7 @@ def compile_audit_prompt(
     original_pack = build_original_pack(original_path)
     if reference_pack.active:
         requested_profiles.add("style-match")
-    if original_pack.active:
+    if original_pack.active and "preservation" not in requested_profiles:
         requested_profiles.add("fidelity")
     if number_sense:
         requested_profiles.add("numbers")
@@ -341,6 +413,8 @@ def compile_audit_prompt(
         raise ValueError("The style-match profile requires --reference or --reference-style.")
     if "fidelity" in requested_profiles and not original_pack.active:
         raise ValueError("The fidelity profile requires --original with the pre-rewrite text.")
+    if "preservation" in requested_profiles and not original_pack.active:
+        raise ValueError("The preservation profile requires --original with the pre-rewrite text.")
     if "serial" in requested_profiles and not context:
         raise ValueError("The serial profile requires --context with prior chapters or a continuity ledger.")
     if "sources" in requested_profiles and not source_pack.active:
@@ -367,6 +441,7 @@ def compile_audit_prompt(
     style_match_enabled = "style-match" in requested_profiles
     sources_enabled = "sources" in requested_profiles
     fidelity_enabled = "fidelity" in requested_profiles
+    preservation_enabled = "preservation" in requested_profiles
 
     if logic_enabled:
         append_missing(selected_modules, LOGIC_AUDIT_MODULES)
@@ -404,6 +479,8 @@ def compile_audit_prompt(
         append_missing(selected_modules, SOURCE_AUDIT_MODULES)
     if fidelity_enabled:
         append_missing(selected_modules, FIDELITY_AUDIT_MODULES)
+    if preservation_enabled:
+        append_missing(selected_modules, PRESERVATION_AUDIT_MODULES)
     protection_requested = protect_content or bool(protect_terms) or any(
         module.name == "protected-content" for module in selected_modules
     )
@@ -434,7 +511,7 @@ def compile_audit_prompt(
         blocks.append(reference_pack.block)
     if sources_enabled:
         blocks.append(source_pack.block)
-    if fidelity_enabled:
+    if fidelity_enabled or preservation_enabled:
         blocks.append(original_pack.block)
     if protection_active:
         blocks.append(f"# Protection Activation\n\n{protection_reason}")
@@ -538,6 +615,12 @@ def compile_audit_prompt(
         task_lines.append(
             "For rewrite fidelity, compare original and candidate claim units; flag omitted, broadened, "
             "reversed, reattributed, reordered, or invented meaning and propose the smallest repair."
+        )
+    if preservation_enabled:
+        task_lines.append(
+            "For voice and ambiguity preservation, compare the original with the candidate and locate "
+            "flattened uncertainty, intentional repetition, motifs, hesitation, speaker markers, subtext, "
+            "or unresolved interaction pressure; distinguish those losses from legitimate clarity repairs."
         )
     blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"

@@ -23,7 +23,7 @@ def build_original_pack(path: str | None = None) -> OriginalPack:
 
     block = "\n".join(
         [
-            "# Original Text For Fidelity",
+            "# Original Text For Rewrite Comparison",
             "",
             f"Original: {source.name}",
             "This text is the authority for meaning, claims, entities, chronology, polarity,",

@@ -23,7 +23,8 @@ It writes the established broad stages for logic, character consistency, relatio
 stance, physical continuity, AI traces, number sense, and proofreading. The higher-cost
 `voice`, `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`,
 `texture`, `fidelity`, and `sources` stages stay out unless explicitly selected or detected by
-`--auto`.
+`--auto`. `preservation` is always explicit-only because it is a high-cost source-to-rewrite
+comparison.
 
 It also writes `00-pattern-lint.md` and JSON as a deterministic preflight. These
 files contain evidence locations and a transparent editing score; they do not
@@ -61,6 +62,7 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `numbers` for exact numbers with units
 - `style-match` only when `--reference` or `--reference-style` explicitly activates it
 - `fidelity` only when `--original` supplies the pre-rewrite text
+- `preservation` only with explicit selection and `--original`; automatic mode skips it
 - `sources` only when factual source files and a serious document type are both present
 
 The `voice` stage checks stable baseline, current goal, knowledge and role constraints,
@@ -93,6 +95,10 @@ continuity ledger.
 Only that stage receives the original; it checks semantic preservation rather than
 style imitation.
 
+`--stage preservation` also requires `--original`. It compares useful ambiguity,
+intentional repetition, motifs, hesitation, subtext, speaker markers, and unresolved
+pressure without turning every rough edge into a defect.
+
 `--stage sources` is rejected unless `--source` supplies factual evidence and the
 draft is academic, news, legal, or technical. Source files enter only that stage;
 they do not become style references or fiction context.
@@ -100,7 +106,7 @@ they do not become style references or fiction context.
 ## Recommended Order
 
 ```text
-pattern lint -> optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity -> numbers -> sources -> proofreading
+pattern lint -> optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading
 ```
 
 After structural changes, re-run affected downstream stages.

@@ -1,4 +1,4 @@
-# Advanced Human Writing Skills
+# Advanced Human Writing & AI Humanizer
 
 > 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
@@ -8,7 +8,7 @@
 
 中文说明 | [English](README.md)
 
-Advanced Human Writing Skills 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
+Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
 
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
@@ -19,6 +19,7 @@ Advanced Human Writing Skills 是一个开源、模块化的多语言 AI 写作�
 | 文字空泛、对称、像模板 | 用具体的修订检查项压掉套话和泛泛表达 |
 | 反复“不是……是……”“是……不是……”或“比……比……” | 检查句式家族与复现密度，保留必要纠错和真实比较，重写装饰性框架 |
 | 改写时悄悄改变事实、语气强度、不确定性或因果 | 仅在提供原文时启用语义保真账本与新增细节检查 |
+| 去AI味时把迟疑、意象、潜台词和人物口吻一起洗掉 | 对照原文保护有作用的含混、重复、母题和说话标记 |
 | 句子表面流畅却漏字、漏宾语或连接成分 | 用句法槽位、并列对称和指代回查做独立终校 |
 | 模糊归因、意义拔高、假范围、同义词轮换和排版套路反复出现 | 按文体和密度审查表层模式，不搞全局禁词 |
 | 小说被“下午”“某地”“新的决定”等小标题切碎 | 只对叙事文体检查，保留作品名和章节名，要求用正文完成场景过渡 |
@@ -85,6 +86,8 @@ Advanced Human Writing Skills 是一个开源、模块化的多语言 AI 写作�
 | `ai-trace-rubric` | 把“还像 AI”拆成可诊断、可修复的维度 |
 | `reference-style-alignment` | 只在明确提供参考资料或文风要求时，提炼可迁移的声音与写法，不复制内容 |
 | `rewrite-fidelity` | 提供原文时检查意义漂移、凭空具体化、正反颠倒和不确定性变化 |
+| `voice-ambiguity-preservation` | 防止过度清洗抹掉有意义的含混、重复、意象、迟疑、潜台词和人物口吻 |
+| `humanize-examples` | 仅在明确要求时加载的改写前后示例库，不作为事实来源或默认范文 |
 | `surface-pattern-audit` | 按文体审查表层模式、装饰性连续比较和叙事小标题，但不全局封禁句式 |
 | `protected-content` | 防止润色时误改数字、引文、公式、链接、代码、原话和指定术语 |
 | `source-grounding` | 严肃文本有明确来源时，核对主张、出处、适用范围和不确定性 |
@@ -99,9 +102,30 @@ python -m pip install .
 human-writing-skills list --kind style
 human-writing-skills list --kind module
 human-writing-skills build --style webnovel --context examples/story-ledger.md --task "续写第三章，保留冲突但揭示一个新线索。"
+human-writing-skills humanize --draft chapter.md --style fiction --mode quick
 ```
 
-也可以不安装，继续使用 `python -m humanwriting.cli ...`。`build` 命令会输出一份可以直接复制给 Codex、ChatGPT、Claude、本地大模型或其他写作代理的指令包。
+也可以不安装，继续使用 `python -m humanwriting.cli ...`。`build` 和 `humanize` 会输出一份可以直接复制给 Codex、ChatGPT、Claude、本地大模型或其他写作代理的指令包。
+
+## 快捷 Humanize
+
+`humanize` 是低门槛改写入口。它把 `--draft` 同时视为待改写原文，默认保持原语言、
+文体、事实和意义，再处理模板腔与机械结构。
+
+```powershell
+# 最小组合：表层模式 + 原意保真 + 声音/含混保护
+human-writing-skills humanize --draft chapter.md --style fiction
+
+# 只有结构问题较重时才增加深度编辑模块
+human-writing-skills humanize --draft article.md --style self-media --mode deep
+
+# 示例库保持显式加载，不作为事实或文风来源
+human-writing-skills humanize --draft chapter.md --style fiction --with-examples
+```
+
+`quick` 不加载套话、公式结构、段落推进和编辑循环；`deep` 才追加这些高成本模块。
+`humanize-examples` 只有传入 `--with-examples` 才加载；`voice-ambiguity-preservation`
+只用于有原文的改写或显式 preservation 审查。
 
 ## 多语言范围
 
@@ -287,7 +311,7 @@ tests/               标准库单元测试
 新增能力采用渐进加载。生成任务只有明确要求对话、谈判、会谈、审问、争论等
 言语中心场景时，才自动加入 `dialogue-voice-audit`；普通叙述和严肃文体不会误触发。
 审稿中的 `voice`、`serial`、`world`、`process`、`momentum`、`salience`、
-`recurrence`、`texture`、`sources` 仍不塞入宽覆盖的 `full`：
+`recurrence`、`texture`、`sources`、`preservation` 仍不塞入宽覆盖的 `full`：
 
 ```powershell
 human-writing-skills build --style fiction --task "写一场两位角色各有所求的谈判。"
@@ -332,6 +356,7 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 | `numbers` | 动作与情绪中的假精确数字 |
 | `proofread` | 错漏字、句法槽位、悬空连接词、指代、标点、称谓和排版 |
 | `fidelity` | 原意、实体、正反、不确定性、时间顺序、归因和新增细节；必须提供 `--original` |
+| `preservation` | 有意义的含混、重复、母题、迟疑、潜台词和人物口吻；必须提供 `--original` 并显式选择 |
 | `style-match` | 对照明确输入的参考资料检查文风漂移；没有参考信号时不可使用 |
 | `sources` | 对照明确来源核验严肃文本主张；需要 `--source` 和严肃文体 |
 
@@ -352,7 +377,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
+每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。高成本的 `preservation` 不自动加入，使用 `--stage preservation --original original.md` 显式运行。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
 
 - 详细说明：[docs/audit-pipeline.zh-CN.md](docs/audit-pipeline.zh-CN.md)
 
