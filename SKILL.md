@@ -10,6 +10,18 @@ continuity without flattening a specific voice. Use the smallest set of modules
 that covers the task. Keep project facts, prior chapters, rewrite originals, and
 continuity ledgers separate from optional style references.
 
+## Capability Layers
+
+- The `humanwriting/` Python package is executable. Its CLI deterministically
+  compiles prompts, locates recurring text patterns, calculates diagnostics,
+  previews conservative fixes, checks protected content, and writes staged audits.
+- The Markdown files under `skills/` are model-executed writing and editorial
+  modules. They are selected by the compiler and are intentionally not pretending
+  to be deterministic NLP algorithms.
+- A normal installation includes both layers. Verify the executable layer with
+  `human-writing-skills list --kind module` and run a real draft through `lint`,
+  `fix`, `verify`, or `pipeline` rather than judging the package from `SKILL.md` alone.
+
 ## Quick Humanize Route
 
 - For a supplied draft, use `humanize --mode quick` for surface patterns,

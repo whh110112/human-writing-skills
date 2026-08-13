@@ -10,6 +10,20 @@
 
 Advanced Human Writing & AI Humanizer is an open-source, modular skill pack and lightweight prompt compiler for natural multilingual AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
 
+This is not an empty prompt collection. The repository contains two deliberately
+different capability layers:
+
+- **Executable Python tools:** `humanwriting/` provides the installable
+  `human-writing-skills` CLI for deterministic lint findings with evidence spans,
+  text statistics, conservative fix previews, protected-content verification,
+  prompt compilation, and staged audit-file generation.
+- **Model-executed editorial modules:** `skills/*.md` contains genre and review
+  instructions selected on demand by that compiler. These modules guide the writing
+  model; they do not falsely present subjective literary judgment as a deterministic
+  algorithm.
+
+The test suite exercises both the executable layer and module-selection gates.
+
 It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
 The goal is not deception. The goal is better writing: clearer instructions, stronger revision habits, and reusable style constraints that make AI-assisted drafts feel edited by a human.
@@ -109,6 +123,8 @@ human-writing-skills list --kind style
 human-writing-skills list --kind module
 human-writing-skills build --style fiction --context examples/story-ledger.md --task "Write the next scene."
 human-writing-skills humanize --draft chapter.md --style fiction --mode quick
+human-writing-skills lint --draft chapter.md --style fiction
+human-writing-skills verify --source original.md --candidate revised.md
 ```
 
 You can also run directly from the source checkout with `python -m humanwriting.cli ...`. The `build` and `humanize` commands print instruction packs that can be pasted into Codex, ChatGPT, Claude, local LLM tools, or another writing agent.

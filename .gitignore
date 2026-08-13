@@ -5,6 +5,7 @@ __pycache__/
 dist/
 build/
 .tmp-wheel/
+.tmp-skillhub-package/
 *.egg-info/
 .DS_Store
 .learnings/

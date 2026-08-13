@@ -1,0 +1,90 @@
+name: Publish to SkillHub
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to publish, without the leading v
+        required: true
+        type: string
+      changelog:
+        description: Optional changelog for a manual publication
+        required: false
+        default: Manual SkillHub publication.
+        type: string
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Resolve release metadata
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_CHANGELOG: ${{ inputs.changelog }}
+        shell: bash
+        run: |
+          version="${RELEASE_TAG:-$INPUT_VERSION}"
+          version="${version#v}"
+          changelog="${RELEASE_BODY:-$INPUT_CHANGELOG}"
+          if [[ -z "$version" ]]; then
+            echo "A release tag or manual version is required." >&2
+            exit 1
+          fi
+          if [[ -z "$changelog" ]]; then
+            changelog="Publish human-writing-skills v$version."
+          fi
+          {
+            echo "version=$version"
+            echo "changelog<<EOF"
+            echo "$changelog"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build SkillHub package
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: python scripts/build_skillhub_package.py --output .tmp-skillhub-package --version "$VERSION"
+
+      - name: Install SkillHub CLI
+        run: |
+          curl -fsSL https://skillhub-1388575217.cos.ap-guangzhou.myqcloud.com/install/install.sh \
+            | bash -s -- --cli-only --no-self-upgrade
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Publish skill
+        env:
+          SKILLHUB_KEY: ${{ secrets.SKILLHUB_KEY }}
+          VERSION: ${{ steps.release.outputs.version }}
+          CHANGELOG: ${{ steps.release.outputs.changelog }}
+        run: |
+          if [[ -z "$SKILLHUB_KEY" ]]; then
+            echo "Repository secret SKILLHUB_KEY is required." >&2
+            exit 1
+          fi
+          skillhub publish .tmp-skillhub-package \
+            --host https://api.skillhub.cn \
+            --version "$VERSION" \
+            --changelog "$CHANGELOG" \
+            --dry-run \
+            --json
+          skillhub login --key "$SKILLHUB_KEY" --host https://api.skillhub.cn
+          skillhub publish .tmp-skillhub-package \
+            --host https://api.skillhub.cn \
+            --version "$VERSION" \
+            --changelog "$CHANGELOG" \
+            --json

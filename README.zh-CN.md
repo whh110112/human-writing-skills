@@ -10,6 +10,17 @@
 
 Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
 
+这不是只有说明文档的空提示词仓库。项目有两层刻意分开的能力：
+
+- **可执行的 Python 工具层：** `humanwriting/` 提供可安装的
+  `human-writing-skills` 命令行，可确定性地定位文本模式并给出证据位置、统计文本、
+  预览保守修复、校验不可误改内容、编译提示词以及生成分阶段审稿文件。
+- **由模型执行的编辑模块层：** `skills/*.md` 保存按需选择的文体与审稿规则，
+  由写作模型执行。文学判断本来就不能完全靠固定算法，因此这些模块不会冒充
+  “一键自动写好小说”的确定性程序。
+
+测试套件同时覆盖可执行工具和模块按需激活逻辑。
+
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
 ## 这个项目解决什么
@@ -108,6 +119,8 @@ human-writing-skills list --kind style
 human-writing-skills list --kind module
 human-writing-skills build --style webnovel --context examples/story-ledger.md --task "续写第三章，保留冲突但揭示一个新线索。"
 human-writing-skills humanize --draft chapter.md --style fiction --mode quick
+human-writing-skills lint --draft chapter.md --style fiction
+human-writing-skills verify --source original.md --candidate revised.md
 ```
 
 也可以不安装，继续使用 `python -m humanwriting.cli ...`。`build` 和 `humanize` 会输出一份可以直接复制给 Codex、ChatGPT、Claude、本地大模型或其他写作代理的指令包。
