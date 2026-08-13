@@ -110,6 +110,33 @@ DECORATIVE_EMOJI_PATTERN = re.compile(
     re.UNICODE,
 )
 TITLE_CASE_HEADING_PATTERN = re.compile(r"(?m)^#{1,6}\s+([A-Z][A-Za-z0-9'-]*(?:\s+[A-Z][A-Za-z0-9'-]*){2,})\s*$")
+VAGUE_NARRATIVE_MARKER_PATTERN = re.compile(
+    r"说不清|说不上来|道不明|莫名(?:地|其妙)?|不知为何|不知道为什么|"
+    r"难以形容|无法形容|隐约|某种(?:的)?感觉|那点(?:感觉|情绪|意味)?|"
+    r"这点(?:感觉|情绪|意味)?|一丝(?:感觉|情绪|笑意|寒意|不安)?|"
+    r"一股(?:感觉|情绪|寒意|不安)?|仿佛|像是|似乎",
+    re.IGNORECASE,
+)
+DIALOGUE_QUOTE_PATTERN = re.compile(r"[\“\"](?P<content>[^\”\"\n]{4,240})[\”\"]")
+DIALOGUE_PRESSURE_PATTERN = re.compile(
+    r"[？?！!]|你|你们|请|别|不要|告诉我|回答|为什么|怎么|必须|不会|不许|"
+    r"\b(?:why|how|tell me|answer|don't|do not|must|will not)\b",
+    re.IGNORECASE,
+)
+DIALOGUE_RESPONSE_PATTERN = re.compile(
+    r"没有回答|没出声|不作声|沉默|停住|停了下来|转身|抬头|低头|看向|望向|"
+    r"避开|握紧|松开|推开|推过|退后|走开|站起|坐下|笑|哭|皱眉|愣住|僵住|"
+    r"打断|接过|递给|拉住|抓住|靠近|移开|回头|起身|离开|不动|没动|未答|"
+    r"\b(?:silence|paused|turned|looked|avoided|gripped|released|pushed|stepped|"
+    r"stood|sat|laughed|cried|frowned|froze|interrupted|took|handed|left)\b",
+    re.IGNORECASE,
+)
+ABSTRACT_PARAGRAPH_ENDING_PATTERN = re.compile(
+    r"(?:仿佛|像是|似乎|说不清|道不明|莫名|某种.{0,12}感觉|那点|这点|一丝|一股)"
+    r"[^。！？!?\n]{0,80}[。！？!?]?$|"
+    r"\b(?:as if|seemed|some kind of|could not explain)\b[^.!?\n]{0,80}[.!?]?$",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -535,6 +562,133 @@ def _scene_opening_cues(fragment: str) -> set[str]:
     }
 
 
+def _narrative_naturalness_findings(
+    text: str,
+    masked: str,
+    style: str,
+    allowed: set[str],
+) -> list[LintFinding]:
+    if style not in NARRATIVE_STYLES:
+        return []
+
+    findings: list[LintFinding] = []
+    paragraphs = _paragraph_spans(masked)
+
+    def enabled(rule_id: str, category: str) -> bool:
+        return rule_id not in allowed and category not in allowed
+
+    # A single cinematic opening can be useful. Repeated fingerprints across a
+    # passage are the signal that the writer is reusing a presentation recipe.
+    opening_candidates: list[tuple[int, int, tuple[str, ...]]] = []
+    for start, end, paragraph in paragraphs:
+        fragment = paragraph[:320]
+        cues = set(_scene_opening_cues(fragment))
+        if re.search(r"清晨|早上|上午|中午|下午|傍晚|晚上|夜里|深夜|黎明|次日", fragment):
+            cues.add("time")
+        if VAGUE_NARRATIVE_MARKER_PATTERN.search(fragment):
+            cues.add("affect")
+        if len(cues) >= 4:
+            opening_candidates.append((start, end, tuple(sorted(cues))))
+    fingerprints: dict[tuple[str, ...], list[tuple[int, int]]] = {}
+    for start, end, fingerprint in opening_candidates:
+        fingerprints.setdefault(fingerprint, []).append((start, end))
+    repeated_fingerprints = [spans for spans in fingerprints.values() if len(spans) >= 3]
+    broad_recipe_count = sum(len(cues) >= 4 for _, _, cues in opening_candidates)
+    if (
+        len(opening_candidates) >= 4
+        and (repeated_fingerprints or broad_recipe_count >= 4)
+        and enabled("NAT001", "repeated-scene-recipe")
+    ):
+        start, end, _ = opening_candidates[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "NAT001",
+                "repeated-scene-recipe",
+                "medium",
+                start,
+                min(end, start + 180),
+                "Several narrative openings reuse the same time/weather, setting, appearance, and feeling bundle; vary the entry point and carry forward scene pressure.",
+            )
+        )
+
+    vague_markers = list(VAGUE_NARRATIVE_MARKER_PATTERN.finditer(masked))
+    if (
+        len(vague_markers) >= 6
+        and len(vague_markers) * 220 >= max(len(masked), 1)
+        and enabled("NAT002", "vague-affect-recurrence")
+    ):
+        first = vague_markers[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "NAT002",
+                "vague-affect-recurrence",
+                "medium",
+                first.start(),
+                first.end(),
+                "Vague affect and perception markers recur at high density; keep meaningful uncertainty, but replace repeated labels with owned evidence, action, or consequence.",
+            )
+        )
+
+    abstract_endings = [
+        (start, end)
+        for start, end, paragraph in paragraphs
+        if ABSTRACT_PARAGRAPH_ENDING_PATTERN.search(paragraph)
+    ]
+    if (
+        len(abstract_endings) >= 4
+        and len(abstract_endings) * 3 >= max(len(paragraphs), 1)
+        and enabled("NAT003", "abstract-paragraph-closure")
+    ):
+        start, end = abstract_endings[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "NAT003",
+                "abstract-paragraph-closure",
+                "low",
+                start,
+                min(end, start + 180),
+                "Many paragraphs close on an abstract feeling or polished image; let some exits land on a changed object, action, interruption, or unanswered pressure.",
+            )
+        )
+
+    # Deterministic lint only reports a cluster. It does not demand a reply to
+    # harmless talk and leaves nuanced interaction analysis to the audit module.
+    orphaned: list[tuple[int, int]] = []
+    for paragraph_index, (p_start, p_end, _) in enumerate(paragraphs):
+        for quote in DIALOGUE_QUOTE_PATTERN.finditer(masked[p_start:p_end]):
+            absolute_start = p_start + quote.start()
+            absolute_end = p_start + quote.end()
+            content = quote.group("content")
+            if not DIALOGUE_PRESSURE_PATTERN.search(content):
+                continue
+            tail = masked[absolute_end:p_end]
+            has_response = bool(DIALOGUE_RESPONSE_PATTERN.search(tail[:180]))
+            if not has_response and paragraph_index + 1 < len(paragraphs):
+                next_start, next_end, _ = paragraphs[paragraph_index + 1]
+                next_lead = masked[next_start : min(next_end, next_start + 100)]
+                has_response = bool(DIALOGUE_RESPONSE_PATTERN.search(next_lead))
+            if not has_response:
+                orphaned.append((absolute_start, absolute_end))
+    if len(orphaned) >= 2 and enabled("NAT004", "dialogue-response-orphan"):
+        start, end = orphaned[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "NAT004",
+                "dialogue-response-orphan",
+                "medium",
+                start,
+                end,
+                "Multiple pressure-bearing lines receive no visible reply, action, costly silence, interruption, or carried deferral before the prose moves on.",
+            )
+        )
+
+    return findings
+
+
 def _precision_is_earned(text: str, start: int, end: int) -> bool:
     context = text[max(0, start - 60) : min(len(text), end + 60)]
     return bool(
@@ -893,6 +1047,8 @@ def lint_text(
             else:
                 run_start = None
                 run_count = 0
+
+        findings.extend(_narrative_naturalness_findings(text, masked, style, allowed))
 
     findings.sort(key=lambda finding: (finding.start, finding.rule_id))
     weighted = sum(SEVERITY_WEIGHT[finding.severity] for finding in findings)
