@@ -42,6 +42,8 @@ class CompilerTests(unittest.TestCase):
         root = default_skills_dir()
         self.assertTrue(root.joinpath("fiction.md").is_file())
         self.assertTrue(root.joinpath("relationship-stance-audit.md").is_file())
+        self.assertTrue(root.joinpath("speech-register-continuity.md").is_file())
+        self.assertTrue(root.joinpath("capability-state-audit.md").is_file())
 
     def test_lists_style_and_module_skills(self):
         self.assertIn("fiction", list_style_skills())
@@ -60,6 +62,8 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("proofreading-audit", list_module_skills())
         self.assertIn("reference-style-alignment", list_module_skills())
         self.assertIn("dialogue-voice-audit", list_module_skills())
+        self.assertIn("speech-register-continuity", list_module_skills())
+        self.assertIn("capability-state-audit", list_module_skills())
         self.assertIn("serial-reentry", list_module_skills())
         self.assertIn("narrative-distance-control", list_module_skills())
         self.assertIn("imagery-load-audit", list_module_skills())
@@ -160,6 +164,13 @@ class CompilerTests(unittest.TestCase):
         self.assertEqual(skill.kind, "style")
         self.assertIn("News Report Skill", skill.content)
 
+    def test_formal_document_is_a_serious_base_style(self):
+        self.assertIn("formal-document", list_style_skills())
+        prompt = compile_prompt("formal-document", "Draft an official notice.")
+        self.assertIn("Selected Skill: formal-document", prompt)
+        self.assertIn("Technique Module: protected-content", prompt)
+        self.assertIn("Remove conversational fillers", prompt)
+
     def test_compile_prompt_contains_style_and_task(self):
         prompt = compile_prompt("fiction", "Write the next scene.")
         self.assertIn("Core Directive", prompt)
@@ -183,6 +194,51 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Technique Module: dialogue-voice-audit", narration)
         self.assertNotIn("Technique Module: dialogue-voice-audit", excluded)
         self.assertNotIn("Technique Module: dialogue-voice-audit", serious)
+
+    def test_register_generation_requires_dialogue_and_explicit_language_evidence(self):
+        with TemporaryDirectory() as directory:
+            context = Path(directory) / "ledger.md"
+            identity_context = Path(directory) / "identity-ledger.md"
+            context.write_text(
+                "人物来自广东，母语是粤语；与同事主要说普通话。",
+                encoding="utf-8",
+            )
+            identity_context.write_text(
+                "人物是美国人，未设定其他语言经历。",
+                encoding="utf-8",
+            )
+            active = compile_prompt(
+                "fiction", "写一段他与同事的对话。", context_path=str(context)
+            )
+            no_dialogue = compile_prompt(
+                "fiction", "描写他走进办公室。", context_path=str(context)
+            )
+            no_evidence = compile_prompt("fiction", "写一段两人的对话。")
+            identity_only = compile_prompt(
+                "fiction", "写一段他的对话。", context_path=str(identity_context)
+            )
+            serious = compile_prompt("news-report", "写一篇包含采访引语的报道。")
+        self.assertIn("Technique Module: speech-register-continuity", active)
+        self.assertNotIn("Technique Module: speech-register-continuity", no_dialogue)
+        self.assertNotIn("Technique Module: speech-register-continuity", no_evidence)
+        self.assertIn("Technique Module: speech-register-continuity", identity_only)
+        self.assertIn("does not by itself prove a dialect inventory", identity_only)
+        self.assertNotIn("Technique Module: speech-register-continuity", serious)
+
+    def test_capability_generation_is_current_task_gated(self):
+        with TemporaryDirectory() as directory:
+            context = Path(directory) / "ledger.md"
+            context.write_text("主角当前为筑基后期，左臂受伤。", encoding="utf-8")
+            active = compile_prompt(
+                "webnovel",
+                "续写突破场景，保持境界、伤势和代价连续。",
+                context_path=str(context),
+            )
+            ordinary = compile_prompt(
+                "webnovel", "续写两人在客栈吃饭的场景。", context_path=str(context)
+            )
+        self.assertIn("Technique Module: capability-state-audit", active)
+        self.assertNotIn("Technique Module: capability-state-audit", ordinary)
 
     def test_world_and_process_generation_activate_only_on_matching_narrative_tasks(self):
         world = compile_prompt("fiction", "写一场民国背景下使用电报传讯的场景。")
@@ -521,6 +577,41 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: dialogue-voice-audit", texture)
         self.assertIn("Audit Module: chapter-momentum-audit", momentum)
         self.assertNotIn("Audit Module: serial-reentry", momentum)
+
+    def test_register_and_capability_profiles_are_isolated(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            context = root / "ledger.md"
+            draft.write_text("他说：\u201c俺也去。\u201d她答：\u201c好。\u201d", encoding="utf-8")
+            context.write_text(
+                "他说普通话，从未接触东北方言。当前为筑基后期，左臂受伤。",
+                encoding="utf-8",
+            )
+            register = compile_audit_prompt(str(draft), profiles=["register"])
+            capability = compile_audit_prompt(
+                str(draft), context_path=str(context), profiles=["capability"]
+            )
+            with self.assertRaisesRegex(ValueError, "requires --context"):
+                compile_audit_prompt(str(draft), profiles=["capability"])
+        self.assertIn("Audit Module: speech-register-continuity", register)
+        self.assertNotIn("Audit Module: dialogue-voice-audit", register)
+        self.assertIn("Audit Module: capability-state-audit", capability)
+        self.assertNotIn("Audit Module: world-ontology-audit", capability)
+
+    def test_auto_detection_gates_register_and_capability_on_evidence(self):
+        draft = "他说：\u201c俺也去。\u201d她问：\u201c你学的东北话？\u201d"
+        context = "人物只说普通话，没有东北方言经历；当前战力为三级。"
+        decisions = detect_audit_profiles(
+            draft, context_active=True, context=context
+        )
+        selected = {item.profile for item in decisions if item.selected}
+        self.assertTrue({"register", "capability"} <= selected)
+
+        without_context = detect_audit_profiles(draft)
+        without_selected = {item.profile for item in without_context if item.selected}
+        self.assertIn("register", without_selected)
+        self.assertNotIn("capability", without_selected)
 
     def test_new_deep_profiles_are_isolated(self):
         with TemporaryDirectory() as directory:

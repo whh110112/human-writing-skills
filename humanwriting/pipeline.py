@@ -30,6 +30,7 @@ def select_pipeline_profiles(
     context_active: bool = False,
     source_active: bool = False,
     serious_document: bool = False,
+    context: str = "",
 ) -> tuple[list[str], list[ProfileDecision]]:
     if stages:
         selected = list(dict.fromkeys(stages))
@@ -42,10 +43,12 @@ def select_pipeline_profiles(
             raise ValueError("The fidelity stage requires --original with the pre-rewrite text.")
         if "preservation" in selected and not original_active:
             raise ValueError("The preservation stage requires --original with the pre-rewrite text.")
+        if "capability" in selected and not context_active:
+            raise ValueError("The capability stage requires --context with prior state or a continuity ledger.")
         if "sources" in selected and not source_active:
             raise ValueError("The sources stage requires one or more --source files.")
         if "sources" in selected and not serious_document:
-            raise ValueError("The sources stage is limited to serious academic, news, legal, or technical documents.")
+            raise ValueError("The sources stage is limited to serious academic, formal, news, legal, or technical documents.")
         decisions = []
         for profile in PIPELINE_PROFILES:
             is_selected = profile in selected
@@ -60,6 +63,8 @@ def select_pipeline_profiles(
                 reason = "No pre-rewrite --original file was supplied."
             if profile == "preservation" and not original_active:
                 reason = "No pre-rewrite --original file was supplied."
+            if profile == "capability" and not context_active:
+                reason = "No prior-state --context file was supplied."
             if profile == "sources" and not source_active:
                 reason = "No factual --source files were supplied."
             elif profile == "sources" and not serious_document:
@@ -74,6 +79,7 @@ def select_pipeline_profiles(
             context_active=context_active,
             source_active=source_active,
             serious_document=serious_document,
+            context=context,
         )
         return [decision.profile for decision in decisions if decision.selected], decisions
     decisions = []
@@ -81,6 +87,8 @@ def select_pipeline_profiles(
     for profile in PIPELINE_PROFILES:
         include = profile not in {
             "voice",
+            "register",
+            "capability",
             "serial",
             "world",
             "process",
@@ -134,7 +142,8 @@ def build_audit_pipeline(
     document_type: str = "auto",
 ) -> tuple[list[AuditStage], list[ProfileDecision]]:
     draft = read_optional(draft_path)
-    context_active = bool(read_optional(context_path))
+    context = read_optional(context_path)
+    context_active = bool(context)
     reference_pack = build_reference_pack(
         reference_paths,
         reference_style,
@@ -152,6 +161,7 @@ def build_audit_pipeline(
         context_active=context_active,
         source_active=source_pack.active,
         serious_document=serious_document,
+        context=context,
     )
     reason_by_profile = {decision.profile: decision.reason for decision in decisions}
     auto_protection, _ = detect_serious_document(draft, document_type=document_type)
@@ -280,7 +290,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
+            "optional stats -> logic -> character/relationship/voice/register/capability/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

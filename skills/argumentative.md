@@ -18,6 +18,8 @@ Build a persuasive argument that sounds like a thoughtful person, not a template
 - Use transitions that name the logical relationship.
 - Let uncertainty appear where the evidence is limited.
 - End by sharpening the implication, not repeating the thesis.
+- Use conversational particles or direct address only when the requested venue permits
+  them; formal argument should rely on evidence and calibrated stance rather than chatter.
 
 ## Avoid
 

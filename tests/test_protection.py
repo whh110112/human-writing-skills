@@ -75,11 +75,13 @@ class ProtectionTests(unittest.TestCase):
 
     def test_serious_styles_auto_activate_but_narrative_styles_do_not(self):
         academic = compile_prompt("academic-paper", "Write the results section with 92.4% accuracy.")
+        formal = compile_prompt("formal-document", "Write an official notice with a deadline.")
         news = compile_prompt("news-report", "Write a report using the supplied figures.")
         fiction = compile_prompt("fiction", "He moved three centimeters and counted seven seconds.")
         legal_fiction = compile_prompt("fiction", "写一篇以合同纠纷为背景的法律题材小说。")
 
         self.assertIn("Technique Module: protected-content", academic)
+        self.assertIn("Technique Module: protected-content", formal)
         self.assertIn("Technique Module: protected-content", news)
         self.assertNotIn("Technique Module: protected-content", fiction)
         self.assertNotIn("Technique Module: protected-content", legal_fiction)

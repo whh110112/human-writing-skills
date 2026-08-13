@@ -9,6 +9,8 @@ PIPELINE_PROFILES = [
     "character",
     "relationship",
     "voice",
+    "register",
+    "capability",
     "serial",
     "world",
     "process",
@@ -129,6 +131,23 @@ PROCESS_RESULT_PATTERN = re.compile(
     r"\b(?:finally|succeeded|failed|completed|solved|approved|result|conclusion)\b",
     re.IGNORECASE,
 )
+REGISTER_PATTERN = re.compile(
+    r"方言|口音|地域|籍贯|母语|外语|双语|多语|翻译|敬语|敬称|称谓|语气词|口头禅|"
+    r"国籍|出生地|成长地|东北人|广东人|美国人|日本人|韩国人|"
+    r"东北话|粤语|广东话|京片子|北京话|普通话|英语|日语|韩语|法语|西班牙语|"
+    r"移民|留学|语言习惯|说话习惯|"
+    r"\b(?:dialect|accent|native language|bilingual|multilingual|translation|honorific|"
+    r"register|code-switch|discourse particle|speech habit|slang|idiolect|nationality|"
+    r"birthplace|upbringing|American|Japanese|Korean)\b",
+    re.IGNORECASE,
+)
+CAPABILITY_PATTERN = re.compile(
+    r"战力|境界|等级|阶位|段位|修为|异能|能力|技能|招式|法术|装备|武器|伤势|"
+    r"体力|法力|灵力|资源|冷却|克制|越级|突破|升级|训练|权限|权力等级|"
+    r"\b(?:power level|rank|tier|ability|skill|spell|equipment|weapon|injury|stamina|"
+    r"mana|resource|cooldown|counter|level up|training|authority level)\b",
+    re.IGNORECASE,
+)
 
 
 def _match_reason(pattern: re.Pattern[str], text: str, label: str) -> tuple[bool, str]:
@@ -152,6 +171,25 @@ def _voice_reason(text: str, context_active: bool = False) -> tuple[bool, str]:
         f"Detected {basis} dialogue: {dialogue_marks} openings and "
         f"{attributions} attribution cues."
     )
+
+
+def _register_reason(text: str, context: str = "") -> tuple[bool, str]:
+    dialogue_marks = len(DIALOGUE_MARK_PATTERN.findall(text))
+    attributions = len(DIALOGUE_ATTRIBUTION_PATTERN.findall(text))
+    register_match = REGISTER_PATTERN.search("\n".join((text, context)))
+    selected = bool(register_match) and dialogue_marks >= 2 and attributions >= 1
+    if not selected:
+        return False, "No dialogue combined with explicit language, dialect, honorific, or register evidence."
+    return True, f"Detected dialogue with register evidence: {register_match.group(0)!r}."
+
+
+def _capability_reason(text: str, context: str = "") -> tuple[bool, str]:
+    if not context:
+        return False, "No continuity context was supplied for capability-state comparison."
+    match = CAPABILITY_PATTERN.search("\n".join((text, context)))
+    if not match:
+        return False, "No power, ability, equipment, injury, resource, or authority constraint was found."
+    return True, f"Detected context-backed capability constraint: {match.group(0)!r}."
 
 
 def _serial_reason(text: str, context_active: bool) -> tuple[bool, str]:
@@ -277,11 +315,14 @@ def detect_audit_profiles(
     context_active: bool = False,
     source_active: bool = False,
     serious_document: bool = False,
+    context: str = "",
 ) -> list[ProfileDecision]:
     optional = {
         "character": _match_reason(CHARACTER_PATTERN, draft, "character-action or voice"),
         "relationship": _match_reason(RELATIONSHIP_PATTERN, draft, "dialogue or relationship"),
         "voice": _voice_reason(draft, context_active),
+        "register": _register_reason(draft, context),
+        "capability": _capability_reason(draft, context),
         "serial": _serial_reason(draft, context_active),
         "world": _world_reason(draft),
         "process": _process_reason(draft),

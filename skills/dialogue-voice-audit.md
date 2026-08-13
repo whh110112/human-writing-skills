@@ -31,7 +31,7 @@ social options, and code-switching pressure, but they do not define personality.
 For each important speaker, record only scene-relevant dimensions:
 
 - stable baseline: diction, directness, abstraction, turn length, politeness,
-  humor, profanity, titles, and taboo wording
+  humor, profanity, titles, discourse particles, fillers, contractions, and taboo wording
 - response habits: answer, evade, counterquestion, bargain, teach, test, flatter,
   threaten, joke, quote, correct, or stay silent
 - disclosure habits: what is stated, implied, coded, delayed, or never named
@@ -114,6 +114,8 @@ When this file is loaded as a `Technique Module`:
    or treats as obvious, not through an exposition dump.
 6. Keep vocabulary and syntax near the speaker's baseline while allowing motivated
    code-switching for audience, pressure, performance, quotation, or strategy.
+   When language, dialect, honorific, or regional evidence matters, load
+   `speech-register-continuity` instead of improvising a linguistic profile here.
 7. Make important dialogue transact: alter knowledge, leverage, permission, risk,
    commitment, trust, or the next available action.
 8. Do not display the hidden model unless the user asks for notes.
@@ -137,6 +139,8 @@ When this file is loaded as an `Audit Module`:
    - a pressure-bearing line or action abandoned before any uptake or explicit deferral
    - silence treated as a response even though the text gives it no timing or consequence
    - unearned register, politeness, directness, dialect, or profanity shift
+   - a colloquial fragment whose intended meaning is not recoverable because a required
+     verb, object, complement, name, or referent was accidentally omitted
    - speech incompatible with the current audience, power balance, or emotional load
    - personality reduced to one repeated verbal tic or occupational stereotype
 5. Test every deviation for a change gate: audience adaptation, deception,

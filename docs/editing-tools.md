@@ -9,7 +9,7 @@ does not load rewrite comparison rules, statistics, or mechanical cleanup logic.
 | --- | --- | --- |
 | `--original` | Meaning of text being rewritten | Only when supplied; enables `rewrite-fidelity` |
 | `--reference` | Transferable style features | Only with an explicit reference or style request |
-| `--source` | Factual evidence | Only for serious academic, news, legal, or technical work |
+| `--source` | Factual evidence | Only for serious academic, formal, news, legal, or technical work |
 
 Do not use `--reference` as evidence for facts. Do not imitate the style of
 `--original` unless it is also deliberately supplied as a reference.

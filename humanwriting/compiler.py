@@ -23,6 +23,16 @@ DIALOGUE_NEGATION_PATTERN = re.compile(
     r"\b(?:no|without|avoid|exclude).{0,16}(?:dialogue|conversation|negotiation|interview)\b",
     re.IGNORECASE,
 )
+REGISTER_EVIDENCE_PATTERN = re.compile(
+    r"(?:方言|口音|地域|籍贯|母语|外语|双语|多语|翻译|敬语|敬称|称谓|语气词|口头禅|"
+    r"国籍|出生地|成长地|东北人|广东人|美国人|日本人|韩国人|"
+    r"东北话|粤语|广东话|京片子|北京话|上海话|四川话|闽南语|普通话|英语|日语|韩语|法语|"
+    r"西班牙语|葡萄牙语|阿拉伯语|拉丁语|移民|留学|海外生活|语言习惯|说话习惯)|"
+    r"\b(?:dialect|accent|regional speech|native language|second language|bilingual|multilingual|"
+    r"translation|honorific|register|code-switch|speech habit|discourse particle|slang|idiolect|"
+    r"nationality|birthplace|upbringing|American|Japanese|Korean)\b",
+    re.IGNORECASE,
+)
 WORLD_GENERATION_PATTERN = re.compile(
     r"(?:世界观|架空|时代背景|历史背景|世界规则|科技水平|制度设定|社会规则|"
     r"古代|民国|唐朝|宋朝|明朝|清朝|赛博朋克|蒸汽朋克|修仙|魔法|星际)|"
@@ -40,6 +50,13 @@ PROCESS_GENERATION_PATTERN = re.compile(
 SALIENCE_GENERATION_PATTERN = re.compile(
     r"(?:扩写|长篇|长稿|水文|灌水|篇幅分配|节奏审核|删减冗余|语义重复)|"
     r"\b(?:expand|long-form|attention budget|pacing audit|dilution|semantic repetition)\b",
+    re.IGNORECASE,
+)
+CAPABILITY_GENERATION_PATTERN = re.compile(
+    r"(?:战力|境界|等级|阶位|段位|修为|能力|异能|技能|招式|法术|装备|武器|伤势|"
+    r"体力|法力|灵力|资源|冷却|克制|越级|突破|升级|训练|权限|权力等级)|"
+    r"\b(?:power level|rank|tier|ability|skill|spell|equipment|weapon|injury|stamina|"
+    r"mana|resource|cooldown|counter|level up|training|authority level)\b",
     re.IGNORECASE,
 )
 CORE_REVIEW_MODULES = [
@@ -76,6 +93,8 @@ PHYSICAL_AUDIT_MODULES = [
 LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
 VOICE_AUDIT_MODULES = ["dialogue-voice-audit"]
+REGISTER_AUDIT_MODULES = ["speech-register-continuity"]
+CAPABILITY_AUDIT_MODULES = ["capability-state-audit"]
 SERIAL_AUDIT_MODULES = ["serial-reentry"]
 MOMENTUM_AUDIT_MODULES = ["chapter-momentum-audit"]
 WORLD_AUDIT_MODULES = ["world-ontology-audit"]
@@ -112,6 +131,8 @@ AUDIT_PROFILES = {
     "logic",
     "character",
     "voice",
+    "register",
+    "capability",
     "serial",
     "momentum",
     "world",
@@ -230,12 +251,18 @@ def compile_prompt(
     )
     if dialogue_generation_active:
         append_missing(selected_modules, VOICE_AUDIT_MODULES)
+        if REGISTER_EVIDENCE_PATTERN.search(
+            "\n".join(part for part in [task, context] if part)
+        ):
+            append_missing(selected_modules, REGISTER_AUDIT_MODULES)
     if style in DIALOGUE_GENERATION_STYLES and WORLD_GENERATION_PATTERN.search(
         "\n".join(part for part in [task, context] if part)
     ):
         append_missing(selected_modules, WORLD_AUDIT_MODULES)
     if style in DIALOGUE_GENERATION_STYLES and PROCESS_GENERATION_PATTERN.search(task):
         append_missing(selected_modules, PROCESS_AUDIT_MODULES)
+    if style in DIALOGUE_GENERATION_STYLES and CAPABILITY_GENERATION_PATTERN.search(task):
+        append_missing(selected_modules, CAPABILITY_AUDIT_MODULES)
     if style in DIALOGUE_GENERATION_STYLES and SALIENCE_GENERATION_PATTERN.search(task):
         append_missing(selected_modules, SALIENCE_AUDIT_MODULES)
     if reference_pack.active:
@@ -417,10 +444,12 @@ def compile_audit_prompt(
         raise ValueError("The preservation profile requires --original with the pre-rewrite text.")
     if "serial" in requested_profiles and not context:
         raise ValueError("The serial profile requires --context with prior chapters or a continuity ledger.")
+    if "capability" in requested_profiles and not context:
+        raise ValueError("The capability profile requires --context with prior state or a continuity ledger.")
     if "sources" in requested_profiles and not source_pack.active:
         raise ValueError("The sources profile requires one or more --source files.")
     if "sources" in requested_profiles and not serious_document:
-        raise ValueError("The sources profile is limited to serious academic, news, legal, or technical documents.")
+        raise ValueError("The sources profile is limited to serious academic, formal, news, legal, or technical documents.")
     physical_enabled = "physical" in requested_profiles or (
         "full" in requested_profiles and strict_continuity
     )
@@ -430,6 +459,8 @@ def compile_audit_prompt(
     logic_enabled = bool(requested_profiles & {"full", "logic"})
     character_enabled = bool(requested_profiles & {"full", "character"})
     voice_enabled = "voice" in requested_profiles
+    register_enabled = "register" in requested_profiles
+    capability_enabled = "capability" in requested_profiles
     serial_enabled = "serial" in requested_profiles
     momentum_enabled = "momentum" in requested_profiles
     world_enabled = "world" in requested_profiles
@@ -449,6 +480,10 @@ def compile_audit_prompt(
         append_missing(selected_modules, CHARACTER_AUDIT_MODULES)
     if voice_enabled:
         append_missing(selected_modules, VOICE_AUDIT_MODULES)
+    if register_enabled:
+        append_missing(selected_modules, REGISTER_AUDIT_MODULES)
+    if capability_enabled:
+        append_missing(selected_modules, CAPABILITY_AUDIT_MODULES)
     if serial_enabled:
         append_missing(selected_modules, SERIAL_AUDIT_MODULES)
     if momentum_enabled:
@@ -543,6 +578,19 @@ def compile_audit_prompt(
             "check goals, topic, response linkage, knowledge, role constraints, audience, register, "
             "motivated change gates, and whether pressure-bearing turns receive uptake or become "
             "explicit interaction debt without relying on occupational stereotypes."
+        )
+    if register_enabled:
+        task_lines.append(
+            "For speech register, compare each speaker's established language identity, dialect "
+            "exposure, politeness, address forms, discourse particles, vocabulary, translation "
+            "convention, and audience shifts; require an evidence-backed gate for code-switching "
+            "and distinguish spoken ellipsis from a missing grammatical slot."
+        )
+    if capability_enabled:
+        task_lines.append(
+            "For capability continuity, separate permanent baseline from temporary state, then "
+            "verify abilities, rank, authority, equipment, injuries, resources, cooldowns, counters, "
+            "costs, and every increase, loss, exception, or surprising outcome against an on-page gate."
         )
     if serial_enabled:
         task_lines.append(

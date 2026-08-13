@@ -135,7 +135,7 @@ def analyze_style_statistics(text: str, style: str = "general") -> StyleStatisti
     transition_density = transition_count * 1000 / max(len(tokens), 1)
 
     warnings: list[str] = []
-    serious = style in {"academic-paper", "news-report"}
+    serious = style in {"academic-paper", "formal-document", "news-report"}
     if len(sentence_lengths) >= 6 and sentence_cv < (0.12 if serious else 0.18):
         warnings.append("Sentence lengths are unusually uniform for this style and sample length.")
     if paragraph_cv is not None and len(paragraph_lengths) >= 5 and paragraph_cv < 0.16:

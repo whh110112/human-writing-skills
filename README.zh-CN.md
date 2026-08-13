@@ -26,8 +26,10 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
+| 人物方言、敬语、语气词或外语突然串台 | 建立语言身份卡，按经历、听众和变调依据审核，不按地域或国籍刻板分配口音 |
 | 关键台词或动作后无人承接，剧情生硬切走 | 检查回应义务，并把延迟回应记录为互动欠账 |
 | 时代、技术、制度或世界规则互相冲突 | 抽取世界契约，再检查物件、行动和例外是否兼容 |
+| 战力、技能、权限、装备、伤势和资源前后漂移 | 区分永久基线与临时状态，要求升级、损耗、克制和例外都有过程门与代价 |
 | 调查、谈判、研发等过程被跳过，结果凭空成功 | 检查承诺、尝试、阻力、判断、代价和结果的赚取链 |
 | 扩写只增加环境、心理和同义复述 | 比较场景承诺与注意力分配，把篇幅还给关键过程和后果 |
 | 提示词越写越乱 | 用 CLI 把文体、上下文、任务编译成清晰指令包 |
@@ -42,6 +44,7 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | `news-report` | 新闻报告 | 事实顺序、消息来源、克制表达 |
 | `self-media` | 自媒体文章 | 有用、直接、有个人判断，但不空喊口号 |
 | `academic-paper` | 科研论文 | 谨慎表述、结构、术语一致性 |
+| `formal-document` | 公文/正式文件 | 权责、依据、范围、动作、期限和克制语域 |
 | `webnovel` | 网络小说/连载文 | 爽点、钩子、伏笔回收、战力和设定连续性 |
 
 ## 深层“人类痕迹”模块
@@ -57,6 +60,8 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | `logic-causality-audit` | 检查因果、时间线、知识来源、动机、规则、资源和后果断裂 |
 | `character-consistency-audit` | 检查人物目标、声音、能力、边界、知识和转变是否有过渡 |
 | `dialogue-voice-audit` | 按人物基线与情境生成并审核对白，检查关键回合是否得到语言、动作、沉默或延迟回应 |
+| `speech-register-continuity` | 有明确证据时检查人物语言、方言经历、敬语、语气词、称谓和切换依据 |
+| `capability-state-audit` | 检查战力、技能、权限、装备、伤势、资源、冷却、克制与变化过程 |
 | `serial-reentry` | 有前章或账本时，检查前情倾倒、遗漏承接和章节状态重置 |
 | `chapter-momentum-audit` | 检查只铺气氛不推进、承诺未兑现、章间残留丢失和无依据钩子 |
 | `world-ontology-audit` | 检查时代、技术、制度、社会习惯和架空规则是否兼容 |
@@ -220,13 +225,17 @@ human-writing-skills audit `
 - 论证前后有没有自相矛盾
 - 上一段结束时人物到底在哪里
 
-因此项目使用轻量级 ledger 记录：
+因此项目使用轻量级 ledger 记录，并按“权威账本 -> 最新状态 -> 近期章节 ->
+相关旧片段 -> 明示为不确定的推断”取用上下文。检索出来的旧段落只负责召回，不能
+覆盖后续已经确认的新状态：
 
 - 固定事实：人物、时间线、地点、关系、规则
 - 活跃线索：未解决冲突、悬念、伏笔、论点
 - 关系状态：谁知道、想要、隐瞒、亏欠、拒绝了什么，谁握有主动权
 - 关系立场：公开/私下态度、当前听众、谁能在谁面前提谁、禁泄秘密和例外动机
 - 声音锚点：叙述视角、用词、直接程度、披露习惯、知识边界、听众变化和禁用表达
+- 语言身份：共同场景语言、已证明的方言/外语经历、敬语称谓、语气词与变调依据
+- 能力状态：永久战力/技能/权限与临时伤势、装备、资源、冷却、克制、代价和变化门
 - 对话契约：谁对谁说、为何现在说、想让对方做什么、不能透露什么、这轮要改变什么
 - 互动欠账：哪句关键台词或动作仍待回应、拒绝、打断、后果或延迟回收
 - 当前状态：上一段结束在哪里，下一段必须如何衔接
@@ -234,6 +243,14 @@ human-writing-skills audit `
 - 新增事实：本次输出后哪些事情变成了真
 
 示例见：[examples/story-ledger.md](examples/story-ledger.md)
+
+`speech-register-continuity` 只有小说/网文存在对白，并且任务或账本明确给出地域、
+语言、方言、敬语或语域证据时才自动加载；也可用 `audit --profile register` 单独审查。
+它不会因为人物的地域或国籍就凭空给出某种口音。
+
+`capability-state-audit` 在生成时只由本次任务中的战力/技能/资源等要求触发；流水线
+自动审查还要求提供上下文账本。普通文戏不会加载。可显式使用
+`audit --profile capability --context ledger.md`。
 
 ## Chatbox 使用
 
@@ -310,7 +327,7 @@ tests/               标准库单元测试
 
 新增能力采用渐进加载。生成任务只有明确要求对话、谈判、会谈、审问、争论等
 言语中心场景时，才自动加入 `dialogue-voice-audit`；普通叙述和严肃文体不会误触发。
-审稿中的 `voice`、`serial`、`world`、`process`、`momentum`、`salience`、
+审稿中的 `voice`、`register`、`capability`、`serial`、`world`、`process`、`momentum`、`salience`、
 `recurrence`、`texture`、`sources`、`preservation` 仍不塞入宽覆盖的 `full`：
 
 ```powershell
@@ -323,7 +340,9 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
 `dialogue-voice-audit` 不按职业套口吻，而是检查稳定语言基线、现实利益、知识边界、
-当场目标、回应关系和有动机的变调；`serial-reentry` 只有提供前章或账本
+当场目标和回应关系；语言身份、语气词、敬语与变调依据交给
+`speech-register-continuity`，战力与资源状态交给 `capability-state-audit`。
+`serial-reentry` 只有提供前章或账本
 时才可使用；`momentum` 只审多章稿件的入场压力、变化、回报和章尾承接；`texture`
 负责电影式开场堆料、叙事距离、比喻与感官负载、单行段落成串、动作后重复解释
 情绪以及人物资料倾倒。`world` 只在明确世界坐标出现时检查兼容性；`process`
@@ -343,6 +362,8 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 | `logic` | 因果、时间线、知识、动机、规则、资源与后果 |
 | `character` | 人物目标、声音、能力、边界和变化桥梁 |
 | `voice` | 人物基线、谈话目的、知识/角色约束、听众语域、变调依据和回应义务 |
+| `register` | 语言身份、方言经历、敬语称谓、语气词、词汇与切换依据 |
+| `capability` | 战力、技能、权限、装备、伤势、资源、克制与变化门；必须提供 `--context` |
 | `serial` | 前情倾倒、遗漏承接和章节重置；必须提供 `--context` |
 | `momentum` | 多章稿件的入场压力、不可逆变化、承诺回报、残留和章尾压力 |
 | `world` | 时代、技术、制度、社会习惯和世界规则兼容性 |
@@ -377,7 +398,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。高成本的 `preservation` 不自动加入，使用 `--stage preservation --original original.md` 显式运行。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
+每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、语言语域、战力状态、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 与 `capability` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。高成本的 `preservation` 不自动加入，使用 `--stage preservation --original original.md` 显式运行。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
 
 - 详细说明：[docs/audit-pipeline.zh-CN.md](docs/audit-pipeline.zh-CN.md)
 
@@ -387,7 +408,7 @@ human-writing-skills pipeline `
 只预览保守的机械修复；`verify` 会比较改写前后受保护的数字、引文、公式、链接、
 代码和术语。分数与统计只是透明的编辑启发式，不是 AI 作者身份鉴定。
 
-内容保护只对论文、新闻以及具有充分证据的法律/技术文档自动加载。小说、网文、
+内容保护只对论文、公文、新闻以及具有充分证据的法律/技术文档自动加载。小说、网文、
 普通问答、搞怪文本和自媒体默认不加载；需要例外时使用 `--protect-content` 或
 `--protect-term` 明确开启。
 

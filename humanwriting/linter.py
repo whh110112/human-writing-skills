@@ -200,7 +200,7 @@ RULES = [
             re.DOTALL,
         ),
         "The action already carries the emotion; remove the gloss unless it complicates or corrects the evidence.",
-        excluded_styles=frozenset({"academic-paper", "news-report"}),
+        excluded_styles=frozenset({"academic-paper", "formal-document", "news-report"}),
     ),
     PatternRule(
         "ATM001",
@@ -231,7 +231,7 @@ RULES = [
             re.IGNORECASE,
         ),
         "Check whether the transition carries real causality or only announces structure.",
-        excluded_styles=frozenset({"academic-paper", "news-report"}),
+        excluded_styles=frozenset({"academic-paper", "formal-document", "news-report"}),
     ),
     PatternRule(
         "OPEN001",
@@ -367,7 +367,7 @@ RULES = [
             re.IGNORECASE,
         ),
         "Verify that the narrator or character has a reason to know this exact micro-measurement.",
-        excluded_styles=frozenset({"academic-paper", "news-report"}),
+        excluded_styles=frozenset({"academic-paper", "formal-document", "news-report"}),
     ),
     PatternRule(
         "SYN001",
@@ -614,7 +614,7 @@ def lint_text(
     if style in FICTION_STYLES:
         findings.extend(_narrative_heading_findings(text, masked, allowed))
 
-    if style not in {"academic-paper", "news-report"}:
+    if style not in {"academic-paper", "formal-document", "news-report"}:
         if "STR002" not in allowed and "comparison-ladder" not in allowed:
             for start, end, sentence in _sentence_spans(masked):
                 comparison_offsets = _comparative_bi_offsets(sentence)

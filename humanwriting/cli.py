@@ -205,7 +205,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_source_arguments(audit)
     audit.add_argument(
         "--document-type",
-        choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "news-report", "legal", "technical"],
+        choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "formal-document", "news-report", "legal", "technical"],
         default="auto",
         help="Controls serious-document protection. Auto requires strong textual evidence.",
     )
@@ -239,7 +239,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_source_arguments(pipeline)
     pipeline.add_argument(
         "--document-type",
-        choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "news-report", "legal", "technical"],
+        choices=["auto", "general", "fiction", "webnovel", "self-media", "argumentative", "academic-paper", "formal-document", "news-report", "legal", "technical"],
         default="auto",
         help="Controls serious-document protection. Auto requires strong textual evidence.",
     )

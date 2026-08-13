@@ -30,7 +30,9 @@ AI writing often fails in predictable ways:
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
+| Dialect, honorifics, particles, or foreign language jump between characters | An evidence-backed language-identity card with motivated switch gates |
 | A consequential line or action receives no uptake before the prose cuts away | Response-obligation checks and deferred interaction debt |
+| Power, skill, authority, equipment, injury, or resources drift | Permanent/temporary state separation and earned transition gates |
 | Prompts become messy | A CLI that compiles style, context, and task into one clean instruction pack |
 | Advice stays abstract | Rules are written as observable editing actions |
 
@@ -43,6 +45,7 @@ AI writing often fails in predictable ways:
 | `news-report` | news-style reports | factual order, attribution, neutral wording |
 | `self-media` | social posts and creator essays | useful voice without empty hype |
 | `academic-paper` | research writing | cautious claims, structure, terminology |
+| `formal-document` | official and administrative documents | authority, scope, responsibility, action, deadline, restrained register |
 | `webnovel` | serialized genre fiction | hooks, payoffs, power rules, continuity |
 
 ## Deep Human-Trace Modules
@@ -58,6 +61,8 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
 | `dialogue-voice-audit` | character-fit dialogue plus verbal, physical, silent, interrupted, or deferred uptake for consequential turns |
+| `speech-register-continuity` | evidence-backed language, dialect exposure, honorifics, particles, address, and switch gates |
+| `capability-state-audit` | power, skill, authority, equipment, injury, resources, cooldowns, counters, and transitions |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
 | `chapter-momentum-audit` | atmosphere-only chapters, missing payoffs, discarded residue, and unsupported hooks |
 | `world-ontology-audit` | incompatible era, technology, institution, social practice, or speculative rule |
@@ -220,7 +225,7 @@ access, it marks citation metadata as unverified instead of inventing a verdict.
 
 ## Long-Form Continuity
 
-For longer works, this project recommends a small ledger instead of relying only on a large context window.
+For longer works, this project recommends a small ledger instead of relying only on a large context window. Use context in this order: canonical ledger, latest confirmed state, recent chapters, relevant retrieved older spans, then explicitly uncertain inference. Retrieved text is recall evidence and cannot overwrite a later canonical state.
 
 The ledger tracks:
 
@@ -229,6 +234,8 @@ The ledger tracks:
 - relationship state: who knows, wants, hides, owes, refuses, or holds leverage
 - relationship stance: public/private posture, current audience, mention policy, forbidden leaks, and exception motives
 - voice anchors: point of view, diction, directness, disclosure habits, domain limits, audience shifts, taboo phrases
+- language identity: shared scene language, demonstrated dialect/second-language exposure, address forms, particles, and switch gates
+- capability state: permanent power/skill/authority plus temporary injury, equipment, resources, cooldowns, counters, costs, and transition gates
 - dialogue contract: who speaks to whom, why now, desired listener action, protected information, and intended state change
 - interaction debt: which consequential line or action still awaits uptake, refusal, interruption, consequence, or delayed payoff
 - current state: where the previous passage ended and what must connect next
@@ -236,6 +243,10 @@ The ledger tracks:
 - change log: what became newly true in the latest output
 
 See [examples/story-ledger.md](examples/story-ledger.md) for a fiction example.
+
+`speech-register-continuity` auto-loads only for fiction/webnovel dialogue when the task or ledger contains explicit language, regional, dialect, honorific, or register evidence. It can also be selected with `audit --profile register`; region or nationality never licenses an invented accent.
+
+`capability-state-audit` loads during generation only when the current task names a capability constraint. Automatic pipeline review additionally requires context, so ordinary dialogue scenes do not pay its Token cost. Select it explicitly with `audit --profile capability --context ledger.md` when needed.
 
 ## Chatbox
 
@@ -334,8 +345,10 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
 `dialogue-voice-audit` models baseline speech, practical incentives, knowledge limits,
-scene goals, response linkage, and motivated code-switching without treating a job as
-a personality. Use `serial-reentry` only with
+scene goals, and response linkage without treating a job as a personality. Use
+`speech-register-continuity` for evidence-backed language identity, particles,
+honorifics, and code-switching; use `capability-state-audit` for power and resource
+state. Use `serial-reentry` only with
 prior chapters or a ledger, `momentum` for a multi-chapter draft, and `texture` for
 narrative distance, cinematic opening stacks, imagery load, paragraph fragmentation,
 emotional over-explanation, and detail inventory. Use `world` only with explicit
@@ -357,6 +370,8 @@ ordinary `--deep-review` does not load them.
 | `logic` | Cause, timeline, knowledge, motive, rules, resources, and consequences |
 | `character` | Character goal, voice, competence, boundaries, and change gates |
 | `voice` | Speaker baseline, scene goal, role/knowledge limits, audience register, change gates, and response obligations |
+| `register` | Language identity, dialect exposure, honorifics, particles, vocabulary, and code-switch gates |
+| `capability` | Power, skill, authority, equipment, injury, resources, counters, and transition gates; requires `--context` |
 | `serial` | Recap dumps, missing carryovers, and chapter resets; requires `--context` |
 | `momentum` | Multi-chapter entry pressure, irreversible turns, payoff, residue, and exit pressure |
 | `world` | Era, technology, institution, social-practice, and world-rule compatibility |
@@ -392,7 +407,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` requires context, `fidelity` requires an original, `salience` requires a long narrative of at least 4,000 characters, `recurrence` requires at least three chapters, and `sources` requires both a serious document and explicit factual sources. The higher-cost `preservation` comparison is explicit-only: use `--stage preservation --original original.md`. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` and `capability` require context; `fidelity` requires an original; `salience` requires a long narrative of at least 4,000 characters; `recurrence` requires at least three chapters; and `sources` requires both a serious document and explicit factual sources. The higher-cost `preservation` comparison is explicit-only: use `--stage preservation --original original.md`. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 
@@ -403,8 +418,8 @@ diagnostics, `fix` for conservative mechanical cleanup, and `verify` to catch
 protected facts changed during rewriting. Scores and statistics are editing
 heuristics, not authorship proof.
 
-Protected-content instructions auto-load only for academic papers, news reports,
-and strongly identified legal or technical documents. Fiction, webnovels, casual
+Protected-content instructions auto-load only for academic papers, formal documents,
+news reports, and strongly identified legal or technical documents. Fiction, webnovels, casual
 Q&A, playful text, and self-media do not auto-load them; use `--protect-content`
 or `--protect-term` to override this gate.
 

@@ -14,14 +14,6 @@
 - Captain Wei knows more than he admits, but he has protected Lin Qiao twice.
 - The next scene begins outside the shuttered customs hall at dawn.
 
-## Relationship State
-
-- Lin Qiao trusts Captain Wei's interventions more than his explanations.
-- Captain Wei has leverage because he knows the Salt Office patrol routes, but using
-  that knowledge would reveal how close he is to the cover-up.
-- Their last exchange ended politely, which is part of the problem: neither said the
-  accusation directly.
-
 ## Relationship Stance and Information Permissions
 
 - Current audience: Lin Qiao and Captain Wei are alone outside the customs hall;
@@ -29,7 +21,7 @@
 
 | From | To | Public stance | Private stance | Knowledge | Mention policy | Exposure risk | Leverage |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Lin Qiao | Captain Wei | cautious cooperation | suspicious dependence | suspects he knows the cover-up | may question him indirectly; do not accuse without proof | medium | her burned-page clue |
+| Lin Qiao | Captain Wei | cautious cooperation | suspicious dependence | suspects he knows the cover-up | question indirectly; no accusation without proof | medium | burned-page clue |
 | Captain Wei | Salt Office | official compliance | concealed conflict | knows patrol routes and missing records | avoid direct disclosure in public; coded warning only | high | access and patrol knowledge |
 
 | Speaker | Audience | Referenced person/group | Allowed tone | Forbidden leak | Exception motive |
@@ -51,8 +43,8 @@
 ## Voice Anchors
 
 - Third person limited, close to Lin Qiao.
-- Concrete, tense, lightly lyrical but not ornate.
-- Avoid modern slang and large exposition blocks.
+- Concrete, tense, lightly lyrical.
+- Yanxi common speech; no dialect or foreign phrase is established.
 
 ## Speaker Models
 

@@ -4,13 +4,13 @@
 
 Automatic protection is deliberately narrow:
 
-- `academic-paper` and `news-report` generation enable it by document type.
+- `academic-paper`, `formal-document`, and `news-report` generation enable it by document type.
 - Legal and technical drafts require multiple matching document cues.
 - Fiction, webnovels, self-media, casual Q&A, playful output, and roleplay do not
   auto-enable it. A number or proper noun by itself is never sufficient.
 - `--protect-content` or `--protect-term` always overrides automatic selection.
 
-For untyped audits, use `--document-type legal`, `technical`, `academic-paper`, or
+For untyped audits, use `--document-type legal`, `technical`, `academic-paper`, `formal-document`, or
 `news-report` when the automatic evidence is too sparse. Use a narrative document
 type to suppress a false positive. In a pipeline, automatic protection is loaded in
 one final selected stage only to avoid repeating the same token-heavy manifest.

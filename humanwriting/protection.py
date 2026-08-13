@@ -7,12 +7,24 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
-SERIOUS_DOCUMENT_TYPES = {"academic-paper", "news-report", "legal", "technical"}
+SERIOUS_DOCUMENT_TYPES = {
+    "academic-paper",
+    "formal-document",
+    "news-report",
+    "legal",
+    "technical",
+}
+FORMAL_DOCUMENT_CUE = re.compile(
+    r"公文|正式文件|通知书|通报|请示|批复|纪要|公函|函件|函复|决定书|实施意见|管理办法|暂行规定|"
+    r"official document|formal memorandum|official notice|administrative notice",
+    re.IGNORECASE,
+)
 NARRATIVE_DOCUMENT_TYPES = {"fiction", "webnovel", "self-media"}
 SERIOUS_TASK_PATTERN = re.compile(
-    r"(?:学术|科研|研究)?论文|新闻(?:稿|报道|报告)|法律文书|合同(?:条款|文本)?|"
+    r"(?:学术|科研|研究)?论文|新闻(?:稿|报道|报告)|公文|正式文件|通知|通报|请示|批复|纪要|"
+    r"法律文书|合同(?:条款|文本)?|"
     r"判决书|起诉状|答辩状|法律意见书|技术文档|接口文档|API\s*文档|"
-    r"academic paper|research paper|news report|legal document|contract|"
+    r"academic paper|research paper|news report|official document|formal memorandum|legal document|contract|"
     r"technical documentation|API documentation",
     re.IGNORECASE,
 )
@@ -117,6 +129,7 @@ def detect_serious_document(
     legal_hits = len(LEGAL_CUE.findall(text))
     technical_hits = len(TECHNICAL_CUE.findall(text))
     news_hits = len(NEWS_CUE.findall(text))
+    formal_hits = len(FORMAL_DOCUMENT_CUE.findall(text))
     if academic:
         return True, "Academic cues occur with a citation or equation."
     if legal_hits >= 2:
@@ -125,6 +138,8 @@ def detect_serious_document(
         return True, "Multiple technical-document cues occur with code or a URL."
     if news_hits >= 2:
         return True, "Multiple attributed news-report cues were detected."
+    if formal_hits >= 2:
+        return True, "Multiple official-document cues were detected."
     return False, "No strong serious-document evidence was detected."
 
 

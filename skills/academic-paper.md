@@ -19,6 +19,10 @@ Produce formal, cautious, well-scaffolded research prose.
 - Avoid decorative language.
 - Use topic sentences that identify the paragraph's function.
 - Preserve methodological detail when summarizing.
+- Calibrate modal language to evidence: distinguish demonstrates, supports, suggests,
+  may, and remains uncertain instead of adding vague conversational hedges.
+- Suppress fillers, discourse particles, slang, rhetorical intimacy, and spoken
+  self-correction except inside marked quotations or qualitative transcript data.
 
 ## Avoid
 
@@ -26,3 +30,4 @@ Produce formal, cautious, well-scaffolded research prose.
 - vague "significant impact" language
 - mixing literature review, method, and conclusion in one paragraph
 - claiming causality from descriptive evidence
+- conversational tone that weakens claim scope, method, or attribution

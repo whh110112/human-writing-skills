@@ -11,6 +11,7 @@ STYLE_SKILLS = {
     "academic-paper",
     "argumentative",
     "fiction",
+    "formal-document",
     "news-report",
     "self-media",
     "webnovel",

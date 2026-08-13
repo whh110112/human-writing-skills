@@ -7,7 +7,7 @@ from accidental editing does not prove that the citation exists or supports the 
 
 ## Activation Gate
 
-Use only for academic, news, legal, or technical material when factual source files
+Use only for academic, formal, news, legal, or technical material when factual source files
 are explicitly supplied. Do not activate for fiction, webnovels, casual answers,
 self-media, or style references. Keep `--source` facts separate from `--reference`
 style material.

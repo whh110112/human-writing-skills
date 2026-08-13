@@ -3,7 +3,7 @@
 ## Activation Gate
 
 Load this module automatically only for serious factual output: academic papers,
-news reports, legal documents, and technical documentation. Require strong document
+official documents, news reports, legal documents, and technical documentation. Require strong document
 signals for untyped drafts; an isolated number, URL, or proper noun is not enough.
 
 Do not auto-load it for fiction, webnovels, casual Q&A, playful text, roleplay, or

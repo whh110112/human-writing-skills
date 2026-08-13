@@ -99,7 +99,9 @@ jobs:
 
           # ClawHub may create the version successfully, then return a duplicate-version
           # error during an internal retry before the public read API becomes consistent.
-          for attempt in {1..8}; do
+          # Moderation/read replication has previously taken more than two minutes.
+          # Keep polling within the 20-minute job budget before declaring a ghost publish.
+          for attempt in {1..32}; do
             if "${cli[@]}" inspect "$skill" --version "$VERSION" --json >/dev/null 2>&1; then
               "${cli[@]}" skill tag "$skill" "$VERSION" --tag latest --yes
               echo "Verified ClawHub version $VERSION after an eventually consistent publish."

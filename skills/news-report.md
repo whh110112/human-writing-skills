@@ -18,6 +18,10 @@ Write clear, source-aware news copy with restrained language and strong factual 
 - Prefer exact numbers and dates over vague scale.
 - Avoid adjectives that imply judgment.
 - Preserve chronology when it matters.
+- Keep reporter narration concise and impersonal. Suppress conversational particles,
+  fillers, slang, rhetorical questions, and performed intimacy outside attributed quotes.
+- Preserve the register of direct quotations; paraphrase only when meaning and attribution
+  remain exact, and never make a source sound more formal or certain than the evidence.
 
 ## Avoid
 
@@ -25,3 +29,4 @@ Write clear, source-aware news copy with restrained language and strong factual 
 - unsupported causal claims
 - anonymous "some people say" framing
 - burying the main fact below background
+- novelistic dialogue texture or chatty transitions in the reporter's voice

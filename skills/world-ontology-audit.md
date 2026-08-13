@@ -23,6 +23,7 @@ institutions, law, and authority
 economy, transport, and communication
 social customs and information access
 speculative rules, powers, and costs
+capability tiers, permissions, resources, counters, and transition costs
 ```
 
 For every challenged detail, record the on-page claim, the governing world rule,
@@ -42,6 +43,8 @@ and one of these verdicts:
   translation layer.
 - Flag powers, laws, markets, travel speeds, or social permissions that change only
   to make the current scene convenient.
+- For detailed individual power, skill, equipment, injury, or resource transitions,
+  load `capability-state-audit`; this module owns the governing world rule only.
 - Distinguish a deliberate anachronism, hybrid culture, hidden technology, unreliable
   narrator, or local exception from an accidental mismatch.
 - Do not treat genre convention or general world knowledge as stronger than the

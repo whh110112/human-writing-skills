@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Advanced multilingual human writing and AI humanizer toolkit. Humanize AI text, remove robotic AI tone, rewrite natural prose, edit fiction and novels, continue chapters, and audit story continuity, character voice, dialogue, scene geography, physical state, relationships, numbers, citations, and source meaning. Use for AI writing cleanup, de-AI writing, naturalization, proofreading, style matching from supplied samples, long-context fiction, webnovels, essays, news, self-media, academic, legal, and technical prose in Chinese, English, Japanese, French, Spanish, Portuguese, Arabic, Latin, and other model-supported languages. Also trigger for requests such as 去AI味、消除AI腔、AI文本润色、小说润色、小说续写、长文一致性、人物口吻、场景空间审查.
+description: Advanced multilingual human writing and AI humanizer toolkit. Humanize AI text, remove robotic AI tone, rewrite natural prose, edit fiction and novels, continue chapters, and audit story continuity, character voice, dialogue register, dialect and language identity, capability or power state, scene geography, physical state, relationships, numbers, citations, and source meaning. Use for AI writing cleanup, de-AI writing, naturalization, proofreading, style matching from supplied samples, long-context fiction, webnovels, essays, official documents, news, self-media, academic, legal, and technical prose in Chinese, English, Japanese, French, Spanish, Portuguese, Arabic, Latin, and other model-supported languages. Also trigger for requests such as 去AI味、消除AI腔、AI文本润色、小说润色、小说续写、长文一致性、人物口吻、方言语域、战力设定、场景空间审查.
 ---
 
 # Advanced Human Writing & AI Humanizer
@@ -22,9 +22,9 @@ continuity ledgers separate from optional style references.
 ## Workflow
 
 1. Select one base style from `skills/`: `fiction`, `webnovel`, `argumentative`,
-   `news-report`, `self-media`, or `academic-paper`.
+   `news-report`, `formal-document`, `self-media`, or `academic-paper`.
 2. Read only the relevant modules. Add continuity, spatial, relationship, number,
-   dialogue, world, process, salience, recurrence, source, rhythm, preservation,
+   dialogue, register, capability, world, process, salience, recurrence, source, rhythm, preservation,
    or AI-trace modules when the text actually needs them.
 3. Treat user facts and `--context` as authoritative. Never borrow facts from a
    style sample. When `--original` is supplied for a rewrite, activate
@@ -33,7 +33,7 @@ continuity ledgers separate from optional style references.
 4. Activate `reference-style-alignment` only when the user supplies reference
    material, gives an explicit style direction, or directly asks to match a style.
 5. Treat `--source` as factual evidence only. Activate `source-grounding` only for
-   serious academic, news, legal, or technical work with explicit source files.
+   serious academic, formal, news, legal, or technical work with explicit source files.
 6. For important revisions, run deterministic `lint`, then independent audit
    profiles, then `verify` protected content against the source. Run `stats` only
    when distributional diagnostics help; use `fix` as a preview before writing.

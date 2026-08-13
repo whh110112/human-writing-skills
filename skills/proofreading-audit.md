@@ -53,6 +53,9 @@ slot, the minimal insertion, and why that insertion is recoverable.
 5. Do not rewrite plot, argument, characterization, or tone during proofreading.
 6. Make a final omission-only pass after corrections; verify that every edit leaves a
    grammatically and semantically complete sentence skeleton.
+7. In dialogue, first test whether a particle, hesitation, subject drop, contraction,
+   or fragment is recoverable from speaker and turn context. Preserve it when intentional;
+   restore only a uniquely recoverable required slot.
 
 ## Output
 

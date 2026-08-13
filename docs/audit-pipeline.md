@@ -21,7 +21,7 @@ human-writing-skills pipeline `
 
 It writes the established broad stages for logic, character consistency, relationship
 stance, physical continuity, AI traces, number sense, and proofreading. The higher-cost
-`voice`, `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`,
+`voice`, `register`, `capability`, `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`,
 `texture`, `fidelity`, and `sources` stages stay out unless explicitly selected or detected by
 `--auto`. `preservation` is always explicit-only because it is a high-cost source-to-rewrite
 comparison.
@@ -50,6 +50,8 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `character` for character-action or voice cues
 - `relationship` for dialogue, hierarchy, faction, intimacy, or secrecy cues
 - `voice` for sustained attributed dialogue; supplied context also permits shorter attributed exchanges
+- `register` for dialogue plus explicit language, dialect, honorific, or register evidence
+- `capability` for supplied context plus power, skill, authority, equipment, injury, or resource constraints
 - `serial` only when prior context is supplied and the draft is narrative
 - `world` for explicit era, world-rule, technology-system, or speculative-setting cues
 - `process` for sustained consequential process or process-to-result cues
@@ -72,6 +74,11 @@ equating occupation with personality. The generated manifest records why every s
 skipped. Detection is a conservative text heuristic, not complete story understanding;
 explicitly select stages for important chapters.
 
+`register` never invents an accent from nationality or region; it checks supplied
+evidence for shared language, dialect exposure, address, particles, and switch gates.
+`capability` separates permanent baseline from temporary state and requires an earned
+gate and cost for changes or surprising outcomes.
+
 ## Explicit Stages
 
 ```powershell
@@ -91,6 +98,9 @@ direction is supplied. Only that stage receives the reference text.
 `--stage serial` is rejected unless `--context` supplies prior chapters or a
 continuity ledger.
 
+`--stage capability` also requires `--context`; without prior state there is no
+reliable baseline for power, skill, authority, injury, equipment, or resources.
+
 `--stage fidelity` is rejected unless `--original` supplies the pre-rewrite text.
 Only that stage receives the original; it checks semantic preservation rather than
 style imitation.
@@ -106,7 +116,7 @@ they do not become style references or fiction context.
 ## Recommended Order
 
 ```text
-pattern lint -> optional stats -> logic -> character/relationship/voice/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading
+pattern lint -> optional stats -> logic -> character/relationship/voice/register/capability/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading
 ```
 
 After structural changes, re-run affected downstream stages.
