@@ -25,6 +25,10 @@ class SkillHubPackageTests(unittest.TestCase):
             self.assertIn("去AI味", skill)
             self.assertIn("AI文本润色", skill)
             self.assertIn("ai-humanizer", skill)
+            self.assertIn("# 增强版去 AI 写作 Skill", skill)
+            self.assertIn("## 适用场景", skill)
+            self.assertIn("去AI味、去AI写作、消除AI腔", skill)
+            self.assertNotIn("# Advanced Human Writing & AI Humanizer", skill)
             self.assertTrue(output.joinpath("humanwriting", "cli.py").is_file())
             self.assertTrue(output.joinpath("humanwriting", "linter.py").is_file())
             self.assertTrue(output.joinpath("skills", "fiction.md").is_file())
@@ -33,6 +37,7 @@ class SkillHubPackageTests(unittest.TestCase):
             self.assertFalse(output.joinpath(".gitignore").exists())
             self.assertFalse(output.joinpath(".gitattributes").exists())
             self.assertFalse(output.joinpath("LICENSE").exists())
+            self.assertFalse(output.joinpath("marketplaces").exists())
 
     def test_refuses_to_mix_with_nonempty_output(self):
         with TemporaryDirectory() as directory:

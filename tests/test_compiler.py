@@ -33,6 +33,9 @@ class CompilerTests(unittest.TestCase):
             "增强版去 AI 写作 Skill",
             "高级 AI 写作工具",
             "去AI写作",
+            "humanize ai text",
+            "natural rewriting",
+            "novel writing assistant",
         ):
             self.assertIn(term.lower(), skill.lower())
 

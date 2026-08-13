@@ -29,7 +29,13 @@ TAGS = [
     "human-writing",
 ]
 
-EXCLUDED_PATHS = {".gitattributes", ".gitignore", "LICENSE"}
+SKILLHUB_OVERVIEW_PATH = Path("marketplaces/skillhub-overview.zh-CN.md")
+EXCLUDED_PATHS = {
+    ".gitattributes",
+    ".gitignore",
+    "LICENSE",
+    SKILLHUB_OVERVIEW_PATH.as_posix(),
+}
 
 
 def project_version(root: Path) -> str:
@@ -78,11 +84,9 @@ def skillhub_frontmatter(version: str) -> str:
     )
 
 
-def replace_frontmatter(text: str, version: str) -> str:
-    match = re.match(r"\A---\r?\n.*?\r?\n---\r?\n", text, re.DOTALL)
-    if not match:
-        raise ValueError("SKILL.md does not contain valid front matter")
-    return skillhub_frontmatter(version) + text[match.end() :]
+def skillhub_skill(root: Path, version: str) -> str:
+    overview = root.joinpath(SKILLHUB_OVERVIEW_PATH).read_text(encoding="utf-8")
+    return skillhub_frontmatter(version) + "\n" + overview.lstrip()
 
 
 def build_package(root: Path, output: Path, version: str | None = None) -> Path:
@@ -100,9 +104,8 @@ def build_package(root: Path, output: Path, version: str | None = None) -> Path:
         destination = output.joinpath(relative)
         destination.parent.mkdir(parents=True, exist_ok=True)
         if relative.as_posix() == "SKILL.md":
-            text = source.read_text(encoding="utf-8")
             with destination.open("w", encoding="utf-8", newline="\n") as skill_file:
-                skill_file.write(replace_frontmatter(text, resolved_version))
+                skill_file.write(skillhub_skill(root, resolved_version))
         else:
             destination.write_bytes(source.read_bytes())
     return output
