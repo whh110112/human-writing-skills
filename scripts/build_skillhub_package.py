@@ -95,9 +95,8 @@ def build_package(root: Path, output: Path, version: str | None = None) -> Path:
         destination.parent.mkdir(parents=True, exist_ok=True)
         if relative.as_posix() == "SKILL.md":
             text = source.read_text(encoding="utf-8")
-            destination.write_text(
-                replace_frontmatter(text, resolved_version), encoding="utf-8", newline="\n"
-            )
+            with destination.open("w", encoding="utf-8", newline="\n") as skill_file:
+                skill_file.write(replace_frontmatter(text, resolved_version))
         else:
             destination.write_bytes(source.read_bytes())
     return output
