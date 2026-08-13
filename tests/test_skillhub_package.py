@@ -32,6 +32,7 @@ class SkillHubPackageTests(unittest.TestCase):
             self.assertFalse(output.joinpath(".github").exists())
             self.assertFalse(output.joinpath(".gitignore").exists())
             self.assertFalse(output.joinpath(".gitattributes").exists())
+            self.assertFalse(output.joinpath("LICENSE").exists())
 
     def test_refuses_to_mix_with_nonempty_output(self):
         with TemporaryDirectory() as directory:

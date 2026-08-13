@@ -29,7 +29,7 @@ TAGS = [
     "human-writing",
 ]
 
-EXCLUDED_PATHS = {".gitattributes", ".gitignore"}
+EXCLUDED_PATHS = {".gitattributes", ".gitignore", "LICENSE"}
 
 
 def project_version(root: Path) -> str:
