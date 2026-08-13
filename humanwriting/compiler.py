@@ -71,6 +71,7 @@ DEEP_REVIEW_MODULES = [
     "formulaic-structure-audit",
     "surface-pattern-audit",
     "prose-progress-audit",
+    "narrative-naturalness-audit",
 ]
 AI_TRACE_AUDIT_MODULES = [
     "ai-trace-rubric",
@@ -78,6 +79,7 @@ AI_TRACE_AUDIT_MODULES = [
     "formulaic-structure-audit",
     "surface-pattern-audit",
     "prose-progress-audit",
+    "narrative-naturalness-audit",
 ]
 RELATIONSHIP_AUDIT_MODULES = [
     "relationship-state",
@@ -124,6 +126,7 @@ HUMANIZE_DEEP_MODULES = [
     "cliche-phrase-audit",
     "formulaic-structure-audit",
     "prose-progress-audit",
+    "narrative-naturalness-audit",
     "imperfect-prose",
 ]
 AUDIT_PROFILES = {

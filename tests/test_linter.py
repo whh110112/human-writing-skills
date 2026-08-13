@@ -225,6 +225,56 @@ class LinterTests(unittest.TestCase):
         self.assertNotIn("OPEN002", {item.rule_id for item in serious.findings})
         self.assertNotIn("OPEN002", {item.rule_id for item in allowed.findings})
 
+    def test_reports_repeated_narrative_recipe_and_abstract_closures(self):
+        text = (
+            "清晨，江边的雾贴着路灯。她穿着灰外套，心里莫名有某种感觉。\n\n"
+            "上午，车站的雨打在玻璃上。他穿着黑衣，似乎有说不清的情绪。\n\n"
+            "傍晚，酒店的灯光落在门口。她穿着长裙，仿佛那点感觉又回来了。\n\n"
+            "夜里，码头的冷风吹过来。他穿着旧夹克，莫名觉得一丝不安。\n\n"
+            "清晨，医院的灯光亮着。她穿着白衫，似乎有某种感觉。\n\n"
+            "后来，窗外的雨停了，仿佛一切都没有发生。"
+        )
+        rule_ids = {item.rule_id for item in lint_text(text, style="fiction").findings}
+        self.assertTrue({"NAT001", "NAT002", "NAT003"} <= rule_ids)
+
+    def test_reports_clustered_dialogue_without_forcing_small_talk_replies(self):
+        text = (
+            "\“你为什么不告诉我？\”\n\n"
+            "窗外的雨落在玻璃上。\n\n"
+            "\“你必须回答。\”\n\n"
+            "远处的灯一盏盏亮起来。"
+        )
+        report = lint_text(text, style="fiction")
+        self.assertIn("NAT004", {item.rule_id for item in report.findings})
+
+    def test_narrative_naturalness_rules_do_not_run_for_serious_styles(self):
+        text = (
+            "清晨，实验室的灯光亮着。研究员穿着白大褂，似乎有某种感觉。\n\n"
+            "上午，医院的雨声持续。患者穿着病服，莫名感到不安。"
+        )
+        report = lint_text(text, style="academic-paper")
+        self.assertFalse(
+            {"NAT001", "NAT002", "NAT003", "NAT004"}
+            & {item.rule_id for item in report.findings}
+        )
+
+    def test_narrative_naturalness_rules_are_allowlisted(self):
+        text = (
+            "清晨，江边的雾贴着路灯。她穿着灰外套，心里莫名有某种感觉。\n\n"
+            "上午，车站的雨打在玻璃上。他穿着黑衣，似乎有说不清的情绪。\n\n"
+            "傍晚，酒店的灯光落在门口。她穿着长裙，仿佛那点感觉又回来了。\n\n"
+            "夜里，码头的冷风吹过来。他穿着旧夹克，莫名觉得一丝不安。\n\n"
+            "清晨，医院的灯光亮着。她穿着白衫，似乎有某种感觉。"
+        )
+        report = lint_text(
+            text,
+            style="fiction",
+            allow={"narrative-naturalness", "repeated-scene-recipe", "vague-affect-recurrence"},
+        )
+        rule_ids = {item.rule_id for item in report.findings}
+        self.assertNotIn("NAT001", rule_ids)
+        self.assertNotIn("NAT002", rule_ids)
+
 
 if __name__ == "__main__":
     unittest.main()

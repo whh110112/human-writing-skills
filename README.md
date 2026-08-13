@@ -95,6 +95,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, bidirectional contrast frames, chained comparisons, and overly neat closure |
 | `prose-progress-audit` | static paragraphs and pressure-bearing interactions abandoned before uptake or explicit deferral |
+| `narrative-naturalness-audit` | in deep or explicit AI-trace review, catches repeated scene recipes, vague-affect recurrence, polished paragraph closures, and orphaned dialogue |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -511,6 +512,7 @@ The `--deep-review` flag adds the compact review plus:
 - `formulaic-structure-audit`: check triplets, bidirectional contrasts, chained comparisons, and paragraphs that close too neatly
 - `surface-pattern-audit`: check recurring significance, attribution, range, lexical, formatting, and decorative comparison patterns in genre context
 - `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure
+- `narrative-naturalness-audit`: in deep or explicit AI-trace review, check repeated scene-entry recipes, vague-affect recurrence, polished paragraph endings, and orphaned dialogue
 - `natural-measurement`: check false precision in fiction, webnovels, and self-media
 
 The `--strict-continuity` flag adds:

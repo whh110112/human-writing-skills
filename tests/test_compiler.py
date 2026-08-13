@@ -84,6 +84,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("source-grounding", list_module_skills())
         self.assertIn("rewrite-fidelity", list_module_skills())
         self.assertIn("surface-pattern-audit", list_module_skills())
+        self.assertIn("narrative-naturalness-audit", list_module_skills())
         self.assertIn("voice-ambiguity-preservation", list_module_skills())
         self.assertIn("humanize-examples", list_module_skills())
 
@@ -113,6 +114,7 @@ class CompilerTests(unittest.TestCase):
             )
         self.assertIn("Technique Module: formulaic-structure-audit", deep)
         self.assertIn("Technique Module: prose-progress-audit", deep)
+        self.assertIn("Technique Module: narrative-naturalness-audit", deep)
         self.assertIn("Technique Module: imperfect-prose", deep)
         self.assertNotIn("Technique Module: humanize-examples", deep)
         self.assertIn("Technique Module: humanize-examples", examples)
@@ -468,6 +470,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Audit Module: cliche-phrase-audit", prompt)
         self.assertIn("Audit Module: formulaic-structure-audit", prompt)
         self.assertIn("Audit Module: prose-progress-audit", prompt)
+        self.assertIn("Audit Module: narrative-naturalness-audit", prompt)
         self.assertIn("Audit Module: natural-measurement", prompt)
         self.assertIn("Audit Module: logic-causality-audit", prompt)
         self.assertIn("Audit Module: character-consistency-audit", prompt)

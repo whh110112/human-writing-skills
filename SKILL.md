@@ -38,6 +38,8 @@ continuity ledgers separate from optional style references.
 2. Read only the relevant modules. Add continuity, spatial, relationship, number,
    dialogue, register, capability, world, process, salience, recurrence, source, rhythm, preservation,
    or AI-trace modules when the text actually needs them.
+   `narrative-naturalness-audit` is reserved for deep or explicit AI-trace review of
+   narrative prose; it is not loaded for ordinary quick humanization or serious documents.
 3. Treat user facts and `--context` as authoritative. Never borrow facts from a
    style sample. When `--original` is supplied for a rewrite, activate
    `rewrite-fidelity` and preserve meaning without preserving awkward wording.

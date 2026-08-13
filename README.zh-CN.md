@@ -91,6 +91,7 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | `cliche-phrase-audit` | 论坛常吐槽的塑料套话、万能身体动作、空洞情绪标签和死转场 |
 | `formulaic-structure-audit` | 过于整齐的三连式、双向“不是/是”对举、连续“比”比较和每段干净收束 |
 | `prose-progress-audit` | 段落没有新增状态，或关键台词/动作尚未被接收就切换话题与场景 |
+| `narrative-naturalness-audit` | 只在深度/显式 AI 痕迹审查中检查重复场景配方、抽象情绪复现、段落漂亮收束和对话无承接 |
 | `imperfect-prose` | 文字太干净、太对称、太像统一润色 |
 | `vocal-rhythm` | 朗读时节奏单调、缺少呼吸点 |
 | `embodied-emotion` | 只有情绪标签，没有身体、动作、矛盾和感知 |
@@ -497,6 +498,7 @@ python -m humanwriting.cli build `
 - `formulaic-structure-audit`：检查三连式、双向对举、连续“比”比较和每段都收束得太完整的公式结构
 - `surface-pattern-audit`：按文体检查意义拔高、模糊归因、假范围、词汇轮换、排版套路和装饰性连续比较
 - `prose-progress-audit`：检查每段是否真的推进了事实、关系、证据、动作或压力
+- `narrative-naturalness-audit`：只在深度或显式 AI 痕迹审查中检查重复场景配方、空泛感受词复现、漂亮收束和对白无承接；普通 quick 不加载
 - `natural-measurement`：小说、网文和自媒体中检查不合语境的假精确数字
 
 `--strict-continuity` 会自动加入：
