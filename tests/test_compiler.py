@@ -30,6 +30,9 @@ class CompilerTests(unittest.TestCase):
             "去AI味",
             "小说续写",
             "长文一致性",
+            "增强版去 AI 写作 Skill",
+            "高级 AI 写作工具",
+            "去AI写作",
         ):
             self.assertIn(term.lower(), skill.lower())
 

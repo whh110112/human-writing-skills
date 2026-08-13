@@ -2,13 +2,16 @@
 
 > 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
+**增强版去 AI 写作 Skill / 高级 AI 写作工具**：支持去AI味、去AI写作、消除AI腔、
+AI 人性化改写、AI 文本润色、小说润色、小说续写和长篇上下文一致性审校。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
 
 中文说明 | [English](README.md)
 
-Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
+Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。它既可以作为去 AI 味工具和 AI 文章润色工具，也可以用于小说创作、长文续写与严肃文本审校。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
 
 这不是只有说明文档的空提示词仓库。项目有两层刻意分开的能力：
 

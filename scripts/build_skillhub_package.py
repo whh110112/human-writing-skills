@@ -8,23 +8,25 @@ import subprocess
 from pathlib import Path
 
 
-DISPLAY_NAME = "Advanced Human Writing & AI Humanizer"
+DISPLAY_NAME = "增强版去 AI 写作 Skill｜高级 AI 写作工具"
 SUMMARY = (
-    "Executable multilingual AI humanizer with deterministic lint, fix, verify, "
-    "prompt compilation, staged review, and opt-in long-form continuity modules."
+    "增强版去 AI 写作 Skill：用于去AI味、消除AI腔、AI文本润色、小说续写和长文一致性审校；"
+    "内含可执行 lint、fix、verify、分阶段审稿及按需加载模块。"
 )
 DESCRIPTION = (
-    "Humanize, write, rewrite, or audit fiction and serious prose with a Python CLI, "
-    "deterministic text checks, protected-content verification, staged pipelines, "
-    "and selectively loaded writing instructions."
+    "高级 AI 写作工具与多语言 AI humanizer。可自然化改写小说、网文、自媒体、新闻、论文和公文，"
+    "检查 AI 写作痕迹、漏字、人物口吻、场景空间、关系、战力与长篇上下文连续性；"
+    "Python CLI 提供确定性文本扫描、保守修复、不可改内容校验、提示词编译和流水线审稿。"
 )
 TAGS = [
+    "去AI味",
+    "去AI写作",
+    "消除AI腔",
+    "AI写作工具",
+    "AI文本润色",
+    "小说润色",
     "ai-humanizer",
     "human-writing",
-    "fiction-editing",
-    "story-continuity",
-    "proofreading",
-    "multilingual-writing",
 ]
 
 

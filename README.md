@@ -2,6 +2,9 @@
 
 > Reusable multilingual writing `SKILLS` for natural prose, genre-aware style, and long-form continuity.
 
+**Advanced AI humanizer and de-AI writing toolkit** for natural rewriting,
+AI text cleanup, fiction editing, novel continuation, and long-form continuity review.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
