@@ -110,11 +110,16 @@ DECORATIVE_EMOJI_PATTERN = re.compile(
     re.UNICODE,
 )
 TITLE_CASE_HEADING_PATTERN = re.compile(r"(?m)^#{1,6}\s+([A-Z][A-Za-z0-9'-]*(?:\s+[A-Z][A-Za-z0-9'-]*){2,})\s*$")
+NARRATIVE_AFFECT_NOUNS = (
+    r"(?:感觉|情绪|意味|不安|忐忑|焦虑|心动|悲凉|失落|恐惧|惊讶|嫉妒|"
+    r"疲惫|紧张|愤怒|悲伤|羞涩|苦涩|冷意|暖意|凉意|笑意|寒意|杀意|"
+    r"怒意|酸楚|惆怅|心绪|心事)"
+)
 VAGUE_NARRATIVE_MARKER_PATTERN = re.compile(
-    r"说不清|说不上来|道不明|莫名(?:地|其妙)?|不知为何|不知道为什么|"
-    r"难以形容|无法形容|隐约|某种(?:的)?感觉|那点(?:感觉|情绪|意味)?|"
-    r"这点(?:感觉|情绪|意味)?|一丝(?:感觉|情绪|笑意|寒意|不安)?|"
-    r"一股(?:感觉|情绪|寒意|不安)?|仿佛|像是|似乎",
+    rf"说不清|说不上来|道不明|莫名(?:地|其妙)?|不知为何|不知道为什么|"
+    rf"难以形容|无法形容|隐约|某种(?:的)?{NARRATIVE_AFFECT_NOUNS}|"
+    rf"(?:那点|这点|一丝|一股)(?:的)?{NARRATIVE_AFFECT_NOUNS}|"
+    r"仿佛|像是|似乎",
     re.IGNORECASE,
 )
 DIALOGUE_QUOTE_PATTERN = re.compile(r"[\“\"](?P<content>[^\”\"\n]{4,240})[\”\"]")
@@ -131,8 +136,14 @@ DIALOGUE_RESPONSE_PATTERN = re.compile(
     r"stood|sat|laughed|cried|frowned|froze|interrupted|took|handed|left)\b",
     re.IGNORECASE,
 )
+DIALOGUE_TURN_PATTERN = re.compile(
+    r"^\s*(?:[\“\"]|(?:他说|她说|他答|她答|他问|她问|回答|答道|回道)\s*[：:]\s*[\“\"]|"
+    r"(?:he|she|they)\s+(?:said|answered|replied)\s*:\s*[\"'])",
+    re.IGNORECASE,
+)
 ABSTRACT_PARAGRAPH_ENDING_PATTERN = re.compile(
-    r"(?:仿佛|像是|似乎|说不清|道不明|莫名|某种.{0,12}感觉|那点|这点|一丝|一股)"
+    rf"(?:仿佛|像是|似乎|说不清|道不明|莫名|某种.{{0,12}}{NARRATIVE_AFFECT_NOUNS}|"
+    rf"(?:那点|这点|一丝|一股)(?:的)?{NARRATIVE_AFFECT_NOUNS})"
     r"[^。！？!?\n]{0,80}[。！？!?]?$|"
     r"\b(?:as if|seemed|some kind of|could not explain)\b[^.!?\n]{0,80}[.!?]?$",
     re.IGNORECASE,
@@ -669,7 +680,10 @@ def _narrative_naturalness_findings(
             if not has_response and paragraph_index + 1 < len(paragraphs):
                 next_start, next_end, _ = paragraphs[paragraph_index + 1]
                 next_lead = masked[next_start : min(next_end, next_start + 100)]
-                has_response = bool(DIALOGUE_RESPONSE_PATTERN.search(next_lead))
+                has_response = bool(
+                    DIALOGUE_RESPONSE_PATTERN.search(next_lead)
+                    or DIALOGUE_TURN_PATTERN.search(next_lead)
+                )
             if not has_response:
                 orphaned.append((absolute_start, absolute_end))
     if len(orphaned) >= 2 and enabled("NAT004", "dialogue-response-orphan"):

@@ -237,6 +237,15 @@ class LinterTests(unittest.TestCase):
         rule_ids = {item.rule_id for item in lint_text(text, style="fiction").findings}
         self.assertTrue({"NAT001", "NAT002", "NAT003"} <= rule_ids)
 
+    def test_concrete_quantifier_nouns_do_not_count_as_vague_affect(self):
+        text = (
+            "一丝阳光落在桌面，一股风从窗缝钻进来，那点零钱压在书下。"
+            "这点面粉还够用，一丝灰尘粘在镜面，一股烟从楼道飘过。"
+        )
+        rule_ids = {item.rule_id for item in lint_text(text, style="fiction").findings}
+        self.assertNotIn("NAT002", rule_ids)
+        self.assertNotIn("NAT003", rule_ids)
+
     def test_reports_clustered_dialogue_without_forcing_small_talk_replies(self):
         text = (
             "\“你为什么不告诉我？\”\n\n"
@@ -246,6 +255,16 @@ class LinterTests(unittest.TestCase):
         )
         report = lint_text(text, style="fiction")
         self.assertIn("NAT004", {item.rule_id for item in report.findings})
+
+    def test_adjacent_verbal_dialogue_turn_counts_as_a_response(self):
+        text = (
+            "\u201c你为什么离开？\u201d\n\n"
+            "\u201c因为我害怕。\u201d\n\n"
+            "\u201c你必须回答。\u201d\n\n"
+            "\u201c我已经回答了。\u201d"
+        )
+        report = lint_text(text, style="fiction")
+        self.assertNotIn("NAT004", {item.rule_id for item in report.findings})
 
     def test_narrative_naturalness_rules_do_not_run_for_serious_styles(self):
         text = (
