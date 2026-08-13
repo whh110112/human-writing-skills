@@ -29,6 +29,8 @@ TAGS = [
     "human-writing",
 ]
 
+EXCLUDED_PATHS = {".gitattributes", ".gitignore"}
+
 
 def project_version(root: Path) -> str:
     pyproject = root.joinpath("pyproject.toml").read_text(encoding="utf-8")
@@ -47,7 +49,11 @@ def tracked_files(root: Path) -> list[Path]:
     )
     files = []
     for raw_path in result.stdout.decode("utf-8").split("\0"):
-        if not raw_path or raw_path.startswith(".github/"):
+        if (
+            not raw_path
+            or raw_path in EXCLUDED_PATHS
+            or raw_path.startswith(".github/")
+        ):
             continue
         path = root.joinpath(raw_path)
         if path.is_file():
