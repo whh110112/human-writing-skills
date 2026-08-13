@@ -10,6 +10,7 @@ from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
 from .skills import load_many, load_skill
 
 NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
+NARRATIVE_NATURALNESS_DOCUMENT_TYPES = {"fiction", "webnovel", "self-media"}
 DIALOGUE_GENERATION_STYLES = {"fiction", "webnovel"}
 DIALOGUE_GENERATION_PATTERN = re.compile(
     r"(?:写|续写|生成|创作|展开|安排).{0,24}(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天|问答)|"
@@ -458,6 +459,9 @@ def compile_audit_prompt(
     )
     relationship_enabled = bool(requested_profiles & {"full", "relationship"})
     ai_trace_enabled = bool(requested_profiles & {"full", "ai-trace"})
+    narrative_naturalness_enabled = document_type in NARRATIVE_NATURALNESS_DOCUMENT_TYPES or (
+        document_type == "auto" and not serious_document
+    )
     numbers_enabled = bool(requested_profiles & {"full", "numbers"})
     logic_enabled = bool(requested_profiles & {"full", "logic"})
     character_enabled = bool(requested_profiles & {"full", "character"})
@@ -506,7 +510,15 @@ def compile_audit_prompt(
     if relationship_enabled:
         append_missing(selected_modules, RELATIONSHIP_AUDIT_MODULES)
     if ai_trace_enabled:
-        append_missing(selected_modules, AI_TRACE_AUDIT_MODULES)
+        append_missing(
+            selected_modules,
+            [
+                module
+                for module in AI_TRACE_AUDIT_MODULES
+                if module != "narrative-naturalness-audit"
+                or narrative_naturalness_enabled
+            ],
+        )
     if numbers_enabled:
         append_missing(selected_modules, ["natural-measurement"])
     if proofread_enabled:

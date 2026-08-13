@@ -505,6 +505,20 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: chapter-pattern-audit", prompt)
         self.assertNotIn("Audit Module: source-grounding", prompt)
 
+    def test_narrative_naturalness_audit_is_gated_for_serious_documents(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("The report presents the revised findings and limitations.", encoding="utf-8")
+            fiction = compile_audit_prompt(str(draft), document_type="fiction")
+            serious_prompts = [
+                compile_audit_prompt(str(draft), document_type=document_type)
+                for document_type in ("academic-paper", "formal-document", "news-report")
+            ]
+        self.assertIn("Audit Module: narrative-naturalness-audit", fiction)
+        for prompt in serious_prompts:
+            self.assertIn("Audit Module: ai-trace-rubric", prompt)
+            self.assertNotIn("Audit Module: narrative-naturalness-audit", prompt)
+
     def test_relationship_profile_does_not_load_unrelated_audits(self):
         with TemporaryDirectory() as directory:
             draft = Path(directory) / "draft.md"
