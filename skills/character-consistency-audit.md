@@ -8,7 +8,8 @@ continuous or change through an earned on-page event.
 
 ## Character State Card
 
-For each important character, extract:
+For each important character, extract from the canonical outline, character bible,
+continuity ledger, and confirmed prior events. Label draft-only inference as provisional:
 
 - Current goal and immediate tactic
 - Public persona and private pressure
@@ -47,6 +48,11 @@ A contradiction may be valid development if the draft shows at least one change 
 
 When no gate exists, flag the drift. When a gate exists but is too weak, recommend
 strengthening the bridge rather than restoring the old behavior.
+
+For book-length drafts, compare bounded chapter windows against the same compact state
+card. Carry forward only confirmed state changes and evidence locations; do not average
+contradictory portrayals into a new personality. Use `long-form-style-consistency` for
+cross-window narrator and speaker-style reconciliation.
 
 ## Output
 

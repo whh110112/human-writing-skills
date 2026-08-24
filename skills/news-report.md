@@ -22,6 +22,9 @@ Write clear, source-aware news copy with restrained language and strong factual 
   fillers, slang, rhetorical questions, and performed intimacy outside attributed quotes.
 - Preserve the register of direct quotations; paraphrase only when meaning and attribution
   remain exact, and never make a source sound more formal or certain than the evidence.
+- End hard news at the last useful verified fact, attributed response, constraint, or
+  dated next step. Use a feature kicker only when it adds consequence or changed meaning;
+  do not manufacture uplift, reflection, or a scenic dissolve.
 
 ## Avoid
 
@@ -30,3 +33,4 @@ Write clear, source-aware news copy with restrained language and strong factual 
 - anonymous "some people say" framing
 - burying the main fact below background
 - novelistic dialogue texture or chatty transitions in the reporter's voice
+- generic future-facing, symbolic, or resilience-themed closing lines unsupported by reporting

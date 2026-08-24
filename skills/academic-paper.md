@@ -23,6 +23,8 @@ Produce formal, cautious, well-scaffolded research prose.
   may, and remains uncertain instead of adding vague conversational hedges.
 - Suppress fillers, discourse particles, slang, rhetorical intimacy, and spoken
   self-correction except inside marked quotations or qualitative transcript data.
+- Let conclusions synthesize supported findings, limitations, and implications without
+  repeating the abstract, inflating significance, or adding generic future-work closure.
 
 ## Avoid
 

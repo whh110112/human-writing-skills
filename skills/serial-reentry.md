@@ -66,6 +66,10 @@ separately. Revisit the middle chapters and revision boundaries, where subtle st
 loss is easy to miss. Do not let the latest statement silently overwrite earlier
 evidence.
 
+Use `long-form-style-consistency` when the task also requires cross-window narrator
+style, institutional voice, terminology, or character-dialogue calibration. Keep this
+module focused on what the new chapter must remember and carry forward.
+
 ```text
 Serial Reentry Review
 - Prior material supplied:

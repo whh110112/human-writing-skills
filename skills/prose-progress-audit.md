@@ -2,18 +2,15 @@
 
 ## Aim
 
-Catch drafts that feel polished but static: paragraphs restate the same premise,
-emotions, or argument in different words while nothing materially changes.
-
-Readers often experience this as "smooth but hollow" or "finished-looking slop."
-This module forces each paragraph to earn its place.
+Catch polished but static drafts whose paragraphs restate a premise, emotion, or
+argument without material change.
 
 ## Paragraph Progress Test
 
-For each paragraph or scene beat, write one sentence answering:
+For each paragraph or scene beat, record:
 
 - What became newly true?
-- What did the reader learn that they could not already infer?
+- What did the reader learn that was not already inferable?
 - What action, evidence, decision, cost, or contradiction moved?
 - What pressure is carried into the next paragraph?
 
@@ -39,34 +36,30 @@ If two neighboring paragraphs reduce to the same summary, cut or merge one.
 
 ## Interaction Progress Test
 
-When a line, gesture, decision, or discovery puts pressure on another present
-character, mark the response obligation it creates. Before the passage shifts away,
-look for uptake through speech, action, bodily response, legible silence, interruption,
-or explicit deferral. If none exists, flag an orphaned interaction beat.
+When a line, gesture, decision, or discovery pressures another present character,
+look for speech, action, bodily response, legible silence, interruption, or explicit
+deferral before the passage shifts. Otherwise flag an orphaned interaction beat.
 
-Do not require a reply to every sentence. Review only stimuli that request, challenge,
-reveal, touch a boundary, alter terms, or otherwise change the listener's available
-choices. A delayed answer is valid when the text carries the unresolved interaction
-debt into the next relevant beat.
+Require uptake only when a stimulus requests, challenges, reveals, touches a boundary,
+alters terms, or changes available choices. Delayed uptake is valid when the text
+carries the debt into the next relevant beat.
 
 ## Audit Steps
 
 1. Create a paragraph summary list.
-2. Mark duplicated summaries, decorative summaries, paragraphs with no state change,
-   and pressure-bearing interactions abandoned without uptake or deferral.
+2. Mark duplicate/decorative summaries, absent state change, and abandoned interaction.
 3. For each weak paragraph, decide:
    - cut
    - merge
    - replace with evidence
    - convert explanation into action
    - add a complication
-4. Preserve deliberate stillness only when the stillness creates tension, voice,
-   or observation that changes how the reader sees the scene.
-5. For long drafts, compare non-neighboring paragraph summaries. Flag a semantic
-   echo when narration, dialogue, and internal thought repeat the same fact or feeling
-   without changing its evidence, owner, consequence, or interpretation.
+4. Preserve stillness only when it creates tension, voice, or changed observation.
+5. In long drafts, flag non-neighboring echoes that repeat a fact or feeling without
+   changing its evidence, owner, consequence, or interpretation.
 6. If the passage is an expansion, compare added attention with added state change.
    Route scene-level word-allocation problems to `attention-budget-audit`.
+7. Route zero-progress terminal reflection or scenery to `earned-ending-audit`.
 
 ## Output Check
 
@@ -76,6 +69,7 @@ Prose Progress Audit
 - Duplicate or static paragraphs:
 - Missing state change:
 - Orphaned interaction beat or deferred interaction debt:
+- Zero-progress terminal tail:
 - Minimal repair:
 ```
 

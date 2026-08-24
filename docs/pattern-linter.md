@@ -28,6 +28,13 @@ cinematic opening bundles (`OPEN002`), repeated vague introspection
 these rules for news or academic writing. Code, URLs, and Markdown
 quotations are masked.
 
+For `fiction` and `webnovel`, `END001` inspects only scene or document exits. It flags
+a terminal suffix when several cues combine into a reflective bookend: scenery or
+time dissolves, staged stillness, explicit reflection, and thematic summation after
+the last meaningful change. One quiet image or reflective sentence is not enough by
+itself unless it uses a strong stock-reflection frame. The repair direction is a
+deletion test, not replacement with a cliffhanger.
+
 Additional surface families include significance inflation (`SIGN001`), vague
 attribution (`ATTR001`), formulaic challenge closures (`CHALLENGE001`), elaborate
 English copulas (`COPULA001`), decorative participles (`ING001`), false-range density

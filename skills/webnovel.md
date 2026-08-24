@@ -29,6 +29,9 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - Keep names, titles, and factions consistent.
 - Balance inner thought with visible pressure.
 - End with a hook that follows from the scene, not a random shock.
+- Do not append a reflective or scenic bookend merely because the generated segment is
+  ending. Keep the final beat only if it changes consequence, choice, pressure, or the
+  meaning of a concrete detail; otherwise stop at the prior earned line.
 - Use short scene blocks when pressure turns quickly, but make every block inherit a
   residue and leave a new complication.
 - Let dialogue transact: alter permission, knowledge, leverage, risk, debt, trust, or
@@ -47,3 +50,4 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 - rebuilding every chapter from weather, lighting, clothes, and summarized feeling
 - delaying the promised scene with biography, world rules, or decorative atmosphere
 - cutting away from a consequential line or action before anyone receives or defers it
+- recurring sunset, silence, future-reflection, or "everything changed" scene endings

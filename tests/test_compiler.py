@@ -36,6 +36,14 @@ class CompilerTests(unittest.TestCase):
             "humanize ai text",
             "natural rewriting",
             "novel writing assistant",
+            "long-form audit",
+            "chunked audit",
+            "文风统一",
+            "长篇审查",
+            "人物设定统一",
+            "scene ending audit",
+            "AI式结尾",
+            "生硬结尾审查",
         ):
             self.assertIn(term.lower(), skill.lower())
 
@@ -87,6 +95,8 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("narrative-naturalness-audit", list_module_skills())
         self.assertIn("voice-ambiguity-preservation", list_module_skills())
         self.assertIn("humanize-examples", list_module_skills())
+        self.assertIn("long-form-style-consistency", list_module_skills())
+        self.assertIn("earned-ending-audit", list_module_skills())
 
     def test_quick_humanize_loads_only_the_focused_rewrite_stack(self):
         with TemporaryDirectory() as directory:
@@ -116,9 +126,49 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: prose-progress-audit", deep)
         self.assertIn("Technique Module: narrative-naturalness-audit", deep)
         self.assertIn("Technique Module: imperfect-prose", deep)
+        self.assertNotIn("Technique Module: earned-ending-audit", deep)
         self.assertNotIn("Technique Module: humanize-examples", deep)
         self.assertIn("Technique Module: humanize-examples", examples)
         self.assertNotIn("Technique Module: formulaic-structure-audit", examples)
+        self.assertNotIn("Technique Module: earned-ending-audit", examples)
+
+    def test_ending_profile_is_isolated_and_ai_trace_includes_it(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text(
+                "她把钥匙放下。窗外暮色渐渐沉下，她不禁思考人生与未来。",
+                encoding="utf-8",
+            )
+            ending = compile_audit_prompt(
+                str(draft),
+                profiles=["ending"],
+                document_type="fiction",
+            )
+            ai_trace = compile_audit_prompt(
+                str(draft),
+                profiles=["ai-trace"],
+                document_type="fiction",
+            )
+        self.assertIn("Selected profiles: ending", ending)
+        self.assertIn("Audit Module: earned-ending-audit", ending)
+        self.assertNotIn("Audit Module: formulaic-structure-audit", ending)
+        self.assertIn("Audit Module: earned-ending-audit", ai_trace)
+
+    def test_serious_ending_profile_uses_same_module_without_narrative_naturalness(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "news.md"
+            draft.write_text(
+                "市交通局周二公布，东桥将于8月15日封闭两周。工程预计8月29日结束。",
+                encoding="utf-8",
+            )
+            prompt = compile_audit_prompt(
+                str(draft),
+                profiles=["ending"],
+                document_type="news-report",
+            )
+        self.assertIn("Audit Module: earned-ending-audit", prompt)
+        self.assertNotIn("Audit Module: narrative-naturalness-audit", prompt)
+        self.assertIn("Audit Module: protected-content", prompt)
 
     def test_humanize_prompt_budgets_keep_quick_materially_smaller(self):
         with TemporaryDirectory() as directory:

@@ -148,6 +148,52 @@ ABSTRACT_PARAGRAPH_ENDING_PATTERN = re.compile(
     r"\b(?:as if|seemed|some kind of|could not explain)\b[^.!?\n]{0,80}[.!?]?$",
     re.IGNORECASE,
 )
+SCENE_BREAK_PATTERN = re.compile(r"(?:\*\s*\*\s*\*|-{3,}|_{3,}|#{3,})")
+TERMINAL_SCENERY_PATTERN = re.compile(
+    r"窗外|日头|夕阳|落日|暮色|天色|夜色|灯火|街灯|月光|阳光|车水马龙|雨幕|"
+    r"\b(?:outside|window|sunset|sunlight|dusk|nightfall|city lights?|streetlights?|"
+    r"rain|traffic|skyline)\b",
+    re.IGNORECASE,
+)
+TERMINAL_TIME_DISSOLVE_PATTERN = re.compile(
+    r"一寸一寸|一点一点|一分一秒|慢慢地?|渐渐|逐渐|西移|沉下|暗下|亮起|"
+    r"时间.{0,12}(?:过去|流逝|停住|静止)|"
+    r"\b(?:inch by inch|little by little|slowly|gradually|faded|slipped away|"
+    r"drifted|time (?:passed|stilled|stood still))\b",
+    re.IGNORECASE,
+)
+TERMINAL_STILLNESS_PATTERN = re.compile(
+    r"谁也没(?:说话|开口|动)|没有人(?:说话|开口|动)|(?:一言不发|没说话|沉默不语)|"
+    r"(?:静静|安静地).{0,18}(?:坐|站|躺|抱|搂|靠|看)|(?:抱|搂|靠).{0,12}(?:更紧|不放)|"
+    r"\b(?:neither of them (?:spoke|moved)|no one (?:spoke|moved)|sat in silence|"
+    r"stood in silence|held (?:him|her|them) tighter|said nothing)\b",
+    re.IGNORECASE,
+)
+TERMINAL_REFLECTION_PATTERN = re.compile(
+    r"不禁.{0,12}(?:想|回想|思考|反思)|(?:他|她|我|他们|她们).{0,12}(?:终于)?(?:明白|意识到|想到)|"
+    r"(?:望|看).{0,12}(?:窗外|远处|夜色).{0,30}(?:想|未来|以后)|"
+    r"\b(?:reflect(?:ed|ing)?|wondered|realized|thought about|looked back on|"
+    r"could not help but think|couldn't help but think)\b",
+    re.IGNORECASE,
+)
+TERMINAL_THEME_PATTERN = re.compile(
+    r"仿佛|像是|似乎|意味着|预示着?|见证着?|提醒着?|告诉(?:他|她|我|他们|她们)|"
+    r"补回来|弥补回来|新的开始|新篇章|未来还长|来日方长|命运|人生|生活本就|"
+    r"这一刻.{0,20}(?:足够|永恒|圆满)|一切.{0,20}(?:值得|值得了|都会好)|"
+    r"\b(?:as if|as though|a new beginning|new chapter|whatever came next|"
+    r"what the future held|the future still lay ahead|a reminder that|a testament to|"
+    r"everything (?:would|was going to) change|life (?:was|is)|love (?:was|is)|"
+    r"it was enough|for the first time)\b",
+    re.IGNORECASE,
+)
+STRONG_TERMINAL_REFLECTION_PATTERN = re.compile(
+    r"不禁.{0,12}(?:反思|思考).{0,30}(?:人生|生活|未来|命运)|"
+    r"(?:他|她|我|他们|她们).{0,10}(?:终于)?(?:明白|意识到).{0,35}(?:人生|生活|未来|命运|一切)|"
+    r"\b(?:can(?:not|'t)|could(?: not|n't)) help but reflect\b|"
+    r"\bwondered what (?:the )?future held\b|"
+    r"\b(?:life|love|hope),?\s+[A-Z]?[a-z]+(?:\s+[A-Z]?[a-z]+)?\s+reflected,?\s+(?:is|was)\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -481,6 +527,49 @@ def _sentence_spans(text: str) -> list[tuple[int, int, str]]:
     ]
 
 
+def _terminal_paragraphs(masked: str) -> list[tuple[int, int, str]]:
+    paragraphs = _paragraph_spans(masked)
+    if not paragraphs:
+        return []
+    indexes = {len(paragraphs) - 1}
+    for index, (_, _, paragraph) in enumerate(paragraphs):
+        label = paragraph.strip()
+        if index > 0 and (
+            CHAPTER_HEADING_PATTERN.fullmatch(label)
+            or SCENE_BREAK_PATTERN.fullmatch(label)
+        ):
+            indexes.add(index - 1)
+    return [paragraphs[index] for index in sorted(indexes)]
+
+
+def _reflective_bookend_span(fragment: str) -> tuple[int, int] | None:
+    sentences = _sentence_spans(fragment)
+    if not sentences:
+        return None
+    for width in range(1, min(3, len(sentences)) + 1):
+        start = sentences[-width][0]
+        suffix = fragment[start:].strip()
+        leading = len(fragment[start:]) - len(fragment[start:].lstrip())
+        span_start = start + leading
+        if STRONG_TERMINAL_REFLECTION_PATTERN.search(suffix):
+            return span_start, len(fragment)
+        patterns = (
+            TERMINAL_SCENERY_PATTERN,
+            TERMINAL_TIME_DISSOLVE_PATTERN,
+            TERMINAL_STILLNESS_PATTERN,
+            TERMINAL_REFLECTION_PATTERN,
+            TERMINAL_THEME_PATTERN,
+        )
+        cues = sum(bool(pattern.search(suffix)) for pattern in patterns)
+        interpretive = bool(
+            TERMINAL_REFLECTION_PATTERN.search(suffix)
+            or TERMINAL_THEME_PATTERN.search(suffix)
+        )
+        if cues >= 3 and interpretive:
+            return span_start, len(fragment)
+    return None
+
+
 def _comparative_bi_offsets(sentence: str) -> list[int]:
     offsets: list[int] = []
     for match in re.finditer("比", sentence):
@@ -641,6 +730,27 @@ def _narrative_naturalness_findings(
                 "Vague affect and perception markers recur at high density; keep meaningful uncertainty, but replace repeated labels with owned evidence, action, or consequence.",
             )
         )
+
+    if enabled("END001", "reflective-bookend"):
+        for start, end, _ in _terminal_paragraphs(masked):
+            raw_fragment = masked[start:end]
+            fragment = raw_fragment.strip()
+            fragment_offset = start + raw_fragment.find(fragment)
+            span = _reflective_bookend_span(fragment)
+            if span is None:
+                continue
+            relative_start, relative_end = span
+            findings.append(
+                _finding_from_span(
+                    text,
+                    "END001",
+                    "reflective-bookend",
+                    "medium",
+                    fragment_offset + relative_start,
+                    fragment_offset + relative_end,
+                    "This terminal tail stacks reflection, stillness, scenery, passing time, or thematic explanation after the last concrete change. Test deleting it first; keep or replace it only if it changes choice, knowledge, consequence, document function, or the meaning of a concrete detail.",
+                )
+            )
 
     abstract_endings = [
         (start, end)

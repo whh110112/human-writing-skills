@@ -10,12 +10,12 @@ from pathlib import Path
 
 DISPLAY_NAME = "增强版去 AI 写作 Skill｜高级 AI 写作工具"
 SUMMARY = (
-    "增强版去 AI 写作 Skill：用于去AI味、消除AI腔、AI文本润色、小说续写和长文一致性审校；"
+    "增强版去 AI 写作 Skill：用于去AI味、AI文本润色、小说续写、AI式结尾审查和长文一致性审校；"
     "内含可执行 lint、fix、verify、分阶段审稿及按需加载模块。"
 )
 DESCRIPTION = (
     "高级 AI 写作工具与多语言 AI humanizer。可自然化改写小说、网文、自媒体、新闻、论文和公文，"
-    "检查 AI 写作痕迹、漏字、人物口吻、场景空间、关系、战力与长篇上下文连续性；"
+    "检查 AI 写作痕迹、生硬结尾、无意义升华、漏字、人物口吻、场景空间、关系、战力与长篇上下文连续性；"
     "Python CLI 提供确定性文本扫描、保守修复、不可改内容校验、提示词编译和流水线审稿。"
 )
 TAGS = [
@@ -26,7 +26,8 @@ TAGS = [
     "AI文本润色",
     "小说润色",
     "ai-humanizer",
-    "human-writing",
+    "AI式结尾审查",
+    "生硬结尾审查",
 ]
 
 SKILLHUB_OVERVIEW_PATH = Path("marketplaces/skillhub-overview.zh-CN.md")

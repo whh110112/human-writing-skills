@@ -22,6 +22,9 @@ administrative documents with clear authority, scope, responsibility, and action
   emotional interjections unless they occur inside a preserved quotation or transcript.
 - Do not add ceremonial boilerplate that changes no duty, basis, scope, or decision.
 - Prefer explicit actors and actions where passive wording would hide responsibility.
+- End with the applicable decision, responsible actor, deadline, effective scope,
+  remaining limitation, contact, or attachment convention; omit ceremonial uplift that
+  changes no duty, status, or decision.
 
 ## Avoid
 

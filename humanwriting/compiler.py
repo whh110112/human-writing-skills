@@ -100,6 +100,7 @@ REGISTER_AUDIT_MODULES = ["speech-register-continuity"]
 CAPABILITY_AUDIT_MODULES = ["capability-state-audit"]
 SERIAL_AUDIT_MODULES = ["serial-reentry"]
 MOMENTUM_AUDIT_MODULES = ["chapter-momentum-audit"]
+ENDING_AUDIT_MODULES = ["earned-ending-audit"]
 WORLD_AUDIT_MODULES = ["world-ontology-audit"]
 PROCESS_AUDIT_MODULES = ["process-earnedness-audit"]
 SALIENCE_AUDIT_MODULES = ["attention-budget-audit"]
@@ -139,6 +140,7 @@ AUDIT_PROFILES = {
     "capability",
     "serial",
     "momentum",
+    "ending",
     "world",
     "process",
     "salience",
@@ -470,6 +472,7 @@ def compile_audit_prompt(
     capability_enabled = "capability" in requested_profiles
     serial_enabled = "serial" in requested_profiles
     momentum_enabled = "momentum" in requested_profiles
+    ending_enabled = bool(requested_profiles & {"full", "ai-trace", "ending"})
     world_enabled = "world" in requested_profiles
     process_enabled = "process" in requested_profiles
     salience_enabled = "salience" in requested_profiles
@@ -495,6 +498,8 @@ def compile_audit_prompt(
         append_missing(selected_modules, SERIAL_AUDIT_MODULES)
     if momentum_enabled:
         append_missing(selected_modules, MOMENTUM_AUDIT_MODULES)
+    if ending_enabled:
+        append_missing(selected_modules, ENDING_AUDIT_MODULES)
     if world_enabled:
         append_missing(selected_modules, WORLD_AUDIT_MODULES)
     if process_enabled:
@@ -617,6 +622,12 @@ def compile_audit_prompt(
             "For chapter momentum, map each chapter's entry pressure, irreversible turn, "
             "payoff, residue, and exit pressure; flag atmosphere-only openings, repeated "
             "resets, and hooks unsupported by the chapter's own action."
+        )
+    if ending_enabled:
+        task_lines.append(
+            "For ending earnedness, locate the last meaningful change and test every later "
+            "sentence for new consequence, handoff, changed meaning, or required document "
+            "function; try deletion before replacing a reflective bookend with another stock exit."
         )
     if world_enabled:
         task_lines.append(
