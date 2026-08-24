@@ -75,7 +75,7 @@ human-writing-skills audit --draft chapter.md --document-type fiction --profile 
 human-writing-skills lint --draft chapter.md --style fiction
 ```
 
-The dedicated profile loads only when selected, while `END001` provides a lightweight
+The full module loads only through the explicit `ending` profile, while `END001` provides a lightweight
 deterministic preflight for narrative endings. Discovery terms: **AI story ending,
 reflective ending, scene ending audit, chapter ending audit, formulaic conclusion,
 false closure, AI reflective bookend, and can't-help-but-reflect ending**.
