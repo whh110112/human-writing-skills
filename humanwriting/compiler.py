@@ -472,7 +472,7 @@ def compile_audit_prompt(
     capability_enabled = "capability" in requested_profiles
     serial_enabled = "serial" in requested_profiles
     momentum_enabled = "momentum" in requested_profiles
-    ending_enabled = bool(requested_profiles & {"full", "ai-trace", "ending"})
+    ending_enabled = "ending" in requested_profiles
     world_enabled = "world" in requested_profiles
     process_enabled = "process" in requested_profiles
     salience_enabled = "salience" in requested_profiles

@@ -64,7 +64,7 @@ human-writing-skills audit --draft chapter.md --document-type fiction --profile 
 human-writing-skills lint --draft chapter.md --style fiction
 ```
 
-完整模块只在显式选择 `ending`、`ai-trace` 或完整审查时加载；日常扫描由轻量级
+完整模块只在显式选择 `ending` 时加载；日常扫描、`ai-trace` 和完整审查由轻量级
 `END001` 负责。搜索关键词：**AI小说结尾、AI式结尾、生硬结尾审查、场景结尾审查、
 章节结尾审查、反思式结尾、总结式尾句、伪收束、无意义升华、去AI味结尾**。
 

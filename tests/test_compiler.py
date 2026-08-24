@@ -132,7 +132,7 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Technique Module: formulaic-structure-audit", examples)
         self.assertNotIn("Technique Module: earned-ending-audit", examples)
 
-    def test_ending_profile_is_isolated_and_ai_trace_includes_it(self):
+    def test_ending_profile_is_isolated_and_ai_trace_stays_lightweight(self):
         with TemporaryDirectory() as directory:
             draft = Path(directory) / "draft.md"
             draft.write_text(
@@ -152,7 +152,8 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Selected profiles: ending", ending)
         self.assertIn("Audit Module: earned-ending-audit", ending)
         self.assertNotIn("Audit Module: formulaic-structure-audit", ending)
-        self.assertIn("Audit Module: earned-ending-audit", ai_trace)
+        self.assertNotIn("Audit Module: earned-ending-audit", ai_trace)
+        self.assertIn("Audit Module: narrative-naturalness-audit", ai_trace)
 
     def test_serious_ending_profile_uses_same_module_without_narrative_naturalness(self):
         with TemporaryDirectory() as directory:
@@ -554,6 +555,7 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: attention-budget-audit", prompt)
         self.assertNotIn("Audit Module: chapter-pattern-audit", prompt)
         self.assertNotIn("Audit Module: source-grounding", prompt)
+        self.assertNotIn("Audit Module: earned-ending-audit", prompt)
 
     def test_narrative_naturalness_audit_is_gated_for_serious_documents(self):
         with TemporaryDirectory() as directory:
