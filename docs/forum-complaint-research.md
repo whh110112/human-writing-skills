@@ -24,6 +24,7 @@ long-form writing into executable audit modules.
 | Investigation, research, negotiation, or combat is skipped | The result lacks attempts, resistance, judgment, evidence, and cost | `process-earnedness-audit` |
 | Expansion grows while the promised process gets thinner | Attention is spent on atmosphere and semantic restatement | `attention-budget-audit` |
 | Chapters change wording but repeat the same opening, turn, and hook | Chapter functions form a copied architecture | `chapter-pattern-audit` |
+| Every scene ends with scenery, silence, reflection, or a lesson | The real ending has already occurred; a generic bookend simulates meaning without changing state | `earned-ending-audit`, deterministic `END001` |
 | Long-form drift | Facts, relationships, space, props, and hooks are not tracked | `relationship-state`, `spatial-blocking`, `physical-continuity-audit` |
 | False precision | Human perception is written like measurement data | `natural-measurement` |
 | Repeated not-X/is-Y, is-X/not-Y, or chained Chinese 比 comparisons | Symmetry and escalation substitute for evidence or judgment | `formulaic-structure-audit`, `cliche-phrase-audit` |

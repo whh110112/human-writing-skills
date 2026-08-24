@@ -3,7 +3,7 @@
 > 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
 **增强版去 AI 写作 Skill / 高级 AI 写作工具**：支持去AI味、去AI写作、消除AI腔、
-AI 人性化改写、AI 文本润色、小说润色、小说续写和长篇上下文一致性审校。
+AI 人性化改写、AI 文本润色、小说润色、小说续写、长篇分块审查、文风统一和人物设定统一。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
@@ -26,6 +26,48 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
+## 长篇审查与文风统一
+
+项目现在提供可执行的 `chunk-audit`：把一年跨度的小说、系列文章或大体量报告按自然边界
+切成唯一正文块，给每块附上少量只读前文，并统一对照“经用户确认的文风基准 + 大纲/账本”。它会
+生成逐块审查提示词、跨块文风统计差异和最终汇总提示词，用于发现模型升级或长期写作造成的
+叙述风格、人物对白、术语和章节功能漂移。
+
+小说提供 `--outline` 或 `--context` 后，人物目标、知识、关系、边界、能力和说话方式才作为
+权威设定参与审查；没有大纲时不会把临时推断冒充人物正史。新闻、论文、公文和报告则按
+术语、事实、归因、结论范围与章节功能统一，不加载小说专用规则。
+
+```powershell
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
+```
+
+搜索关键词：**长篇审查、分块审查、文风统一、统一文风、人物设定统一、人物一致性审查、
+跨章一致性、小说审查、报告审查、长文上下文一致性**。详见
+[长篇分块审查指南](docs/long-form-consistency.zh-CN.md)。
+
+## AI 式结尾与生硬结尾审查
+
+AI 小说常在场景已经完成后，再补一段风景渐隐、众人沉默、人物反思、人生感悟或
+“未来仍将继续”的总结。这类尾句看似圆润，实际没有新增选择、事实、后果或压力，
+属于**伪收束、反思式尾句或无意义升华**。`earned-ending-audit` 会先定位“最后一个
+有效变化”，再做删除测试；它不会把夕阳、沉默、感悟或抒情文字本身列为禁词。
+
+- 小说和网文应停在已经赚到的后果、决定、发现、物件变化、未解压力，或在本场景中
+  真正改变了意义的意象上。
+- 硬新闻停在最后一个有用且可核实的事实、回应、限制或下一步；特写式结尾只有在
+  新增意义时才保留，不能为了“有余味”强行拔高。
+- 论文、技术报告和公文停在有依据的结论、局限、影响、决定、责任人或期限上，
+  不套小说式抒情，也不补仪式化总结。
+
+```powershell
+human-writing-skills audit --draft chapter.md --document-type fiction --profile ending
+human-writing-skills lint --draft chapter.md --style fiction
+```
+
+完整模块只在显式选择 `ending`、`ai-trace` 或完整审查时加载；日常扫描由轻量级
+`END001` 负责。搜索关键词：**AI小说结尾、AI式结尾、生硬结尾审查、场景结尾审查、
+章节结尾审查、反思式结尾、总结式尾句、伪收束、无意义升华、去AI味结尾**。
+
 ## 这个项目解决什么
 
 | 常见问题 | 项目提供的办法 |
@@ -37,8 +79,10 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | 句子表面流畅却漏字、漏宾语或连接成分 | 用句法槽位、并列对称和指代回查做独立终校 |
 | 模糊归因、意义拔高、假范围、同义词轮换和排版套路反复出现 | 按文体和密度审查表层模式，不搞全局禁词 |
 | 小说被“下午”“某地”“新的决定”等小标题切碎 | 只对叙事文体检查，保留作品名和章节名，要求用正文完成场景过渡 |
+| 场景已经结束，又补风景、沉默、感悟或未来展望 | 定位最后一个有效变化，用删除测试清理伪收束，并按文体选择真正有功能的结尾 |
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
+| 数月或一年间文风、人物对白因模型或提示词变化而漂移 | `chunk-audit` 用固定基准、大纲和唯一正文分块做跨块审查与文风统一 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
 | 人物方言、敬语、语气词或外语突然串台 | 建立语言身份卡，按经历、听众和变调依据审核，不按地域或国籍刻板分配口音 |
 | 关键台词或动作后无人承接，剧情生硬切走 | 检查回应义务，并把延迟回应记录为互动欠账 |
@@ -77,6 +121,7 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | `speech-register-continuity` | 有明确证据时检查人物语言、方言经历、敬语、语气词、称谓和切换依据 |
 | `capability-state-audit` | 检查战力、技能、权限、装备、伤势、资源、冷却、克制与变化过程 |
 | `serial-reentry` | 有前章或账本时，检查前情倾倒、遗漏承接和章节状态重置 |
+| `long-form-style-consistency` | 长篇分块审查、跨时段文风统一、人物设定与对白声音的跨块校验 |
 | `chapter-momentum-audit` | 检查只铺气氛不推进、承诺未兑现、章间残留丢失和无依据钩子 |
 | `world-ontology-audit` | 检查时代、技术、制度、社会习惯和架空规则是否兼容 |
 | `process-earnedness-audit` | 检查关键结果是否由选择、阻力、证据和代价赚到 |
@@ -92,6 +137,7 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 | `formulaic-structure-audit` | 过于整齐的三连式、双向“不是/是”对举、连续“比”比较和每段干净收束 |
 | `prose-progress-audit` | 段落没有新增状态，或关键台词/动作尚未被接收就切换话题与场景 |
 | `narrative-naturalness-audit` | 只在深度/显式 AI 痕迹审查中检查重复场景配方、抽象情绪复现、段落漂亮收束和对话无承接 |
+| `earned-ending-audit` | 检查反思式尾句、风景渐隐、伪收束、套路 kicker 和最后有效变化之后的无意义升华 |
 | `imperfect-prose` | 文字太干净、太对称、太像统一润色 |
 | `vocal-rhythm` | 朗读时节奏单调、缺少呼吸点 |
 | `embodied-emotion` | 只有情绪标签，没有身体、动作、矛盾和感知 |
@@ -123,6 +169,7 @@ human-writing-skills list --kind style
 human-writing-skills list --kind module
 human-writing-skills build --style webnovel --context examples/story-ledger.md --task "续写第三章，保留冲突但揭示一个新线索。"
 human-writing-skills humanize --draft chapter.md --style fiction --mode quick
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
 human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills verify --source original.md --candidate revised.md
 ```
@@ -391,6 +438,7 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 | `physical` | 座位、空间、容量、触达、服装、道具和伤势 |
 | `relationship` | 关系立场、当前听众、信息权限、称谓和秘密泄露 |
 | `ai-trace` | 套话、公式结构、段落无推进和其他 AI 痕迹 |
+| `ending` | 最后有效变化、反思式尾句、伪收束和不同文体的结尾功能 |
 | `numbers` | 动作与情绪中的假精确数字 |
 | `proofread` | 错漏字、句法槽位、悬空连接词、指代、标点、称谓和排版 |
 | `fidelity` | 原意、实体、正反、不确定性、时间顺序、归因和新增细节；必须提供 `--original` |
@@ -402,6 +450,27 @@ Profile 可以重复组合，例如 `--profile relationship --profile ai-trace`�
 
 普通生成只加载一句轻量句法完整性检查。完整的漏字、缺宾语、悬空连接词和指代审查仅在
 `proofread` 或流水线校对阶段加载，避免长期占用生成 Token。
+
+### 长篇分块审查与文风统一
+
+当稿件远超单次上下文，或前后内容由不同模型版本、不同提示词、不同时间写成时，先用
+`chunk-audit` 建立稳定基准，再分块检查。它和 `pipeline` 不重复：`chunk-audit` 解决“全文
+太长”和“跨块漂移”，`pipeline` 解决“同一稿件不要一次检查所有问题”。二者可串联使用。
+
+```powershell
+human-writing-skills chunk-audit `
+  --draft full-novel.md `
+  --style fiction `
+  --outline novel-outline.md `
+  --reference approved-sample.md `
+  --output-dir novel-consistency-audit
+```
+
+没有明确参考样文时，`--baseline-chunk` 只是候选基准，先在基准提取阶段确认或纠正；`--reference` 不会
+被当作剧情事实。小说人物设定由大纲/账本约束并允许有依据的成长，严肃报告则保护事实、
+数字、术语、归因和结论范围。默认每块约 8000 字符，大纲与基准均有独立预算，避免全量激活。
+
+- 详细说明：[docs/long-form-consistency.zh-CN.md](docs/long-form-consistency.zh-CN.md)
 
 ### 多阶段流水线
 

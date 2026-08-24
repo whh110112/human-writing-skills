@@ -8,6 +8,13 @@ from .compiler import compile_audit_prompt, compile_humanize_prompt, compile_pro
 from .detection import PIPELINE_PROFILES
 from .fixer import fix_file, format_fix_report
 from .linter import format_lint_report, lint_file
+from .longform import (
+    DEFAULT_BASELINE_BUDGET,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_CONTEXT_BUDGET,
+    DEFAULT_OVERLAP_SIZE,
+    write_long_form_audit,
+)
 from .pipeline import write_audit_pipeline
 from .protection import compare_protected_files, format_protection_report
 from .reference import DEFAULT_REFERENCE_BUDGET
@@ -284,6 +291,68 @@ def build_parser() -> argparse.ArgumentParser:
         help="Explicit stage. Can be repeated. Without --auto or --stage, the established broad stages are written.",
     )
 
+    chunk_audit = subparsers.add_parser(
+        "chunk-audit",
+        help="Split a long manuscript or report into bounded style and continuity audit passes.",
+    )
+    chunk_audit.add_argument("--draft", required=True, help="Long Markdown/text draft to audit.")
+    chunk_audit.add_argument(
+        "--style",
+        required=True,
+        choices=list_style_skills(),
+        help="Genre contract used for style-drift interpretation.",
+    )
+    chunk_audit.add_argument(
+        "--context",
+        "--outline",
+        dest="context",
+        help="Outline, character bible, report plan, or continuity ledger used as canonical context.",
+    )
+    chunk_audit.add_argument(
+        "--output-dir",
+        help="Output directory. Defaults to <draft-name>-long-form-audit.",
+    )
+    chunk_audit.add_argument(
+        "--chunk-size",
+        type=int,
+        default=DEFAULT_CHUNK_SIZE,
+        help=f"Maximum target characters in each unique audit body. Default: {DEFAULT_CHUNK_SIZE}.",
+    )
+    chunk_audit.add_argument(
+        "--overlap",
+        type=int,
+        default=DEFAULT_OVERLAP_SIZE,
+        help=f"Read-only lead-in characters from the preceding block. Default: {DEFAULT_OVERLAP_SIZE}.",
+    )
+    chunk_audit.add_argument(
+        "--baseline-chunk",
+        type=int,
+        default=1,
+        help="One-based candidate manuscript chunk used as the style baseline when no reference file is supplied.",
+    )
+    chunk_audit.add_argument(
+        "--context-budget",
+        type=int,
+        default=DEFAULT_CONTEXT_BUDGET,
+        help=f"Maximum sampled outline/context characters per audit prompt. Default: {DEFAULT_CONTEXT_BUDGET}.",
+    )
+    chunk_audit.add_argument(
+        "--baseline-budget",
+        type=int,
+        default=DEFAULT_BASELINE_BUDGET,
+        help=f"Maximum sampled baseline/reference characters per audit prompt. Default: {DEFAULT_BASELINE_BUDGET}.",
+    )
+    chunk_audit.add_argument(
+        "--reference",
+        action="append",
+        default=[],
+        help="Explicit approved style reference. Can be repeated; overrides the baseline chunk for style evidence.",
+    )
+    chunk_audit.add_argument(
+        "--reference-style",
+        help="Explicit high-level style direction. Never activates without this flag or --reference.",
+    )
+
     lint = subparsers.add_parser(
         "lint",
         help="Run deterministic writing-pattern checks with evidence locations.",
@@ -494,6 +563,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Wrote {len(stages)} independent audit stages to {output.resolve()}")
         for stage in stages:
             print(f"{stage.order:02d} {stage.profile}: {stage.reason}")
+        return 0
+
+    if args.command == "chunk-audit":
+        output_dir = args.output_dir or f"{Path(args.draft).stem}-long-form-audit"
+        try:
+            output, chunks = write_long_form_audit(
+                args.draft,
+                output_dir,
+                style=args.style,
+                context_path=args.context,
+                reference_paths=args.reference,
+                reference_style=args.reference_style,
+                chunk_size=args.chunk_size,
+                overlap=args.overlap,
+                baseline_chunk=args.baseline_chunk,
+                context_budget=args.context_budget,
+                baseline_budget=args.baseline_budget,
+            )
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(f"Wrote {len(chunks)} bounded long-form audit prompts to {output.resolve()}")
+        print("Run 00-baseline-prompt.md first, then numbered chunks, then 9999-reconcile-prompt.md.")
         return 0
 
     if args.command == "lint":

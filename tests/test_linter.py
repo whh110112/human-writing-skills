@@ -237,6 +237,48 @@ class LinterTests(unittest.TestCase):
         rule_ids = {item.rule_id for item in lint_text(text, style="fiction").findings}
         self.assertTrue({"NAT001", "NAT002", "NAT003"} <= rule_ids)
 
+    def test_reports_chinese_reflective_bookend_after_earned_action(self):
+        text = (
+            "燕子没说话，只是把我搂得更紧了些。"
+            "窗外的钱塘，车水马龙，日头一寸一寸地西移。"
+            "我们谁也没动——像是要把这一晚错过的，都在这一个下午，慢慢地、安静地，补回来。"
+        )
+        report = lint_text(text, style="fiction")
+        finding = next(item for item in report.findings if item.rule_id == "END001")
+        self.assertEqual(finding.category, "reflective-bookend")
+        self.assertIn("补回来", finding.excerpt)
+
+    def test_reports_english_stock_reflection_at_story_end(self):
+        text = (
+            "Mara closed the ledger and returned the key. "
+            "At the window, she couldn't help but reflect on what life was and what the future held."
+        )
+        report = lint_text(text, style="fiction")
+        self.assertIn("END001", {item.rule_id for item in report.findings})
+
+    def test_preserves_quiet_ending_that_changes_material_state(self):
+        text = "燕子没说话，只把门卡塞进我掌心。"
+        report = lint_text(text, style="fiction")
+        self.assertNotIn("END001", {item.rule_id for item in report.findings})
+
+    def test_reflective_bookend_rule_is_narrative_only_and_allowlisted(self):
+        text = (
+            "窗外的灯一点一点亮起。我们谁也没说话，仿佛这一刻预示着新的开始。"
+        )
+        serious = lint_text(text, style="news-report")
+        allowed = lint_text(text, style="fiction", allow={"reflective-bookend"})
+        self.assertNotIn("END001", {item.rule_id for item in serious.findings})
+        self.assertNotIn("END001", {item.rule_id for item in allowed.findings})
+
+    def test_checks_terminal_paragraph_before_next_chapter(self):
+        text = (
+            "第一章 重逢\n\n她把钥匙还给了他。\n\n"
+            "窗外暮色渐渐沉下。她不禁思考人生与未来。\n\n"
+            "第二章 清晨\n\n电话在六点响了。"
+        )
+        report = lint_text(text, style="webnovel")
+        self.assertIn("END001", {item.rule_id for item in report.findings})
+
     def test_concrete_quantifier_nouns_do_not_count_as_vague_affect(self):
         text = (
             "一丝阳光落在桌面，一股风从窗缝钻进来，那点零钱压在书下。"

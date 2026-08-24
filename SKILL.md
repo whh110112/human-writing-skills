@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Advanced multilingual AI humanizer for de-AI writing, natural rewriting, fiction editing, and long-form continuity. Humanize AI text, remove robotic AI tone and AI writing patterns, rewrite prose naturally, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register, dialect, capability state, scene geography, relationships, numbers, citations, and source meaning. Use for AI writing cleanup, text humanization, style matching from supplied samples, long-context fiction, essays, news, official, academic, legal, and technical prose in model-supported languages. Trigger on humanize AI text, make writing sound human, novel writing assistant, story consistency checker, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、长文一致性、人物口吻、方言语域、战力设定、场景空间审查.
+description: Advanced multilingual AI humanizer for natural rewriting, fiction editing, long-form audit, chunked manuscript review, writing style unification, and character consistency. Humanize AI text, remove robotic AI tone, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register, scene geography, relationships, numbers, citations, and source meaning. Use for AI writing cleanup, style matching from supplied samples, long-context fiction, essays, news, official, academic, legal, and technical prose. Trigger on humanize AI text, de-AI writing, natural rewriting, novel writing assistant, story consistency checker, scene ending audit, reflective ending, long-form style consistency, chunked audit, style consistency review, character consistency audit, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、文风统一、统一文风、人物设定统一、人物一致性审查、跨章一致性、小说审查、报告审查、人物口吻、方言语域、战力设定、场景空间审查.
 ---
 
 # Advanced Human Writing & AI Humanizer
@@ -52,11 +52,14 @@ continuity ledgers separate from optional style references.
    profiles, then `verify` protected content against the source. Run `stats` only
    when distributional diagnostics help; use `fix` as a preview before writing.
 7. Keep `voice`, `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`,
-   `texture`, `fidelity`, `preservation`, examples, and `sources` separate from the default audit. Activate them explicitly
+   `ending`, `texture`, `fidelity`, `preservation`, examples, and `sources` separate from the default audit. Activate them explicitly
    or through `pipeline --auto`. `serial` requires context, `recurrence` requires at
    least three chapters, `fidelity` requires `--original`, `preservation` requires
    both explicit selection and `--original`, examples require an explicit request,
    and `sources` requires both a serious document and `--source`.
+8. For a book-length manuscript or large report, use `chunk-audit` instead of placing
+   the whole draft in one prompt. Supply `--outline` or `--context` for authoritative
+   character or report rules. Read `docs/long-form-consistency.md` only for this workflow.
 
 ## Commands
 
@@ -72,10 +75,12 @@ human-writing-skills audit --draft chapter.md --context ledger.md --profile seri
 human-writing-skills audit --draft chapters.md --profile momentum
 human-writing-skills audit --draft chapters.md --profile recurrence
 human-writing-skills audit --draft chapter.md --profile process
+human-writing-skills audit --draft chapter.md --document-type fiction --profile ending
 human-writing-skills audit --draft paper.md --document-type academic-paper --source study.md --profile sources
 human-writing-skills audit --draft revised.md --original original.md --profile fidelity
 human-writing-skills audit --draft revised.md --original original.md --profile preservation
 human-writing-skills pipeline --draft chapter.md --context ledger.md --auto --with-stats --output-dir audit
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline outline.md --output-dir novel-audit
 human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills stats --draft chapter.md --style fiction
 human-writing-skills fix --draft chapter.md --preview

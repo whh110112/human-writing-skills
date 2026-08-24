@@ -96,6 +96,7 @@ def select_pipeline_profiles(
             "salience",
             "recurrence",
             "texture",
+            "ending",
             "sources",
             "fidelity",
             "preservation",
@@ -290,7 +291,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "optional stats -> logic -> character/relationship/voice/register/capability/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
+            "optional stats -> logic -> character/relationship/voice/register/capability/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/ending/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

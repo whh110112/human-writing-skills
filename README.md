@@ -3,7 +3,8 @@
 > Reusable multilingual writing `SKILLS` for natural prose, genre-aware style, and long-form continuity.
 
 **Advanced AI humanizer and de-AI writing toolkit** for natural rewriting,
-AI text cleanup, fiction editing, novel continuation, and long-form continuity review.
+AI text cleanup, fiction editing, novel continuation, chunked long-form audit,
+writing style unification, and character consistency review.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
@@ -31,6 +32,54 @@ It helps a writing agent move away from generic, template-shaped output and towa
 
 The goal is not deception. The goal is better writing: clearer instructions, stronger revision habits, and reusable style constraints that make AI-assisted drafts feel edited by a human.
 
+## Long-Form Audit And Style Unification
+
+The executable `chunk-audit` workflow splits a year-long novel, article series, or
+large report at natural boundaries. Each body span is audited once, with a small
+read-only lead-in and the same user-confirmed style baseline plus outline or project ledger.
+It writes independent chunk prompts, deterministic cross-chunk style diagnostics, and
+a reconciliation prompt for model- or prompt-version drift in narration, character
+dialogue, terminology, and section function.
+
+For fiction, `--outline` or `--context` makes supported goals, knowledge, relationships,
+limits, abilities, and speaker voice canonical. Without it, character inferences remain
+provisional. News, academic, official, and report workflows instead align terminology,
+facts, attribution, claim scope, and section purpose without loading fiction rules.
+
+```powershell
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
+```
+
+Discovery terms: **long-form audit, chunked manuscript audit, writing style
+unification, style consistency review, character consistency audit, cross-chapter
+continuity, novel audit, and report review**. See the
+[long-form consistency guide](docs/long-form-consistency.md).
+
+## Earned Scene And Document Endings
+
+AI-assisted drafts often reach a real stopping point and then append a scenic dissolve,
+shared silence, life lesson, future-facing reflection, or summary of what the scene
+already showed. The `earned-ending-audit` finds this **reflective bookend / false
+closure** pattern in Chinese and English by locating the last meaningful change and
+applying a deletion test. It does not ban sunsets, silence, reflection, or lyrical prose.
+
+- Fiction and webnovels stop on an earned consequence, decision, discovery, changed
+  object, live pressure, or image whose meaning changed inside the scene.
+- Hard news ends on the last useful verified fact, response, constraint, or next step;
+  feature kickers must add meaning instead of manufacturing uplift.
+- Academic, technical, and official writing ends with supported findings, limits,
+  implications, decisions, owners, or deadlines rather than a ceremonial conclusion.
+
+```powershell
+human-writing-skills audit --draft chapter.md --document-type fiction --profile ending
+human-writing-skills lint --draft chapter.md --style fiction
+```
+
+The dedicated profile loads only when selected, while `END001` provides a lightweight
+deterministic preflight for narrative endings. Discovery terms: **AI story ending,
+reflective ending, scene ending audit, chapter ending audit, formulaic conclusion,
+false closure, AI reflective bookend, and can't-help-but-reflect ending**.
+
 ## Why This Exists
 
 AI writing often fails in predictable ways:
@@ -44,8 +93,10 @@ AI writing often fails in predictable ways:
 | Fluent-looking sentences drop a word, object, or connector clause | A separate final pass over predicate slots, parallel structure, and references |
 | Surface AI patterns recur across a passage | Genre-aware checks for vague attribution, inflated significance, false ranges, synonym cycling, formatting habits, and comparison ladders |
 | Fiction is chopped up by time/place mini-headings | Narrative-only checks that preserve titles and chapters but require scene changes to move through prose |
+| A finished scene grows a scenic, reflective, or moralizing tail | Last-meaningful-change and deletion tests for false closure, with genre-specific ending contracts |
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
+| Prose and character dialogue drift across months or model versions | A fixed baseline, canonical outline, unique audit chunks, and cross-chunk reconciliation |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
 | Dialect, honorifics, particles, or foreign language jump between characters | An evidence-backed language-identity card with motivated switch gates |
 | A consequential line or action receives no uptake before the prose cuts away | Response-obligation checks and deferred interaction debt |
@@ -81,6 +132,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `speech-register-continuity` | evidence-backed language, dialect exposure, honorifics, particles, address, and switch gates |
 | `capability-state-audit` | power, skill, authority, equipment, injury, resources, cooldowns, counters, and transitions |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
+| `long-form-style-consistency` | chunked long-form style, character-setting, and speaker-voice reconciliation |
 | `chapter-momentum-audit` | atmosphere-only chapters, missing payoffs, discarded residue, and unsupported hooks |
 | `world-ontology-audit` | incompatible era, technology, institution, social practice, or speculative rule |
 | `process-earnedness-audit` | promised processes skipped before an unsupported result |
@@ -96,6 +148,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `formulaic-structure-audit` | triplets, bidirectional contrast frames, chained comparisons, and overly neat closure |
 | `prose-progress-audit` | static paragraphs and pressure-bearing interactions abandoned before uptake or explicit deferral |
 | `narrative-naturalness-audit` | in deep or explicit AI-trace review, catches repeated scene recipes, vague-affect recurrence, polished paragraph closures, and orphaned dialogue |
+| `earned-ending-audit` | reflective bookends, scenic dissolves, false closure, stock kickers, and conclusions added after the last meaningful change |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
 | `embodied-emotion` | emotion labels without body, action, contradiction, or perception |
@@ -127,6 +180,7 @@ human-writing-skills list --kind style
 human-writing-skills list --kind module
 human-writing-skills build --style fiction --context examples/story-ledger.md --task "Write the next scene."
 human-writing-skills humanize --draft chapter.md --style fiction --mode quick
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
 human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills verify --source original.md --candidate revised.md
 ```
@@ -402,6 +456,7 @@ ordinary `--deep-review` does not load them.
 | `physical` | Position, capacity, reach, clothing, props, and injuries |
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
 | `ai-trace` | Cliches, formulaic structure, static paragraphs, and other AI traces |
+| `ending` | Last meaningful change, reflective bookends, false closure, and genre-specific ending function |
 | `numbers` | False precision in action and emotion |
 | `proofread` | Omissions, sentence slots, stranded connectors, references, punctuation, naming, and layout |
 | `fidelity` | Meaning, entity, polarity, uncertainty, chronology, attribution, and invention checks; requires `--original` |
@@ -414,6 +469,30 @@ Profiles can be combined, for example `--profile relationship --profile ai-trace
 Ordinary generation loads only a lightweight sentence-completeness guard. Full
 omission, missing-object, stranded-connector, and reference checks load only in the
 `proofread` profile or pipeline proofreading stage, preserving the generation token budget.
+
+### Chunked Long-Form Audit
+
+Use `chunk-audit` when a manuscript exceeds one reliable context window or was written
+across model, prompt, or time changes. It complements `pipeline`: chunking handles
+manuscript size and cross-block drift, while the pipeline separates different review
+responsibilities for one draft.
+
+```powershell
+human-writing-skills chunk-audit `
+  --draft full-novel.md `
+  --style fiction `
+  --outline novel-outline.md `
+  --reference approved-sample.md `
+  --output-dir novel-consistency-audit
+```
+
+Without an explicit reference, `--baseline-chunk` selects a candidate manuscript block;
+approve or correct it during baseline extraction. Reference prose supplies style evidence only. Fiction uses the
+outline or ledger for character canon and permits earned development; serious reports
+protect facts, numbers, terminology, attribution, and conclusion scope. Default body,
+context, and baseline budgets keep the workflow usable on smaller-context models.
+
+- Guide: [docs/long-form-consistency.md](docs/long-form-consistency.md)
 
 ### Multi-Stage Pipeline
 

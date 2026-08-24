@@ -24,6 +24,8 @@ Create prose that feels observed rather than generated. Let character desire, sc
   bodily state, risk, promise, or misread intention.
 - Move scenes by changed pressure, not by neutral summary. A scene should alter what a
   character knows, wants, can risk, or can no longer pretend.
+- Stop at the last earned consequence. Delete a terminal reflection or scenic dissolve
+  when it adds no choice, knowledge, consequence, or changed image.
 - Do not insert unrequested time, place, mood, or action mini-headings inside narrative
   prose. Carry scene changes through prior residue, elapsed consequence, perception,
   or the first consequential action in the new time and place.
@@ -33,6 +35,7 @@ Create prose that feels observed rather than generated. Let character desire, sc
 - generic emotional labels without behavior
 - symmetrical paragraph openings
 - moral summaries after every beat
+- reflective bookends after the scene has landed
 - dialogue that explains what both characters already know
 - dialogue that ignores the previous turn or sounds detached from the speaker's goal
 - important speech or action abandoned without response, consequence, or carried debt

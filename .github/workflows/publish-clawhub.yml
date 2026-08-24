@@ -82,7 +82,7 @@ jobs:
             --changelog "$CHANGELOG" \
             --tags latest \
             --categories creative,communication,development \
-            --topics ai-humanizer,human-writing,de-ai-writing,fiction-editing,story-continuity \
+            --topics ai-humanizer,de-ai-writing,fiction-editing,scene-ending-audit,story-continuity \
             --source-repo "$GITHUB_REPOSITORY" \
             --source-commit "$GITHUB_SHA" \
             --source-ref "$GITHUB_REF_NAME" 2>&1)

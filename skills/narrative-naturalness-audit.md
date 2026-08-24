@@ -12,6 +12,7 @@ Across at least six neighboring beats, flag recurrence rather than one word:
 - entry bundle: `time/weather -> place/light -> appearance -> generalized feeling`
 - abstract affect: “说不清”, “莫名”, “某种感觉”, “一丝/一股/那点” and equivalents
 - polished image endings replacing action, object, or change
+- reflective/scenic bookends after the last earned change
 - identical cadence and repeated contrast/comparison frames
 
 For each consequential line or threat:
@@ -28,6 +29,7 @@ For each consequential line or threat:
 - Use selective viewpoint details, not an equal-clarity scan.
 - Allow earned misreading, revision, and open questions.
 - Let paragraphs end on material change, interruption, or unresolved choice.
+- At scene exits, use `earned-ending-audit`; do not trade reflection for a stock cliffhanger.
 - Put evidence before interpretation; vary paragraph functions.
 - Never insert typos, fake dialect, arbitrary jumps, or vulgarity to move a score;
   preserve motifs, ambiguity, and a stable voice.

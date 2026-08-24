@@ -19,6 +19,7 @@ PIPELINE_PROFILES = [
     "recurrence",
     "physical",
     "ai-trace",
+    "ending",
     "texture",
     "style-match",
     "fidelity",
@@ -349,6 +350,10 @@ def detect_audit_profiles(
             "High-cost source-to-rewrite voice comparison; select it explicitly when needed."
             if original_active
             else "No pre-rewrite --original file was supplied.",
+        ),
+        "ending": (
+            False,
+            "Covered by the core ai-trace stage; select ending explicitly for an isolated pass.",
         ),
         "sources": (
             source_active and serious_document,
