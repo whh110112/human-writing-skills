@@ -97,6 +97,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("humanize-examples", list_module_skills())
         self.assertIn("long-form-style-consistency", list_module_skills())
         self.assertIn("earned-ending-audit", list_module_skills())
+        self.assertIn("dialogue-performance-audit", list_module_skills())
 
     def test_quick_humanize_loads_only_the_focused_rewrite_stack(self):
         with TemporaryDirectory() as directory:
@@ -132,7 +133,7 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Technique Module: formulaic-structure-audit", examples)
         self.assertNotIn("Technique Module: earned-ending-audit", examples)
 
-    def test_ending_profile_is_isolated_and_ai_trace_stays_lightweight(self):
+    def test_ending_profile_is_isolated_from_ai_trace_and_full_review(self):
         with TemporaryDirectory() as directory:
             draft = Path(directory) / "draft.md"
             draft.write_text(
@@ -149,11 +150,17 @@ class CompilerTests(unittest.TestCase):
                 profiles=["ai-trace"],
                 document_type="fiction",
             )
+            full = compile_audit_prompt(
+                str(draft),
+                profiles=["full"],
+                document_type="fiction",
+            )
         self.assertIn("Selected profiles: ending", ending)
         self.assertIn("Audit Module: earned-ending-audit", ending)
         self.assertNotIn("Audit Module: formulaic-structure-audit", ending)
         self.assertNotIn("Audit Module: earned-ending-audit", ai_trace)
         self.assertIn("Audit Module: narrative-naturalness-audit", ai_trace)
+        self.assertNotIn("Audit Module: earned-ending-audit", full)
 
     def test_serious_ending_profile_uses_same_module_without_narrative_naturalness(self):
         with TemporaryDirectory() as directory:
@@ -244,13 +251,18 @@ class CompilerTests(unittest.TestCase):
 
     def test_dialogue_generation_activates_only_for_explicit_narrative_tasks(self):
         dialogue = compile_prompt("fiction", "写一场两位角色各有所求的谈判。")
+        interaction = compile_prompt("fiction", "续写两人重逢后的试探场景。")
         narration = compile_prompt("fiction", "写一段独自穿过雨夜的场景。")
         excluded = compile_prompt("fiction", "只写动作，不要对话。")
         serious = compile_prompt("news-report", "Write an interview-based report.")
         self.assertIn("Technique Module: dialogue-voice-audit", dialogue)
+        self.assertIn("Technique Module: dialogue-performance-audit", dialogue)
         self.assertIn("Scene Speech Contract", dialogue)
         self.assertIn("Response Obligation And Interaction Debt", dialogue)
+        self.assertIn("Technique Module: dialogue-performance-audit", interaction)
+        self.assertIn("Dialogue Performance And Landing", interaction)
         self.assertNotIn("Technique Module: dialogue-voice-audit", narration)
+        self.assertNotIn("Technique Module: dialogue-performance-audit", narration)
         self.assertNotIn("Technique Module: dialogue-voice-audit", excluded)
         self.assertNotIn("Technique Module: dialogue-voice-audit", serious)
 
@@ -639,7 +651,9 @@ class CompilerTests(unittest.TestCase):
             texture = compile_audit_prompt(str(draft), profiles=["texture"])
             momentum = compile_audit_prompt(str(draft), profiles=["momentum"])
         self.assertIn("Audit Module: dialogue-voice-audit", voice)
+        self.assertIn("Audit Module: dialogue-performance-audit", voice)
         self.assertIn("Scene Speech Contract", voice)
+        self.assertIn("Dialogue Performance Audit", voice)
         self.assertIn("Response Obligation And Interaction Debt", voice)
         self.assertIn("Common Ground And Subtext", voice)
         self.assertIn("occupational stereotype", voice)
@@ -741,7 +755,7 @@ class CompilerTests(unittest.TestCase):
         draft = "她说：\u201c我只答应这一回。\u201d他问：\u201c条件呢？\u201d"
         without_context = detect_audit_profiles(draft)
         with_context = detect_audit_profiles(draft, context_active=True)
-        self.assertNotIn("voice", {item.profile for item in without_context if item.selected})
+        self.assertIn("voice", {item.profile for item in without_context if item.selected})
         self.assertIn("voice", {item.profile for item in with_context if item.selected})
 
     def test_auto_detection_skips_serial_without_context(self):

@@ -98,6 +98,7 @@ AI writing often fails in predictable ways:
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Prose and character dialogue drift across months or model versions | A fixed baseline, canonical outline, unique audit chunks, and cross-chunk reconciliation |
 | Dialogue sounds interchangeable or out of character | Generation and review against baseline voice, scene goal, knowledge, audience, and pressure |
+| Dialogue ends in a stock gesture or scenic gloss instead of a real exchange | A dialogue-performance pass checks listener uptake, purposeful physical beats, and the changed option or carried debt |
 | Dialect, honorifics, particles, or foreign language jump between characters | An evidence-backed language-identity card with motivated switch gates |
 | A consequential line or action receives no uptake before the prose cuts away | Response-obligation checks and deferred interaction debt |
 | Power, skill, authority, equipment, injury, or resources drift | Permanent/temporary state separation and earned transition gates |
@@ -129,6 +130,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
 | `dialogue-voice-audit` | character-fit dialogue plus verbal, physical, silent, interrupted, or deferred uptake for consequential turns |
+| `dialogue-performance-audit` | consequential dialogue that needs a purposeful physical beat, readable listener uptake, and an earned landing rather than decorative gestures |
 | `speech-register-continuity` | evidence-backed language, dialect exposure, honorifics, particles, address, and switch gates |
 | `capability-state-audit` | power, skill, authority, equipment, injury, resources, cooldowns, counters, and transitions |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
@@ -362,8 +364,8 @@ the established relationship graph.
 
 ## Character- and Situation-Fit Dialogue
 
-`dialogue-voice-audit` separates stable speaker baseline, situation-driven modulation,
-and the action each turn is trying to perform. Occupation, class, region, and trait
+`dialogue-voice-audit` and `dialogue-performance-audit` separate stable speaker baseline,
+situation-driven modulation, and the action each turn is trying to perform. Occupation, class, region, and trait
 labels supply possible knowledge, incentives, duties, and register pressure; they do
 not substitute for personality. An explicit speech-centered generation task activates
 the module on demand. Review an existing scene with an independent `voice` pass:
@@ -379,7 +381,9 @@ The audit separates contradiction from motivated contrast and checks scene purpo
 knowledge boundaries, practical constraints, response linkage, audience, and power.
 A consequential line or action does not require a mechanical spoken reply, but it
 must receive verbal, physical, silently legible, interrupted, or deliberately deferred
-uptake before the prose shifts away.
+uptake before the prose shifts away. A physical beat is retained only when it changes
+access, attention, leverage, permission, distance, or the next available action; the
+module does not prescribe touch, gestures, weather, clothing, or scenery after every line.
 
 If the draft already exists, use `audit`:
 
@@ -403,9 +407,10 @@ tests/               standard-library unit tests
 ### Optional Narrative Modules
 
 The narrative controls use progressive disclosure. Generation adds
-`dialogue-voice-audit` only when a fiction or webnovel task explicitly asks for a
-speech-centered scene such as dialogue, negotiation, a meeting, interrogation, or
-argument. Narration-only and serious-document tasks do not trigger it. The `voice`,
+the dialogue modules only when a fiction or webnovel task explicitly asks for a
+speech-centered or character-interaction scene such as dialogue, negotiation, reunion,
+testing, reconciliation, confrontation, a meeting, interrogation, or argument.
+Narration-only and serious-document tasks do not trigger them. The `voice`,
 `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`, `texture`, and
 `sources` and `preservation` audit profiles remain outside broad `full` review:
 
@@ -418,8 +423,8 @@ human-writing-skills audit --draft chapter.md --profile process
 human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
-`dialogue-voice-audit` models baseline speech, practical incentives, knowledge limits,
-scene goals, and response linkage without treating a job as a personality. Use
+The dialogue modules model baseline speech, practical incentives, knowledge limits,
+scene goals, response linkage, and purposeful performance beats without treating a job as a personality. Use
 `speech-register-continuity` for evidence-backed language identity, particles,
 honorifics, and code-switching; use `capability-state-audit` for power and resource
 state. Use `serial-reentry` only with

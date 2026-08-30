@@ -6,6 +6,8 @@ dist/
 build/
 .tmp-wheel/
 .tmp-skillhub-package/
+.tmp-wheel-*/
+.tmp-skillhub-*/
 *.egg-info/
 .DS_Store
 .learnings/
