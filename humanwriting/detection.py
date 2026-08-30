@@ -163,11 +163,17 @@ def _voice_reason(text: str, context_active: bool = False) -> tuple[bool, str]:
     dialogue_marks = len(DIALOGUE_MARK_PATTERN.findall(text))
     attributions = len(DIALOGUE_ATTRIBUTION_PATTERN.findall(text))
     sustained = dialogue_marks >= 4 and attributions >= 2
+    paired = dialogue_marks >= 2 and attributions >= 2
     context_backed = context_active and dialogue_marks >= 2 and attributions >= 1
-    selected = sustained or context_backed
+    selected = sustained or paired or context_backed
     if not selected:
         return False, "No sustained or context-backed multi-speaker dialogue cues found in the draft."
-    basis = "context-backed" if context_backed and not sustained else "sustained"
+    if sustained:
+        basis = "sustained"
+    elif paired:
+        basis = "paired"
+    else:
+        basis = "context-backed"
     return True, (
         f"Detected {basis} dialogue: {dialogue_marks} openings and "
         f"{attributions} attribution cues."

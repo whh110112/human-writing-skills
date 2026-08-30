@@ -84,6 +84,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 数月或一年间文风、人物对白因模型或提示词变化而漂移 | `chunk-audit` 用固定基准、大纲和唯一正文分块做跨块审查与文风统一 |
 | 人物对白像同一个人或不合当下身份 | 按人物基线、谈话目的、知识边界、听众和压力生成并审核 |
+| 台词后只接万能动作、风景或旁白，人物之间没有真正交接 | 对话表现审查核对听者承接、动作功能、状态变化和延迟回应 |
 | 人物方言、敬语、语气词或外语突然串台 | 建立语言身份卡，按经历、听众和变调依据审核，不按地域或国籍刻板分配口音 |
 | 关键台词或动作后无人承接，剧情生硬切走 | 检查回应义务，并把延迟回应记录为互动欠账 |
 | 时代、技术、制度或世界规则互相冲突 | 抽取世界契约，再检查物件、行动和例外是否兼容 |
@@ -118,6 +119,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | `logic-causality-audit` | 检查因果、时间线、知识来源、动机、规则、资源和后果断裂 |
 | `character-consistency-audit` | 检查人物目标、声音、能力、边界、知识和转变是否有过渡 |
 | `dialogue-voice-audit` | 按人物基线与情境生成并审核对白，检查关键回合是否得到语言、动作、沉默或延迟回应 |
+| `dialogue-performance-audit` | 检查关键对白的听者承接、动作是否有功能、对白落点与下一步状态，避免万能动作和风景垫句 |
 | `speech-register-continuity` | 有明确证据时检查人物语言、方言经历、敬语、语气词、称谓和切换依据 |
 | `capability-state-audit` | 检查战力、技能、权限、装备、伤势、资源、冷却、克制与变化过程 |
 | `serial-reentry` | 有前章或账本时，检查前情倾倒、遗漏承接和章节状态重置 |
@@ -352,8 +354,8 @@ python -m humanwriting.cli build `
 
 ## 人物与情境对白
 
-`dialogue-voice-audit` 把对白拆成三层：人物长期语言基线、当前场景对基线的
-调制，以及每句话试图完成的行动。职业、阶层、地域和性格标签只能提供知识、
+`dialogue-voice-audit` 与 `dialogue-performance-audit` 把对白拆成四层：人物长期语言基线、当前场景对基线的
+调制、每句话试图完成的行动，以及听者承接后的状态变化。职业、阶层、地域和性格标签只能提供知识、
 利益、责任与语域变化线索，不能直接替代人物性格。生成时明确要求言语中心场景
 即可按需激活；已有稿件使用独立 `voice` 审稿：
 
@@ -367,6 +369,8 @@ human-writing-skills audit `
 审核会区分“设定冲突”和“有动机的反差”，并检查谈话目的、知识边界、现实约束、
 上一句回应、听众与权力关系。关键台词或动作不要求机械地回一句话，但在转场前
 必须有语言、动作、可读的沉默、明确打断或延迟回应；否则会标记为互动回合悬空。
+动作、触碰、道具、距离、停顿、服装和风景只有改变注意力、权限、关系、可达性或
+下一步选择时才保留，不会强制给每句台词添加“低声”“一笑”“转身”之类的装饰。
 
 如果已经有一段文本需要审稿，使用 `audit`：
 
@@ -389,8 +393,9 @@ tests/               标准库单元测试
 
 ### 按需叙事模块
 
-新增能力采用渐进加载。生成任务只有明确要求对话、谈判、会谈、审问、争论等
-言语中心场景时，才自动加入 `dialogue-voice-audit`；普通叙述和严肃文体不会误触发。
+新增能力采用渐进加载。生成任务只有明确要求对话、谈判、会谈、审问、争论、重逢、
+试探、安慰、和解、对峙等言语中心或人物互动场景时，才自动加入对白模块；普通叙述
+和严肃文体不会误触发。
 审稿中的 `voice`、`register`、`capability`、`serial`、`world`、`process`、`momentum`、`salience`、
 `recurrence`、`texture`、`sources`、`preservation` 仍不塞入宽覆盖的 `full`：
 
@@ -403,8 +408,8 @@ human-writing-skills audit --draft chapter.md --profile process
 human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
-`dialogue-voice-audit` 不按职业套口吻，而是检查稳定语言基线、现实利益、知识边界、
-当场目标和回应关系；语言身份、语气词、敬语与变调依据交给
+对白模块不按职业套口吻，而是检查稳定语言基线、现实利益、知识边界、当场目标、回应
+关系和有功能的动作落点；语言身份、语气词、敬语与变调依据交给
 `speech-register-continuity`，战力与资源状态交给 `capability-state-audit`。
 `serial-reentry` 只有提供前章或账本
 时才可使用；`momentum` 只审多章稿件的入场压力、变化、回报和章尾承接；`texture`

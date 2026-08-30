@@ -27,10 +27,13 @@ class Skill:
 
 
 def default_skills_dir() -> Traversable:
+    source_skills = Path(__file__).resolve().parent.parent / "skills"
+    if source_skills.is_dir():
+        return source_skills
     try:
         return files("humanwriting_skill_data")
     except ModuleNotFoundError:
-        return Path(__file__).resolve().parent.parent / "skills"
+        return source_skills
 
 
 def list_skills(skills_dir: Path | None = None) -> list[str]:

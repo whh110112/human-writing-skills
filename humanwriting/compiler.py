@@ -13,10 +13,13 @@ NUMBER_SENSE_REVIEW_STYLES = {"fiction", "webnovel", "self-media"}
 NARRATIVE_NATURALNESS_DOCUMENT_TYPES = {"fiction", "webnovel", "self-media"}
 DIALOGUE_GENERATION_STYLES = {"fiction", "webnovel"}
 DIALOGUE_GENERATION_PATTERN = re.compile(
-    r"(?:写|续写|生成|创作|展开|安排).{0,24}(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天|问答)|"
+    r"(?:写|续写|生成|创作|展开|安排).{0,24}(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天|问答|"
+    r"人物互动|角色互动|相处|重逢|初见|初次见面|表白|告白|试探|安慰|和解|对峙|冲突)|"
     r"(?:对话|对白|谈判|会谈|沟通|交涉|审问|讯问|争论|争吵|聊天)(?:场景|片段|戏|章节)?|"
-    r"\b(?:write|continue|draft|create).{0,40}(?:dialogue|conversation|negotiation|meeting|interview|interrogation|argument)|"
-    r"\b(?:dialogue|conversation|negotiation|interrogation)\s+(?:scene|chapter|exchange)\b",
+    r"(?:两人|二人|人物|角色).{0,12}(?:互动|相处|重逢|初见|试探|安慰|和解|对峙|冲突)|"
+    r"\b(?:write|continue|draft|create).{0,40}(?:dialogue|conversation|negotiation|meeting|interview|interrogation|argument|"
+    r"character interaction|reunion|confession|reconciliation|confrontation|comforting scene)|"
+    r"\b(?:dialogue|conversation|negotiation|interrogation|character interaction|reunion|confession|reconciliation|confrontation)\s+(?:scene|chapter|exchange)\b",
     re.IGNORECASE,
 )
 DIALOGUE_NEGATION_PATTERN = re.compile(
@@ -95,7 +98,7 @@ PHYSICAL_AUDIT_MODULES = [
 ]
 LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
-VOICE_AUDIT_MODULES = ["dialogue-voice-audit"]
+VOICE_AUDIT_MODULES = ["dialogue-voice-audit", "dialogue-performance-audit"]
 REGISTER_AUDIT_MODULES = ["speech-register-continuity"]
 CAPABILITY_AUDIT_MODULES = ["capability-state-audit"]
 SERIAL_AUDIT_MODULES = ["serial-reentry"]

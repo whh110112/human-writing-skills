@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Advanced multilingual AI humanizer for natural rewriting, fiction editing, long-form audit, chunked manuscript review, writing style unification, and character consistency. Humanize AI text, remove robotic AI tone, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register, scene geography, relationships, numbers, citations, and source meaning. Use for AI writing cleanup, style matching from supplied samples, long-context fiction, essays, news, official, academic, legal, and technical prose. Trigger on humanize AI text, de-AI writing, natural rewriting, novel writing assistant, story consistency checker, scene ending audit, reflective ending, long-form style consistency, chunked audit, style consistency review, character consistency audit, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、文风统一、统一文风、人物设定统一、人物一致性审查、跨章一致性、小说审查、报告审查、人物口吻、方言语域、战力设定、场景空间审查.
+description: Advanced multilingual AI humanizer for natural rewriting, fiction editing, long-form continuity, and character consistency. Humanize AI text, remove robotic tone, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register and performance, scene geography, relationships, numbers, citations, and source meaning. Use for AI writing cleanup, supplied-sample style matching, long-context fiction, essays, news, official, academic, legal, and technical prose. Trigger on humanize AI text, de-AI writing, natural rewriting, novel writing assistant, story consistency checker, scene ending audit, reflective ending, chunked audit, style consistency review, character consistency audit, dialogue audit, dialogue action audit, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、文风统一、统一文风、人物设定统一、人物一致性审查、跨章一致性、小说审查、报告审查、人物口吻、人物对白审查、对话生硬、对白动作、方言语域、战力设定、场景空间审查.
 ---
 
 # Advanced Human Writing & AI Humanizer
@@ -36,7 +36,7 @@ continuity ledgers separate from optional style references.
 1. Select one base style from `skills/`: `fiction`, `webnovel`, `argumentative`,
    `news-report`, `formal-document`, `self-media`, or `academic-paper`.
 2. Read only the relevant modules. Add continuity, spatial, relationship, number,
-   dialogue, register, capability, world, process, salience, recurrence, source, rhythm, preservation,
+   dialogue, dialogue-performance, register, capability, world, process, salience, recurrence, source, rhythm, preservation,
    or AI-trace modules when the text actually needs them.
    `narrative-naturalness-audit` is reserved for deep or explicit AI-trace review of
    narrative prose; it is not loaded for ordinary quick humanization or serious documents.

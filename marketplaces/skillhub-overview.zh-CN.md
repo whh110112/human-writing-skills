@@ -7,7 +7,7 @@
 ## 适用场景
 
 - 去AI味、去AI写作、消除AI腔、AI人性化改写、AI文章润色和自然语言改写。
-- 小说润色、网络小说创作、章节续写、人物对白、文风匹配和长篇上下文一致性检查。
+- 小说润色、网络小说创作、章节续写、人物对白、对话生硬修复、对白动作审查、文风匹配和长篇上下文一致性检查。
 - 检查人物位置、场景空间、衣着道具、关系立场、人物口吻、方言语域、战力能力与世界设定是否前后一致。
 - 识别机械排比、不是而是、比较阶梯、虚假精确数字、生硬转场、悬空对白、小标题滥用、漏字和套话密度等常见 AI 写作痕迹。
 - 识别场景已经结束后追加的风景渐隐、沉默反思、人生感悟、未来展望与无意义升华；通过最后有效变化和删除测试修复 AI 小说结尾与伪收束。
@@ -19,7 +19,7 @@
 1. **自然化改写**：保留原意、事实和有效含混，减少模板化结构与机械句式，而不是简单替换所谓禁用词。
 2. **文体区分**：小说强调动作、感官、对白与场景推进；新闻、论文、公文和技术文本强调事实、证据与术语准确性。
 3. **长文连续性**：结合人物账本、场景账本、关系状态、物理状态和前文章节，检查人物、位置、服装、道具、能力与剧情衔接。
-4. **人物对白一致性**：根据身份、经历、关系、目的、听众和当下场景控制称呼、敬语、语气词、方言、隐瞒与潜台词。
+4. **人物对白一致性**：根据身份、经历、关系、目的、听众和当下场景控制称呼、敬语、语气词、方言、隐瞒与潜台词，并检查关键台词是否被听者承接、动作是否真正改变互动。
 5. **物理世界审核**：使用容量、占用、可达性、移动过程和状态转换等通用规则，识别瞬移、重复占位和缺少过渡的状态变化。
 6. **可执行审查**：`lint`、`fix`、`verify`、`stats` 和 `pipeline` 可执行确定性检查与多阶段审稿，不把所有能力都伪装成程序算法。
 7. **分块文风统一**：`chunk-audit` 用已认可文风基准和大纲/账本拆分超长小说或报告，检查跨月、跨模型版本的文风、人物对白、术语和章节功能漂移。
@@ -41,6 +41,7 @@
 ```powershell
 human-writing-skills humanize --draft article.md --style self-media --mode quick
 human-writing-skills build --style fiction --context ledger.md --task "续写下一章"
+human-writing-skills build --style fiction --context ledger.md --task "续写两人重逢后的试探场景"
 human-writing-skills build --style fiction --reference sample.md --task "参考样文的节奏写新场景"
 human-writing-skills audit --draft chapter.md --context ledger.md --profile physical
 human-writing-skills audit --draft chapter.md --profile voice
