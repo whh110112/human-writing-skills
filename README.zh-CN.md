@@ -119,7 +119,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | `logic-causality-audit` | 检查因果、时间线、知识来源、动机、规则、资源和后果断裂 |
 | `character-consistency-audit` | 检查人物目标、声音、能力、边界、知识和转变是否有过渡 |
 | `dialogue-voice-audit` | 按人物基线与情境生成并审核对白，检查关键回合是否得到语言、动作、沉默或延迟回应 |
-| `dialogue-performance-audit` | 检查关键对白的听者承接、动作是否有功能、对白落点与下一步状态，避免万能动作和风景垫句 |
+| `dialogue-performance-audit` | 复用对白模块的回应图，检查动作是否真正改变互动，而不是万能动作或风景垫句 |
 | `speech-register-continuity` | 有明确证据时检查人物语言、方言经历、敬语、语气词、称谓和切换依据 |
 | `capability-state-audit` | 检查战力、技能、权限、装备、伤势、资源、冷却、克制与变化过程 |
 | `serial-reentry` | 有前章或账本时，检查前情倾倒、遗漏承接和章节状态重置 |
@@ -138,7 +138,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | `cliche-phrase-audit` | 论坛常吐槽的塑料套话、万能身体动作、空洞情绪标签和死转场 |
 | `formulaic-structure-audit` | 过于整齐的三连式、双向“不是/是”对举、连续“比”比较和每段干净收束 |
 | `prose-progress-audit` | 段落没有新增状态，或关键台词/动作尚未被接收就切换话题与场景 |
-| `narrative-naturalness-audit` | 只在深度/显式 AI 痕迹审查中检查重复场景配方、抽象情绪复现、段落漂亮收束和对话无承接 |
+| `narrative-naturalness-audit` | 只在深度/显式 AI 痕迹审查中检查六拍以上反复出现的场景配方与开场/收束节拍 |
 | `earned-ending-audit` | 检查反思式尾句、风景渐隐、伪收束、套路 kicker 和最后有效变化之后的无意义升华 |
 | `imperfect-prose` | 文字太干净、太对称、太像统一润色 |
 | `vocal-rhythm` | 朗读时节奏单调、缺少呼吸点 |
@@ -147,7 +147,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | `spatial-blocking` | 防止车内、房间、电梯等狭小空间里人物瞬移 |
 | `occupancy-capacity` | 检查座位、长椅、床、板凳、过道等物理资源是否超容量或形态不明 |
 | `appearance-prop-continuity` | 防止服装、鞋子、道具、伤口等日常细节漂移 |
-| `physical-continuity-audit` | 输出前检查座位、站位、移动过渡、服装道具一致性 |
+| `physical-continuity-audit` | 可选的轻量人工清单；不要与法医式物理 Profile 同时使用 |
 | `proofreading-audit` | 最后检查错漏字、谓词必需成分、悬空连接词、指代、标点、称谓和排版 |
 | `style-matrix` | 避免把一种“人类口吻”套到所有文体上 |
 | `editor-loop` | 建立挑剔编辑式的审查与局部重写流程 |
@@ -156,7 +156,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | `rewrite-fidelity` | 提供原文时检查意义漂移、凭空具体化、正反颠倒和不确定性变化 |
 | `voice-ambiguity-preservation` | 防止过度清洗抹掉有意义的含混、重复、意象、迟疑、潜台词和人物口吻 |
 | `humanize-examples` | 仅在明确要求时加载的改写前后示例库，不作为事实来源或默认范文 |
-| `surface-pattern-audit` | 按文体审查表层模式、装饰性连续比较和叙事小标题，但不全局封禁句式 |
+| `surface-pattern-audit` | 按文体审查表层格式、假范围、词汇轮换和叙事小标题，但不全局封禁句式 |
 | `protected-content` | 防止润色时误改数字、引文、公式、链接、代码、原话和指定术语 |
 | `source-grounding` | 严肃文本有明确来源时，核对主张、出处、适用范围和不确定性 |
 
@@ -328,7 +328,7 @@ human-writing-skills audit `
 
 ## 物理连续性
 
-如果写车内、房间、电梯、餐桌、病房等空间关系很重要的场景，使用 `--strict-continuity`。它会自动加入容量、空间调度、服装道具等生成约束；成稿法医式物理审查由 `audit --profile physical` 负责。
+如果写车内、房间、电梯、餐桌、病房等空间关系很重要的场景，使用 `--strict-continuity`。它会自动加入容量、空间调度、服装道具等生成约束；成稿法医式物理审查由 `audit --profile physical` 单独负责，在一张证据账本里统一判断容量、站位、服装、道具、障碍、触达和身体状态。
 
 ```powershell
 python -m humanwriting.cli build `
@@ -409,7 +409,7 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
 对白模块不按职业套口吻，而是检查稳定语言基线、现实利益、知识边界、当场目标、回应
-关系和有功能的动作落点；语言身份、语气词、敬语与变调依据交给
+关系和有功能的动作落点。`dialogue-voice-audit` 独占“回应义务/互动债务”，`dialogue-performance-audit` 只检查已选动作是否有互动功能；语言身份、语气词、敬语与变调依据交给
 `speech-register-continuity`，战力与资源状态交给 `capability-state-audit`。
 `serial-reentry` 只有提供前章或账本
 时才可使用；`momentum` 只审多章稿件的入场压力、变化、回报和章尾承接；`texture`
@@ -570,9 +570,9 @@ python -m humanwriting.cli build `
 - `relationship-stance-audit`：检查说话人、听话人、被提及第三方之间的关系立场、秘密和信息权限
 - `cliche-phrase-audit`：检查高频套话、塑料身体动作、空洞情绪标签和万能转场
 - `formulaic-structure-audit`：检查三连式、双向对举、连续“比”比较和每段都收束得太完整的公式结构
-- `surface-pattern-audit`：按文体检查意义拔高、模糊归因、假范围、词汇轮换、排版套路和装饰性连续比较
+- `surface-pattern-audit`：按文体检查意义拔高、模糊归因、假范围、词汇轮换、排版套路和叙事小标题
 - `prose-progress-audit`：检查每段是否真的推进了事实、关系、证据、动作或压力
-- `narrative-naturalness-audit`：只在深度或显式 AI 痕迹审查中检查重复场景配方、空泛感受词复现、漂亮收束和对白无承接；普通 quick 不加载
+- `narrative-naturalness-audit`：只在深度或显式 AI 痕迹审查中检查六拍以上重复的场景配方与开场/收束节拍；局部套话、结构和对白承接分别交给其主责模块；普通 quick 不加载
 - `natural-measurement`：小说、网文和自媒体中检查不合语境的假精确数字
 
 `--strict-continuity` 会自动加入：
@@ -581,7 +581,7 @@ python -m humanwriting.cli build `
 - `occupancy-capacity`：物理资源容量、形态、占用者和转换过渡检查
 - `appearance-prop-continuity`：服装、鞋子、道具、伤口和身体状态检查
 
-需要成稿物理状态矛盾审查时使用 `audit --profile physical`。
+需要成稿物理状态矛盾审查时使用 `audit --profile physical`。`physical-continuity-audit` 只是轻量人工清单，不能与该法医式 Profile 同时使用。
 
 运行测试：
 

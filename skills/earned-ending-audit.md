@@ -8,10 +8,11 @@ real reflection and quiet endings when they change meaning; remove ornamental cl
 
 ## Activation
 
-Use for scene or chapter generation, explicit ending review, deep humanization, or an
-AI-trace audit. It applies across languages and genres, but the exit contract changes by
-document type. Do not force suspense, action, ambiguity, or a picturesque final image
-into every ending.
+Use only when the user selects the `ending` audit profile or explicitly requests an
+ending review. AI-trace, prose-progress, and narrative-naturalness passes may identify
+an ending candidate, but they do not load this full tail audit automatically. It applies
+across languages and genres, but the exit contract changes by document type. Do not force
+suspense, action, ambiguity, or a picturesque final image into every ending.
 
 ## Last Meaningful Change Test
 

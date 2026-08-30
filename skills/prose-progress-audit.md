@@ -59,7 +59,8 @@ carries the debt into the next relevant beat.
    changing its evidence, owner, consequence, or interpretation.
 6. If the passage is an expansion, compare added attention with added state change.
    Route scene-level word-allocation problems to `attention-budget-audit`.
-7. Route zero-progress terminal reflection or scenery to `earned-ending-audit`.
+7. Mark zero-progress terminal reflection or scenery as a candidate for the optional
+   `ending` profile; do not duplicate that profile's full tail classification here.
 
 ## Output Check
 

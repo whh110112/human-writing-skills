@@ -1,10 +1,15 @@
-# Physical Continuity Audit Skill
+# Physical Continuity Quick Checklist
 
 ## Aim
 
-Run a hard continuity check for spatial position, movement, clothing, props, and body state before final output.
+Run a compact final checklist for spatial position, movement, clothing, props, and body state.
 
-For already-written drafts, prefer `forensic-physical-audit`. This skill is still useful as a final pass, but forensic review is stricter because it requires evidence tables before judgment.
+For an already-written draft that needs a real contradiction verdict, use
+`forensic-physical-audit` instead. It owns evidence extraction and the complete
+physical-state ledger. Do not combine this quick checklist with the forensic audit.
+
+Use this module only when the user explicitly asks for a light final scan and does
+not need the forensic evidence table. It is not part of the `physical` audit profile.
 
 ## Audit Procedure
 

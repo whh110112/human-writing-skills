@@ -4,6 +4,10 @@
 
 Locate machine-shaped prose and rank repairs.
 
+One span, one owner: `cliche` = stock wording; `formulaic` =
+contrast/structure; `surface` = format/range/headings; `prose-progress` =
+stasis/uptake; `narrative-naturalness` = six-plus-beat recipe.
+
 Score each dimension from 0 to 3:
 
 - 0: not a problem
@@ -18,14 +22,14 @@ Score each dimension from 0 to 3:
 | Cognitive smoothness | Every transition is safe and complete | Add doubt, drift, or fragile inference |
 | Generic diction | Sentences fit any topic | Use specific objects, places, actions, or voice |
 | Cliche phrase cluster | Stock phrases, cues, or transitions recur | Use scene evidence, specific action, or plain speech |
-| Formulaic structure | Neat threes, repeated contrast frames, chained "比", identical cadence | Keep necessary distinctions; use direct evidence, one comparison criterion, and asymmetry |
+| Formulaic structure | Neat threes, repeated contrast frames, chained "比", identical cadence | Use owner evidence |
 | Polished stagnation | Paragraphs restate one premise | Cut, merge, or change the state |
 | Emotional flatness | Emotion is named, not embodied | Use action, body signal, sensation, or contradiction |
 | Rhythm monotony | One speed throughout | Vary breath, brakes, and cadence |
 | Context drift | Facts, stakes, or timeline blur | Obey the ledger |
 | Relationship stance drift | A reference conflicts with speaker, listener, or audience | Audit the triad; motivate, code, redirect, or add consequence |
 | Weak beat bridge | Adjacent beats do not cause each other | Carry residue into a turn and exit pressure |
-| Orphaned interaction | Consequential speech or action gets no uptake | Add speech, action, silence, interruption, or deferral |
+| Orphaned interaction | Consequential speech or action gets no uptake | Use owner evidence |
 | Relationship reset | Trust, secrets, boundaries, or leverage reset | Track knowledge, wants, debts, refusals, and exit rights |
 | False precision | Unmeasured micro-actions get exact numbers | Keep useful facts; use felt or plot-relevant scale elsewhere |
 | Physical drift | Position, clothing, props, or injuries jump | Restore state or a change gate |
@@ -46,4 +50,4 @@ AI Trace Review
 
 ## Revision Check
 
-Never optimize all dimensions to zero if the genre needs friction. The goal is a convincing human voice, not sterile perfection.
+Keep genre-valid friction; do not optimize every dimension to zero.

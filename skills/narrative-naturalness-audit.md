@@ -10,29 +10,24 @@ keep it out of quick humanization. Audit quality, not scores.
 Across at least six neighboring beats, flag recurrence rather than one word:
 
 - entry bundle: `time/weather -> place/light -> appearance -> generalized feeling`
-- abstract affect: “说不清”, “莫名”, “某种感觉”, “一丝/一股/那点” and equivalents
 - polished image endings replacing action, object, or change
 - reflective/scenic bookends after the last earned change
-- identical cadence and repeated contrast/comparison frames
+- recurrence of the same entry, closure, and cadence recipe across the window
 
-For each consequential line or threat:
-
-1. Name who is affected and what choice changed.
-2. Find uptake: reply, movement, reaction, silence, interruption, or delay.
-3. If subject, time, or scenery changes first, flag an orphan.
-4. Repair with the smallest pressure-changing response; do not force small-talk replies.
-
-"He said" is attribution, not response; the listener or scene must receive pressure.
+Stock affect phrases belong to `cliche-phrase-audit`, contrast/comparison structures
+belong to `formulaic-structure-audit`, and abandoned consequential uptake belongs to
+`prose-progress-audit`. Do not re-report their local evidence here.
 
 ## Repair
 
 - Use selective viewpoint details, not an equal-clarity scan.
 - Allow earned misreading, revision, and open questions.
 - Let paragraphs end on material change, interruption, or unresolved choice.
-- At scene exits, use `earned-ending-audit`; do not trade reflection for a stock cliffhanger.
+- At scene exits, flag a candidate for the optional `ending` profile; do not simulate a
+  separate ending audit or trade reflection for a stock cliffhanger.
 - Put evidence before interpretation; vary paragraph functions.
 - Never insert typos, fake dialect, arbitrary jumps, or vulgarity to move a score;
   preserve motifs, ambiguity, and a stable voice.
 
-Repair order: restore uptake; break entry/closure recipes; replace abstract labels with
-owned perception, action, or consequence; vary cadence; then re-run continuity and proofread.
+Repair order: break the recurring entry/closure recipe; restore one scene-specific
+perception, action, or consequence; vary cadence; then re-run continuity and proofread.

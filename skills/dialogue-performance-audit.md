@@ -17,14 +17,16 @@ academic prose, or formal documents.
 
 ## Interaction Map
 
+`dialogue-voice-audit` owns response obligation and interaction debt. Use its
+speaker/response map rather than rebuilding it. This module owns whether a selected
+visible beat earns its place in that established exchange.
+
 For a consequential beat, trace only the links the scene needs:
 
 ```text
-pressure or offer -> listener uptake -> chosen visible beat -> changed option or residue
+established uptake -> chosen visible beat (if needed) -> changed option or residue
 ```
 
-- The uptake may be a reply, refusal, evasion, counter, pause, movement, touch,
-  attention shift, interruption, or explicitly carried debt.
 - A visible beat earns its place when it accepts, resists, conceals, tests,
   repositions, interrupts, grants, withdraws, reveals, or delays something.
 - A line does not need an action after it. Greetings, banter, a clean answer, and
@@ -37,9 +39,7 @@ pressure or offer -> listener uptake -> chosen visible beat -> changed option or
 1. Before the exchange, identify the current pressure, each person's immediate
    aim, what either person is willing to show, and the scene's usable objects,
    distance, witnesses, exits, and physical limits from the context.
-2. Give important turns a listener. After an offer, boundary test, disclosure,
-   accusation, contact, or refusal, land a readable uptake before changing topic,
-   time, viewpoint, or scene unless an interruption deliberately carries the debt.
+2. Use the listener uptake already established by `dialogue-voice-audit`.
 3. Choose one concrete performance beat only when it changes the interaction.
    A hand staying on a door, a chair left empty, a phone turned face-down, or a
    step withheld can do work; a low voice, a faint smile, weather, clothing, or
@@ -59,7 +59,7 @@ pressure or offer -> listener uptake -> chosen visible beat -> changed option or
 For representative exchanges, map:
 
 ```text
-turn -> pressure -> listener uptake -> performance beat -> changed state or carried debt
+turn -> established uptake -> performance beat -> changed state
 ```
 
 Flag only evidence-backed issues:
@@ -88,9 +88,8 @@ state impossible to follow.
 Dialogue Performance Audit
 - Scene pressure and usable physical context:
 - Turn and listener:
-- Required uptake: none / immediate / deliberately deferred / interrupted
-- Actual landing beat and state change:
-- Confirmed problem: abandoned pressure / cosmetic beat / tag rhythm / explained subtext / continuity conflict
+- Inherited uptake and actual performance beat:
+- Confirmed problem: cosmetic beat / tag rhythm / explained subtext / continuity conflict
 - Evidence and confidence:
 - Minimal repair and insertion point:
 ```

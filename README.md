@@ -130,7 +130,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `logic-causality-audit` | cause, timeline, knowledge, motive, rule, resource, and consequence failures |
 | `character-consistency-audit` | character goal, voice, competence, boundary, knowledge, and change-gate drift |
 | `dialogue-voice-audit` | character-fit dialogue plus verbal, physical, silent, interrupted, or deferred uptake for consequential turns |
-| `dialogue-performance-audit` | consequential dialogue that needs a purposeful physical beat, readable listener uptake, and an earned landing rather than decorative gestures |
+| `dialogue-performance-audit` | uses the voice audit's response map to test whether a physical beat changes the exchange rather than decorating it |
 | `speech-register-continuity` | evidence-backed language, dialect exposure, honorifics, particles, address, and switch gates |
 | `capability-state-audit` | power, skill, authority, equipment, injury, resources, cooldowns, counters, and transitions |
 | `serial-reentry` | recap dumps and chapter resets when prior chapters or a ledger are supplied |
@@ -149,7 +149,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `cliche-phrase-audit` | stock phrases, generic body cues, empty emotion labels, and dead transitions |
 | `formulaic-structure-audit` | triplets, bidirectional contrast frames, chained comparisons, and overly neat closure |
 | `prose-progress-audit` | static paragraphs and pressure-bearing interactions abandoned before uptake or explicit deferral |
-| `narrative-naturalness-audit` | in deep or explicit AI-trace review, catches repeated scene recipes, vague-affect recurrence, polished paragraph closures, and orphaned dialogue |
+| `narrative-naturalness-audit` | in deep or explicit AI-trace review, catches recurring six-beat scene recipes and copied entry/closure cadence |
 | `earned-ending-audit` | reflective bookends, scenic dissolves, false closure, stock kickers, and conclusions added after the last meaningful change |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
@@ -158,7 +158,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `spatial-blocking` | character teleportation and confused front/back/left/right blocking |
 | `occupancy-capacity` | over-occupied or mode-ambiguous seats, benches, beds, stools, aisles, and surfaces |
 | `appearance-prop-continuity` | clothing, shoes, props, injuries, and daily-detail drift |
-| `physical-continuity-audit` | final checks for position, movement gates, wardrobe, and props |
+| `physical-continuity-audit` | optional light manual checklist; do not combine with the forensic physical profile |
 | `proofreading-audit` | final omissions, predicate slots, stranded connectors, references, punctuation, naming, and layout |
 | `style-matrix` | the mistake of applying one generic "human voice" to every genre |
 | `editor-loop` | one-shot drafting without a critical human-editor pass |
@@ -167,7 +167,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `rewrite-fidelity` | meaning drift, invented specificity, reversed polarity, and altered uncertainty when an original is supplied |
 | `voice-ambiguity-preservation` | over-clean rewrites that erase useful ambiguity, repetition, motifs, hesitation, subtext, or speaker markers |
 | `humanize-examples` | an explicit-only before/after repair library; never loaded as a source or default style sample |
-| `surface-pattern-audit` | recurrent surface patterns, decorative comparison ladders, and narrative mini-headings without global bans |
+| `surface-pattern-audit` | recurrent formatting, false ranges, synonym cycling, and narrative mini-headings without global bans |
 | `protected-content` | accidental changes to numbers, citations, equations, URLs, code, quotes, and required terms |
 | `source-grounding` | claim-to-source checks for serious documents with explicit factual sources |
 
@@ -334,7 +334,7 @@ Yes, this project works in Chatbox because it outputs plain text prompt packs. F
 
 ## Physical Continuity
 
-For scenes where space matters, such as cars, elevators, hospital rooms, dining tables, and bedrooms, use `--strict-continuity`. It adds occupancy, spatial blocking, and appearance/prop generation guards. Use `audit --profile physical` for a forensic pass on an existing draft.
+For scenes where space matters, such as cars, elevators, hospital rooms, dining tables, and bedrooms, use `--strict-continuity`. It adds occupancy, spatial blocking, and appearance/prop generation guards. Use `audit --profile physical` for one evidence-first forensic pass on an existing draft; it owns capacity, blocking, appearance, props, barriers, reach, and body-state contradictions in one ledger.
 
 ```powershell
 python -m humanwriting.cli build `
@@ -424,7 +424,7 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 ```
 
 The dialogue modules model baseline speech, practical incentives, knowledge limits,
-scene goals, response linkage, and purposeful performance beats without treating a job as a personality. Use
+scene goals, response linkage, and purposeful performance beats without treating a job as a personality. `dialogue-voice-audit` owns response obligation and deferred interaction debt; `dialogue-performance-audit` only tests whether a selected physical beat earns its place. Use
 `speech-register-continuity` for evidence-backed language identity, particles,
 honorifics, and code-switching; use `capability-state-audit` for power and resource
 state. Use `serial-reentry` only with
@@ -594,9 +594,9 @@ The `--deep-review` flag adds the compact review plus:
 - `relationship-stance-audit`: check speaker, listener, referenced party, secrecy, stance, rank, and audience permissions
 - `cliche-phrase-audit`: check stock phrases, generic body cues, empty emotion labels, and dead transitions
 - `formulaic-structure-audit`: check triplets, bidirectional contrasts, chained comparisons, and paragraphs that close too neatly
-- `surface-pattern-audit`: check recurring significance, attribution, range, lexical, formatting, and decorative comparison patterns in genre context
+- `surface-pattern-audit`: check recurring significance, attribution, range, lexical, formatting, and mini-heading patterns in genre context
 - `prose-progress-audit`: check whether each paragraph advances facts, relationships, evidence, action, or pressure
-- `narrative-naturalness-audit`: in deep or explicit AI-trace review, check repeated scene-entry recipes, vague-affect recurrence, polished paragraph endings, and orphaned dialogue
+- `narrative-naturalness-audit`: in deep or explicit AI-trace review, check recurring scene-entry/closure recipes across six or more beats; local phrase, structure, and uptake findings stay with their owning modules
 - `natural-measurement`: check false precision in fiction, webnovels, and self-media
 
 The `--strict-continuity` flag adds:
@@ -605,7 +605,7 @@ The `--strict-continuity` flag adds:
 - `occupancy-capacity`: physical resource mode, capacity, occupancy, and transformation checks
 - `appearance-prop-continuity`: clothing, shoes, props, and body-state checks
 
-Use `audit --profile physical` for the final physical-state contradiction pass.
+Use `audit --profile physical` for the final physical-state contradiction pass. The optional `physical-continuity-audit` is a light manual checklist and cannot be combined with this forensic profile.
 
 Run tests:
 

@@ -24,9 +24,9 @@
 | 扩写越长越水，关键过程反而越短 | 注意力花在环境、心理和语义复述上 | `attention-budget-audit` |
 | 每章换了词，但开场、转折和钩子都一样 | 章节功能顺序形成重复模板 | `chapter-pattern-audit` |
 | 每个场景都用风景、沉默、反思或人生感悟收尾 | 真正的结尾已经发生，后补尾巴没有改变任何状态，只在模拟余味 | `earned-ending-audit`, 确定性 `END001` |
-| 长文越写越忘 | 没有维护事实账本、关系状态、空间状态和伏笔 | `relationship-state`, `spatial-blocking`, `physical-continuity-audit` |
+| 长文越写越忘 | 没有维护事实账本、关系状态、空间状态和伏笔 | `relationship-state`, `spatial-blocking`, `forensic-physical-audit` |
 | 动作描写里充满精确数字 | 把感官经验写成测量报告 | `natural-measurement` |
-| 反复“不是……是……”“是……不是……”或连续“比……比……” | 用对举和升级框架代替证据、动作与真实判断 | `formulaic-structure-audit`, `cliche-phrase-audit` |
+| 反复“不是……是……”“是……不是……”或连续“比……比……” | 用对举和升级框架代替证据、动作与真实判断 | `formulaic-structure-audit` |
 | 句子读着顺但漏了字、宾语或连接成分 | 生成后没有做谓词槽位、并列结构和指代回查 | `proofreading-audit`, deterministic `lint` |
 
 ## 模块如何使用

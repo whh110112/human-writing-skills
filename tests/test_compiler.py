@@ -527,8 +527,10 @@ class CompilerTests(unittest.TestCase):
             prompt = compile_audit_prompt(str(draft), number_sense=True)
         self.assertIn("Audit Directive", prompt)
         self.assertIn("Audit Module: forensic-physical-audit", prompt)
-        self.assertIn("Audit Module: occupancy-capacity", prompt)
-        self.assertIn("Audit Module: spatial-blocking", prompt)
+        self.assertNotIn("Audit Module: occupancy-capacity", prompt)
+        self.assertNotIn("Audit Module: spatial-blocking", prompt)
+        self.assertNotIn("Audit Module: appearance-prop-continuity", prompt)
+        self.assertNotIn("Audit Module: physical-continuity-audit", prompt)
         self.assertIn("Audit Module: relationship-stance-audit", prompt)
         self.assertIn("Audit Module: cliche-phrase-audit", prompt)
         self.assertIn("Audit Module: formulaic-structure-audit", prompt)
@@ -541,6 +543,39 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Draft To Audit", prompt)
         self.assertIn("behind the glass", prompt)
         self.assertIn("flats, then heels", prompt)
+
+    def test_physical_profile_has_one_forensic_owner(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("她坐在后排，鞋跟碰到了地垫。", encoding="utf-8")
+            prompt = compile_audit_prompt(str(draft), profiles=["physical"])
+        self.assertIn("Audit Module: forensic-physical-audit", prompt)
+        self.assertNotIn("Audit Module: occupancy-capacity", prompt)
+        self.assertNotIn("Audit Module: spatial-blocking", prompt)
+        self.assertNotIn("Audit Module: appearance-prop-continuity", prompt)
+        self.assertNotIn("Audit Module: physical-continuity-audit", prompt)
+
+    def test_light_physical_checklist_suppresses_default_forensic_profile(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("她坐在后排，鞋跟碰到了地垫。", encoding="utf-8")
+            prompt = compile_audit_prompt(
+                str(draft),
+                modules=["physical-continuity-audit"],
+            )
+        self.assertIn("Audit Module: physical-continuity-audit", prompt)
+        self.assertNotIn("Audit Module: forensic-physical-audit", prompt)
+
+    def test_light_and_forensic_physical_audits_cannot_be_combined(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("她坐在后排。", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "do not combine"):
+                compile_audit_prompt(
+                    str(draft),
+                    modules=["physical-continuity-audit"],
+                    profiles=["physical"],
+                )
 
     def test_no_strict_continuity_removes_all_physical_audits(self):
         with TemporaryDirectory() as directory:
@@ -614,6 +649,37 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Interaction Progress Test", prompt)
         self.assertIn("orphaned pressure-bearing interactions", prompt)
         self.assertNotIn("Audit Module: dialogue-voice-audit", prompt)
+
+    def test_ai_trace_modules_keep_one_owner_per_pattern_family(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("这不是雨，是命运。比夜更黑，比梦更冷。", encoding="utf-8")
+            prompt = compile_audit_prompt(
+                str(draft),
+                profiles=["ai-trace"],
+                document_type="fiction",
+            )
+        self.assertIn("One span, one owner", prompt)
+        self.assertIn("formulaic-structure-audit", prompt)
+        self.assertIn("Do not report them again here", prompt)
+        self.assertNotIn("Comparison ladders:", load_skill("cliche-phrase-audit").content)
+        self.assertNotIn(
+            "repeated contrast, comparison, rhetorical setup",
+            load_skill("surface-pattern-audit").content,
+        )
+
+    def test_dialogue_performance_consumes_voice_response_map(self):
+        voice = load_skill("dialogue-voice-audit").content
+        performance = load_skill("dialogue-performance-audit").content
+        self.assertIn("Response Obligation And Interaction Debt", voice)
+        self.assertIn("owns response obligation and interaction debt", performance)
+        self.assertIn("Use the listener uptake already established", performance)
+        self.assertNotIn("Required uptake: none / immediate", performance)
+
+    def test_ending_module_is_explicitly_gated_in_its_own_contract(self):
+        ending = load_skill("earned-ending-audit").content
+        self.assertIn("selects the `ending` audit profile", ending)
+        self.assertIn("do not load this full tail audit automatically", ending)
 
     def test_logic_character_and_proofread_profiles_are_isolated(self):
         with TemporaryDirectory() as directory:

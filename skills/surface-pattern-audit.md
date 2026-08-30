@@ -13,7 +13,6 @@ out of ordinary generation unless the user asks for this pass.
 - decorative present-participle analysis and elaborate substitutes for simple verbs
 - false ranges whose endpoints do not share one scale
 - synonym cycling that renames one person or object to avoid natural repetition
-- repeated contrast, comparison, rhetorical setup, or negative-list reveal frames
 - formatting that performs empty emphasis: dense bold labels, decorative emoji,
   repeated inline headings, or uniform punch-line endings
 - fiction or webnovels divided by unrequested time, place, mood, or action mini-headings,
@@ -25,10 +24,8 @@ Do not ban a word, passive construction, dash, heading, or repetition by itself.
 Flag a pattern only when it recurs, obscures agency, replaces evidence, breaks the
 genre, or makes several sentences perform the same rhetorical move.
 
-For repeated Chinese `比` clauses, preserve sourced or logically necessary comparison.
-In narrative or reflective prose, keep one comparison axis and one decisive image;
-rewrite decorative ladders from the observed consequence. Never delete a clause if
-doing so removes a distinct fact.
+Repeated contrast, comparison, rhetorical setup, and negative-list reveal frames
+belong to `formulaic-structure-audit`. Do not report them again here.
 
 In narrative prose, preserve true work and chapter titles. Allow headings when the
 requested form is explicitly sectional, epistolary, documentary, log-based, or

@@ -32,7 +32,10 @@ python -m humanwriting.cli audit `
 - `occupancy-capacity`
 - `appearance-prop-continuity`
 
-`physical-continuity-audit` and the stricter evidence-first `forensic-physical-audit` load under `audit --profile physical`, keeping generation prompts smaller.
+`audit --profile physical` loads one evidence-first `forensic-physical-audit`. It owns
+capacity, blocking, appearance, props, barriers, reach, and body-state contradictions
+in a single ledger. `physical-continuity-audit` remains an optional light manual
+checklist and must not be combined with the forensic profile.
 
 ## What To Track
 

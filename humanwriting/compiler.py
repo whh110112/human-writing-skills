@@ -91,11 +91,8 @@ RELATIONSHIP_AUDIT_MODULES = [
 ]
 PHYSICAL_AUDIT_MODULES = [
     "forensic-physical-audit",
-    "occupancy-capacity",
-    "spatial-blocking",
-    "appearance-prop-continuity",
-    "physical-continuity-audit",
 ]
+LIGHT_PHYSICAL_AUDIT_MODULE = "physical-continuity-audit"
 LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
 VOICE_AUDIT_MODULES = ["dialogue-voice-audit", "dialogue-performance-audit"]
@@ -420,6 +417,8 @@ def compile_audit_prompt(
     auto_protect: bool = True,
 ) -> str:
     selected_modules = load_many(modules or [])
+    selected_names = {module.name for module in selected_modules}
+    light_physical_requested = LIGHT_PHYSICAL_AUDIT_MODULE in selected_names
     draft = read_optional(draft_path)
     context = read_optional(context_path)
     requested_profiles = set(profiles or ["full"])
@@ -459,8 +458,13 @@ def compile_audit_prompt(
         raise ValueError("The sources profile requires one or more --source files.")
     if "sources" in requested_profiles and not serious_document:
         raise ValueError("The sources profile is limited to serious academic, formal, news, legal, or technical documents.")
+    if "physical" in requested_profiles and light_physical_requested:
+        raise ValueError(
+            "The physical profile already uses forensic-physical-audit; "
+            "do not combine it with physical-continuity-audit."
+        )
     physical_enabled = "physical" in requested_profiles or (
-        "full" in requested_profiles and strict_continuity
+        "full" in requested_profiles and strict_continuity and not light_physical_requested
     )
     relationship_enabled = bool(requested_profiles & {"full", "relationship"})
     ai_trace_enabled = bool(requested_profiles & {"full", "ai-trace"})

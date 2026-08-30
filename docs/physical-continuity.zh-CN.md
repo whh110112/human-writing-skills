@@ -40,7 +40,7 @@ python -m humanwriting.cli audit `
 - `occupancy-capacity`
 - `appearance-prop-continuity`
 
-`physical-continuity-audit` 和证据表更严格的 `forensic-physical-audit` 只在 `audit --profile physical` 中加载，避免挤占正文生成的上下文。
+`audit --profile physical` 只加载证据表更严格的 `forensic-physical-audit`，在一张账本中统一判断容量、空间调度、服装、道具、障碍、触达和身体状态。`physical-continuity-audit` 保留为可选的轻量人工清单，不能与该法医式 Profile 同时使用。
 
 ## 必须记录什么
 
