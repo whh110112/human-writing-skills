@@ -10,7 +10,7 @@ writing style unification, and character consistency review.
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
 
-[中文说明](README.zh-CN.md) | English
+[中文说明](README.zh-CN.md) | English | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Français](README.fr.md)
 
 Advanced Human Writing & AI Humanizer is an open-source, modular skill pack and lightweight prompt compiler for natural multilingual AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
 
@@ -496,6 +496,32 @@ approve or correct it during baseline extraction. Reference prose supplies style
 outline or ledger for character canon and permits earned development; serious reports
 protect facts, numbers, terminology, attribution, and conclusion scope. Default body,
 context, and baseline budgets keep the workflow usable on smaller-context models.
+
+### Verified Agent Review For Long Documents
+
+Add `--agent-mode deep` when coverage matters more than token cost. It writes an explicit
+task graph in `agent-plan.json`, requires a Coverage Receipt from every reviewer, and
+reserves report paths under `reports/`. After the baseline is approved, tasks that depend
+only on `baseline` may run in parallel in fresh model conversations or API calls.
+
+```powershell
+human-writing-skills chunk-audit `
+  --draft full-novel.md `
+  --style fiction `
+  --outline novel-outline.md `
+  --agent-mode deep `
+  --output-dir novel-agent-audit
+
+human-writing-skills verify-chunk-audit `
+  --package-dir novel-agent-audit
+```
+
+Do not run `9999-reconcile-prompt.md` until verification reports complete coverage. Deep
+mode adds a paragraph-level prose pass for every block, a dialogue pass only where dialogue
+exists, and an evidence pass only for serious documents with explicit `--source` files.
+Standard mode remains one complete audit per unique block. For an explicitly translated or
+localized long document, add `--translationese`; it never activates merely because the text
+uses another language.
 
 - Guide: [docs/long-form-consistency.md](docs/long-form-consistency.md)
 

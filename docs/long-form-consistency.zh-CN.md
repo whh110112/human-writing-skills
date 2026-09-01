@@ -50,9 +50,39 @@ human-writing-skills chunk-audit `
 - `0001-chunk-audit.md` 等：逐块独立审查。块首带少量只读前文，避免断裂但不重复计数。
 - `9999-reconcile-prompt.md`：汇总跨块文风漂移、人物对白变化、术语变化和有效演变。
 - `manifest.json`：记录每块的唯一正文范围、只读衔接范围和基准来源。
+- `agent-plan.json`：记录可独立运行的审查任务、依赖关系和报告落点。
+- `reports/`：保存基准、分块、专项审查和最终汇总报告。
 
 按 `00-baseline`、编号分块、`9999-reconcile` 的顺序运行。每个编号分块可以放入新的模型
 会话或独立 API 请求；把已经确认的基准合同一并提供即可，不需要让模型记住整部作品。
+
+## 可验证的并行 Agent 审查
+
+普通模式每个正文块只生成一个完整审查任务。若担心模型在长文中偷懒、略过后半段，显式使用
+`--agent-mode deep`：
+
+```powershell
+human-writing-skills chunk-audit `
+  --draft full-novel.md `
+  --style fiction `
+  --outline novel-outline.md `
+  --agent-mode deep `
+  --output-dir novel-agent-audit
+```
+
+先完成并确认基准任务。之后，只依赖 `baseline` 的任务可以放进不同的新模型会话或独立 API
+请求并行执行。每份结果都必须保存到 `agent-plan.json` 规定的位置，并保留 Coverage Receipt：
+任务 ID、审查范围、实际检查单元、发现项和未检查/阻塞内容。它不是“模型肯定审对了”的证明，
+而是一份可见的覆盖合同，能让漏审的分块暴露出来。
+
+```powershell
+human-writing-skills verify-chunk-audit --package-dir novel-agent-audit
+```
+
+只有验证不再报告缺失或无效回执后，才能进行最终汇总。深度模式为每块增加逐段文风任务；只有
+存在对白才增加对白任务；只有严肃文体且明确提供 `--source` 时才增加来源证据任务。这样既避免
+全量激活，也避免把小说规则或资料来源塞进不相关任务。明确的翻译或本地化长文可加
+`--translationese`，普通多语言写作不会自动触发这项审查。
 
 ## 如何依托大纲保证人物统一
 

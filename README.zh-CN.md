@@ -9,7 +9,7 @@ AI 人性化改写、AI 文本润色、小说润色、小说续写、长篇分�
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
 
-中文说明 | [English](README.md)
+中文说明 | [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Français](README.fr.md)
 
 Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。它既可以作为去 AI 味工具和 AI 文章润色工具，也可以用于小说创作、长文续写与严肃文本审校。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
 
@@ -474,6 +474,29 @@ human-writing-skills chunk-audit `
 没有明确参考样文时，`--baseline-chunk` 只是候选基准，先在基准提取阶段确认或纠正；`--reference` 不会
 被当作剧情事实。小说人物设定由大纲/账本约束并允许有依据的成长，严肃报告则保护事实、
 数字、术语、归因和结论范围。默认每块约 8000 字符，大纲与基准均有独立预算，避免全量激活。
+
+### 长文 Agent 覆盖审查
+
+当需要确保全文没有被模型草草跳过时，显式加 `--agent-mode deep`。它会写入
+`agent-plan.json` 任务图，要求每个审查任务提交 Coverage Receipt，并在 `reports/` 下规定
+报告落点。基准报告确认后，所有只依赖 `baseline` 的任务可在不同的新会话或独立 API 请求中并行运行。
+
+```powershell
+human-writing-skills chunk-audit `
+  --draft full-novel.md `
+  --style fiction `
+  --outline novel-outline.md `
+  --agent-mode deep `
+  --output-dir novel-agent-audit
+
+human-writing-skills verify-chunk-audit `
+  --package-dir novel-agent-audit
+```
+
+只有覆盖验证通过后，才运行 `9999-reconcile-prompt.md`。深度模式会为每块增加逐段文风审查；
+仅在含对白的块增加对白审查；仅在提供 `--source` 的严肃文本中增加事实证据审查。普通
+`standard` 模式仍是每个唯一正文块一个完整审查任务。对明确的翻译或本地化长文可加
+`--translationese`；它不会因为正文使用西语、葡语、法语或其他语言就自动激活。
 
 - 详细说明：[docs/long-form-consistency.zh-CN.md](docs/long-form-consistency.zh-CN.md)
 

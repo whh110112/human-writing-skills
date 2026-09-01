@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .compiler import read_optional
 from .reference import build_reference_pack, sample_reference
+from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
 from .skills import list_style_skills, load_skill
 from .statistics import StyleStatistics, analyze_style_statistics, format_style_statistics
 
@@ -18,6 +19,7 @@ DEFAULT_BASELINE_BUDGET = 4000
 MIN_CHUNK_SIZE = 2000
 NARRATIVE_STYLES = {"fiction", "webnovel"}
 SERIOUS_STYLES = {"academic-paper", "formal-document", "news-report"}
+AGENT_MODES = {"standard", "deep"}
 DIALOGUE_PATTERN = re.compile(r"[\"“‘「『].{1,240}?[\"”’」』]", re.DOTALL)
 SPLIT_PATTERNS = (
     re.compile(r"\n\s*\n"),
@@ -53,6 +55,30 @@ class ChunkDiagnostic:
         data = asdict(self)
         data["candidate_drift"] = list(self.candidate_drift)
         return data
+
+
+@dataclass(frozen=True)
+class AgentTask:
+    """One independently runnable review task with an expected report receipt."""
+
+    task_id: str
+    kind: str
+    prompt: str
+    report: str
+    depends_on: tuple[str, ...] = ()
+    chunk_index: int | None = None
+    required_before_reconciliation: bool = True
+
+    def to_dict(self) -> dict:
+        return {
+            "task_id": self.task_id,
+            "kind": self.kind,
+            "prompt": self.prompt,
+            "report": self.report,
+            "depends_on": list(self.depends_on),
+            "chunk_index": self.chunk_index,
+            "required_before_reconciliation": self.required_before_reconciliation,
+        }
 
 
 def _preferred_split(text: str, start: int, target: int) -> int:
@@ -166,6 +192,108 @@ def _module_block(name: str) -> str:
     return f"# Audit Module: {name}\n\n{load_skill(name).content}"
 
 
+def _coverage_receipt(task_id: str, chunk: TextChunk | None = None) -> str:
+    scope = (
+        f"audited body `{chunk.start}:{chunk.end}`" if chunk else "the assigned package stage"
+    )
+    return (
+        "# Coverage Receipt\n\n"
+        f"- Task ID: `{task_id}`\n"
+        f"- Scope: {scope}\n"
+        "- Coverage: complete / blocked\n"
+        "- Units checked: list paragraph, section, claim, or dialogue-turn identifiers\n"
+        "- Confirmed findings: count and locations\n"
+        "- Unchecked or blocked material: none, or explain exactly why\n"
+    )
+
+
+def _write_agent_plan(output: Path, tasks: list[AgentTask], mode: str) -> None:
+    plan = {
+        "schema": 1,
+        "mode": mode,
+        "instructions": (
+            "Run baseline first. Tasks that share only the baseline dependency may run in "
+            "parallel in fresh model sessions. Save each response at its expected report path. "
+            "Run reconciliation only after every required report is present."
+        ),
+        "tasks": [task.to_dict() for task in tasks],
+    }
+    (output / "agent-plan.json").write_text(
+        json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+
+
+def verify_long_form_package(package_dir: str) -> dict:
+    """Check that external reviewers returned a non-empty receipt for every planned task."""
+
+    package = Path(package_dir)
+    plan_path = package / "agent-plan.json"
+    if not plan_path.is_file():
+        raise ValueError("Chunk audit package is missing agent-plan.json.")
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    tasks = plan.get("tasks")
+    if not isinstance(tasks, list) or not tasks:
+        raise ValueError("Chunk audit agent plan contains no tasks.")
+
+    complete: list[str] = []
+    missing: list[str] = []
+    invalid: list[str] = []
+    required_tasks = [task for task in tasks if task.get("required_before_reconciliation", True)]
+    for task in required_tasks:
+        task_id = task.get("task_id", "unknown")
+        report_value = task.get("report")
+        if not isinstance(report_value, str):
+            invalid.append(f"{task_id}: no report path")
+            continue
+        report_path = package / report_value
+        if not report_path.is_file():
+            missing.append(f"{task_id}: {report_value}")
+            continue
+        report = report_path.read_text(encoding="utf-8").strip()
+        if len(report) < 80 or "Coverage Receipt" not in report or task_id not in report:
+            invalid.append(f"{task_id}: receipt missing, too short, or task ID not echoed")
+            continue
+        complete.append(task_id)
+
+    return {
+        "package": str(package),
+        "mode": plan.get("mode", "unknown"),
+        "planned": len(required_tasks),
+        "deferred": [
+            task.get("task_id", "unknown")
+            for task in tasks
+            if not task.get("required_before_reconciliation", True)
+        ],
+        "complete": complete,
+        "missing": missing,
+        "invalid": invalid,
+        "ready_for_reconciliation": not missing and not invalid,
+    }
+
+
+def format_long_form_verification(report: dict, output_format: str = "markdown") -> str:
+    if output_format == "json":
+        return json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+    lines = [
+        "# Long-Form Audit Coverage",
+        "",
+        f"- Package: `{report['package']}`",
+        f"- Agent mode: `{report['mode']}`",
+        f"- Planned tasks: `{report['planned']}`",
+        f"- Complete receipts: `{len(report['complete'])}`",
+        f"- Ready for reconciliation: `{'yes' if report['ready_for_reconciliation'] else 'no'}`",
+        "",
+    ]
+    for label, entries in (("Missing", report["missing"]), ("Invalid", report["invalid"])):
+        lines.append(f"## {label}")
+        lines.append("")
+        lines.extend(f"- {entry}" for entry in entries)
+        if not entries:
+            lines.append("- none")
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _base_prompt_sections(style: str) -> list[str]:
     style_skill = load_skill(style)
     return [
@@ -218,6 +346,10 @@ def write_long_form_audit(
     baseline_chunk: int = 1,
     context_budget: int = DEFAULT_CONTEXT_BUDGET,
     baseline_budget: int = DEFAULT_BASELINE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
+    agent_mode: str = "standard",
+    translationese: bool = False,
 ) -> tuple[Path, list[TextChunk]]:
     if style not in list_style_skills():
         raise ValueError(f"Unknown style '{style}'.")
@@ -225,6 +357,8 @@ def write_long_form_audit(
         raise ValueError("Context budget must be at least 1000 characters.")
     if baseline_budget < 1000:
         raise ValueError("Baseline budget must be at least 1000 characters.")
+    if agent_mode not in AGENT_MODES:
+        raise ValueError(f"Agent mode must be one of: {', '.join(sorted(AGENT_MODES))}.")
 
     draft = Path(draft_path).read_text(encoding="utf-8")
     if not draft.strip():
@@ -241,6 +375,7 @@ def write_long_form_audit(
         reference_style,
         budget=baseline_budget,
     )
+    source_pack = build_source_pack(source_paths, source_budget)
     selected_baseline = chunks[baseline_chunk - 1]
     baseline_text = reference_sample or sample_reference(selected_baseline.body, baseline_budget)
     baseline_source = (
@@ -265,6 +400,8 @@ def write_long_form_audit(
             "Long-form audit output directory must be empty to avoid stale chunk prompts."
         )
     output.mkdir(parents=True, exist_ok=True)
+    (output / "reports").mkdir()
+    agent_tasks: list[AgentTask] = []
     diagnostic_text = _format_diagnostics(baseline_stats, diagnostics)
     (output / "00-style-drift.md").write_text(diagnostic_text, encoding="utf-8")
     diagnostic_json = {
@@ -280,6 +417,8 @@ def write_long_form_audit(
     )
 
     shared_sections = _base_prompt_sections(style)
+    if translationese:
+        shared_sections.append(_module_block("translationese-audit"))
     if style in NARRATIVE_STYLES and context:
         shared_sections.append(_module_block("character-consistency-audit"))
     if style in SERIOUS_STYLES:
@@ -287,6 +426,7 @@ def write_long_form_audit(
     baseline_evidence = reference_pack.block if reference_pack.active else (
         "# Candidate Baseline Excerpt\n\n" + baseline_text
     )
+    source_evidence = source_pack.block if source_pack.active else ""
     if context_sample:
         context_block = (
             "# Outline / Continuity Authority\n\n"
@@ -313,15 +453,25 @@ def write_long_form_audit(
             "Return: stable style anchors; permitted range; character cards supported by the outline; "
             "speaker voice anchors; deliberate evolution gates; serious-document terminology and claim-scope rules; "
             "and uncertain items that must not be treated as canon. Keep the result compact enough to reuse in every chunk pass.",
+            _coverage_receipt("baseline"),
         ]
     ) + "\n"
     (output / "00-baseline-prompt.md").write_text(baseline_prompt, encoding="utf-8")
+    agent_tasks.append(
+        AgentTask(
+            task_id="baseline",
+            kind="baseline",
+            prompt="00-baseline-prompt.md",
+            report="reports/00-baseline-report.md",
+        )
+    )
 
     for chunk, report in zip(chunks, reports):
         chunk_sections = list(shared_sections)
         if style in NARRATIVE_STYLES and DIALOGUE_PATTERN.search(chunk.body):
             chunk_sections.append(_module_block("dialogue-voice-audit"))
         lead_in = chunk.lead_in or "[No prior lead-in: this is the first chunk.]"
+        task_id = f"chunk-{chunk.index:04d}-core"
         prompt = "\n\n".join(
             [
                 f"# Long-Form Chunk Audit {chunk.index}/{len(chunks)}",
@@ -341,14 +491,119 @@ def write_long_form_audit(
                 "behavioral limits, and speaker voice; require an on-page change gate before accepting a contradiction. For serious text, "
                 "preserve facts, figures, quotations, terminology, attribution, uncertainty, and conclusion scope. Recommend the smallest local repair, "
                 "then emit a compact state-and-voice delta for the next chunk. Do not normalize every sentence or character into one average voice.",
+                _coverage_receipt(task_id, chunk),
             ]
         ) + "\n"
-        (output / f"{chunk.index:04d}-chunk-audit.md").write_text(prompt, encoding="utf-8")
+        prompt_name = f"{chunk.index:04d}-chunk-audit.md"
+        (output / prompt_name).write_text(prompt, encoding="utf-8")
+        agent_tasks.append(
+            AgentTask(
+                task_id=task_id,
+                kind="core-chunk-audit",
+                prompt=prompt_name,
+                report=f"reports/{chunk.index:04d}-core-report.md",
+                depends_on=("baseline",),
+                chunk_index=chunk.index,
+            )
+        )
+
+        if agent_mode == "deep":
+            prose_task_id = f"chunk-{chunk.index:04d}-prose"
+            prose_prompt_name = f"{chunk.index:04d}-prose-audit.md"
+            prose_prompt = "\n\n".join(
+                [
+                    f"# Deep Prose Audit {chunk.index}/{len(chunks)}",
+                    "Read every paragraph in the audited body. Do not rewrite it wholesale. Check for formulaic contrast, chained parallelism, "
+                    "empty transition, generic abstraction, repetitive paragraph closure, and lost scene or argument progress. "
+                    "Treat a natural local variation as valid unless repetition makes it a structural habit.",
+                    _module_block("ai-trace-rubric"),
+                    _module_block("formulaic-structure-audit"),
+                    _module_block("prose-progress-audit"),
+                    f"# Read-Only Lead-In ({chunk.lead_start}:{chunk.start})\n\n{lead_in}",
+                    f"# Audited Body ({chunk.start}:{chunk.end})\n\n{chunk.body}",
+                    "# Required Output\n\n"
+                    "Return a paragraph coverage table (`P1`, `P2`, ...), then only confirmed findings with a quotation, location, "
+                    "and smallest repair direction. A clear paragraph must still appear in the coverage table.",
+                    _coverage_receipt(prose_task_id, chunk),
+                ]
+            ) + "\n"
+            (output / prose_prompt_name).write_text(prose_prompt, encoding="utf-8")
+            agent_tasks.append(
+                AgentTask(
+                    task_id=prose_task_id,
+                    kind="deep-prose-audit",
+                    prompt=prose_prompt_name,
+                    report=f"reports/{chunk.index:04d}-prose-report.md",
+                    depends_on=("baseline",),
+                    chunk_index=chunk.index,
+                )
+            )
+
+            if style in NARRATIVE_STYLES and DIALOGUE_PATTERN.search(chunk.body):
+                dialogue_task_id = f"chunk-{chunk.index:04d}-dialogue"
+                dialogue_prompt_name = f"{chunk.index:04d}-dialogue-audit.md"
+                dialogue_prompt = "\n\n".join(
+                    [
+                        f"# Deep Dialogue Audit {chunk.index}/{len(chunks)}",
+                        "Audit only dialogue-bearing turns in the body. Map speaker, listener, pressure, uptake, and changed state. "
+                        "Do not demand a gesture after every line; flag a gap only when a consequential turn is abandoned or a beat is decorative.",
+                        _module_block("dialogue-voice-audit"),
+                        _module_block("dialogue-performance-audit"),
+                        context_block,
+                        f"# Audited Body ({chunk.start}:{chunk.end})\n\n{chunk.body}",
+                        "# Required Output\n\n"
+                        "List every dialogue-bearing paragraph or turn range you inspected. Separate confirmed response, voice, knowledge, "
+                        "or performance failures from deliberate evasion and silence.",
+                        _coverage_receipt(dialogue_task_id, chunk),
+                    ]
+                ) + "\n"
+                (output / dialogue_prompt_name).write_text(dialogue_prompt, encoding="utf-8")
+                agent_tasks.append(
+                    AgentTask(
+                        task_id=dialogue_task_id,
+                        kind="deep-dialogue-audit",
+                        prompt=dialogue_prompt_name,
+                        report=f"reports/{chunk.index:04d}-dialogue-report.md",
+                        depends_on=("baseline",),
+                        chunk_index=chunk.index,
+                    )
+                )
+
+            if style in SERIOUS_STYLES and source_evidence:
+                evidence_task_id = f"chunk-{chunk.index:04d}-evidence"
+                evidence_prompt_name = f"{chunk.index:04d}-evidence-audit.md"
+                evidence_prompt = "\n\n".join(
+                    [
+                        f"# Deep Evidence Audit {chunk.index}/{len(chunks)}",
+                        "Audit every factual claim, attribution, numerical statement, and conclusion-scope statement in the body against the supplied sources. "
+                        "Absence from the sampled sources is uncertainty, not disproof. Do not invent citations or repair a fact by guessing.",
+                        _module_block("source-grounding"),
+                        _module_block("protected-content"),
+                        source_evidence,
+                        f"# Audited Body ({chunk.start}:{chunk.end})\n\n{chunk.body}",
+                        "# Required Output\n\n"
+                        "Return a claim coverage table with source support, uncertainty, or mismatch. Keep terminology, figures, quotations, "
+                        "attribution, and conclusion scope exact.",
+                        _coverage_receipt(evidence_task_id, chunk),
+                    ]
+                ) + "\n"
+                (output / evidence_prompt_name).write_text(evidence_prompt, encoding="utf-8")
+                agent_tasks.append(
+                    AgentTask(
+                        task_id=evidence_task_id,
+                        kind="deep-evidence-audit",
+                        prompt=evidence_prompt_name,
+                        report=f"reports/{chunk.index:04d}-evidence-report.md",
+                        depends_on=("baseline",),
+                        chunk_index=chunk.index,
+                    )
+                )
 
     reconcile_prompt = "\n\n".join(
         [
             "# Long-Form Cross-Chunk Reconciliation",
-            "Use the approved baseline report, `00-style-drift.md`, and all completed chunk-audit reports. "
+            "Use the approved baseline report, `00-style-drift.md`, `agent-plan.json`, and every required completed report under `reports/`. "
+            "Do not reconcile while `verify-chunk-audit` reports missing or invalid receipts. "
             "Do not infer a global defect from one statistical outlier. Require quoted or located evidence from at least two relevant blocks, "
             "unless one block directly contradicts the canonical outline.",
             _module_block("long-form-style-consistency"),
@@ -358,9 +613,20 @@ def write_long_form_audit(
             "Produce: a ranked cross-chunk drift table; recurring narrator-style changes; per-character dialogue and behavior conflicts; "
             "valid development or section-function changes; a minimal repair sequence; and ledger updates. Resolve facts and character canon before style, "
             "then voice, rhythm, and surface wording. Re-audit neighboring blocks after structural repairs.",
+            _coverage_receipt("reconcile"),
         ]
     ) + "\n"
     (output / "9999-reconcile-prompt.md").write_text(reconcile_prompt, encoding="utf-8")
+    agent_tasks.append(
+        AgentTask(
+            task_id="reconcile",
+            kind="cross-chunk-reconciliation",
+            prompt="9999-reconcile-prompt.md",
+            report="reports/9999-reconcile-report.md",
+            depends_on=tuple(task.task_id for task in agent_tasks),
+            required_before_reconciliation=False,
+        )
+    )
 
     manifest = {
         "draft": str(Path(draft_path)),
@@ -369,6 +635,9 @@ def write_long_form_audit(
         "lead_in_overlap": overlap,
         "baseline_source": baseline_source,
         "context_supplied": bool(context),
+        "source_names": list(source_pack.source_names),
+        "agent_mode": agent_mode,
+        "translationese_review": translationese,
         "chunks": [
             {
                 "index": chunk.index,
@@ -386,6 +655,7 @@ def write_long_form_audit(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    _write_agent_plan(output, agent_tasks, agent_mode)
 
     guide = "\n".join(
         [
@@ -395,16 +665,20 @@ def write_long_form_audit(
             f"- Unique audit chunks: `{len(chunks)}`",
             f"- Baseline source: {baseline_source}",
             f"- Outline / continuity context: `{'supplied' if context else 'not supplied'}`",
+            f"- Factual source files: `{len(source_pack.source_names)}`",
+            f"- Agent mode: `{agent_mode}`",
+            f"- Translationese review: `{'enabled' if translationese else 'not requested'}`",
             "",
-            "1. Run `00-baseline-prompt.md` first and approve or correct its compact style/character contract.",
-            "2. Run each numbered chunk prompt independently. Supply the approved contract when your model or client does not retain files.",
-            "3. Save each report. The lead-in is context only, so findings from adjacent blocks are not double-counted.",
-            "4. Run `9999-reconcile-prompt.md` with the completed reports and approved baseline.",
-            "5. Apply repairs from canon and meaning to character state, voice, rhythm, then surface wording; re-audit affected neighbors.",
+            "1. Run `00-baseline-prompt.md` first and save its response as `reports/00-baseline-report.md`.",
+            "2. Run every task listed in `agent-plan.json` whose only dependency is `baseline`; they may run in parallel in fresh sessions.",
+            "3. Save each response at its planned report path. Every response must retain its Coverage Receipt; the lead-in is context only, so adjacent blocks are not double-counted.",
+            "4. Run `human-writing-skills verify-chunk-audit --package-dir <this-directory>` before reconciliation. Fix missing or invalid receipts first.",
+            "5. Run `9999-reconcile-prompt.md`, save the final report, then apply repairs from canon and meaning to character state, voice, rhythm, and surface wording. Re-audit affected neighbors.",
             "",
             "`00-style-drift.md` is a deterministic triage map. Its outliers are review leads, not automatic defects.",
             "For fiction, an outline or continuity ledger is required for authoritative character-setting checks.",
             "For reports, use the outline/context file for terminology, claim scope, section purpose, and source boundaries.",
+            "`standard` writes one complete task per chunk. `deep` adds paragraph-by-paragraph prose tasks, dialogue tasks only where dialogue exists, and evidence tasks only for serious documents with explicit `--source` files.",
             "",
         ]
     )

@@ -54,10 +54,40 @@ repair, or select another block with `--baseline-chunk 3` when the opening is at
 - `0001-chunk-audit.md` and following files: independent body audits with read-only lead-ins.
 - `9999-reconcile-prompt.md`: compares narrator, speaker, character, terminology, and section drift.
 - `manifest.json`: records unique body ranges, lead-in ranges, and baseline provenance.
+- `agent-plan.json`: lists independently runnable reviewer tasks, dependencies, and expected report paths.
+- `reports/`: destination directory for baseline, chunk, specialist, and reconciliation reports.
 
 Run the baseline prompt, the numbered chunks, then reconciliation. Each numbered pass
 can use a fresh conversation or API request with the approved compact contract. The
 model does not need hidden memory of the whole manuscript.
+
+## Verified Parallel Agent Review
+
+Use the default package when one careful review per block is sufficient. When complete
+inspection matters, add `--agent-mode deep`:
+
+```powershell
+human-writing-skills chunk-audit `
+  --draft full-novel.md `
+  --style fiction `
+  --outline novel-outline.md `
+  --agent-mode deep `
+  --output-dir novel-agent-audit
+```
+
+Run the baseline first. Tasks that depend only on `baseline` may then run in parallel in
+fresh model sessions. Each response must be saved at the exact path in `agent-plan.json`
+and include its Coverage Receipt: task ID, audited scope, checked units, findings, and
+blocked material. This is a visible completeness contract, not proof that a model is right.
+
+```powershell
+human-writing-skills verify-chunk-audit --package-dir novel-agent-audit
+```
+
+Do not reconcile while this command reports missing or invalid receipts. Deep mode adds a
+paragraph-level prose pass to every block, dialogue review only where dialogue exists, and
+source-grounding only for serious documents with explicit `--source` files. Use
+`--translationese` only for an explicitly translated or localized work.
 
 ## Outline-Backed Character Consistency
 

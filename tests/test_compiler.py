@@ -98,6 +98,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("long-form-style-consistency", list_module_skills())
         self.assertIn("earned-ending-audit", list_module_skills())
         self.assertIn("dialogue-performance-audit", list_module_skills())
+        self.assertIn("translationese-audit", list_module_skills())
 
     def test_quick_humanize_loads_only_the_focused_rewrite_stack(self):
         with TemporaryDirectory() as directory:
@@ -248,6 +249,15 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("prior residue", prompt)
         self.assertIn("Write the next scene.", prompt)
         self.assertNotIn("Technique Module: reference-style-alignment", prompt)
+
+    def test_translationese_module_requires_an_explicit_translation_signal(self):
+        ordinary = compile_prompt("fiction", "Escribe la siguiente escena en español.")
+        translated = compile_prompt(
+            "fiction",
+            "Traduce esta escena al español y elimina los calcos de traducción.",
+        )
+        self.assertNotIn("Technique Module: translationese-audit", ordinary)
+        self.assertIn("Technique Module: translationese-audit", translated)
 
     def test_dialogue_generation_activates_only_for_explicit_narrative_tasks(self):
         dialogue = compile_prompt("fiction", "写一场两位角色各有所求的谈判。")

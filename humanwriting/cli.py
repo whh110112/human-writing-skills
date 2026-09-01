@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -9,10 +10,13 @@ from .detection import PIPELINE_PROFILES
 from .fixer import fix_file, format_fix_report
 from .linter import format_lint_report, lint_file
 from .longform import (
+    AGENT_MODES,
     DEFAULT_BASELINE_BUDGET,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CONTEXT_BUDGET,
     DEFAULT_OVERLAP_SIZE,
+    format_long_form_verification,
+    verify_long_form_package,
     write_long_form_audit,
 )
 from .pipeline import write_audit_pipeline
@@ -352,6 +356,34 @@ def build_parser() -> argparse.ArgumentParser:
         "--reference-style",
         help="Explicit high-level style direction. Never activates without this flag or --reference.",
     )
+    add_source_arguments(chunk_audit)
+    chunk_audit.add_argument(
+        "--agent-mode",
+        choices=sorted(AGENT_MODES),
+        default="standard",
+        help="standard creates one complete task per chunk; deep adds narrowly scoped specialist tasks and coverage receipts.",
+    )
+    chunk_audit.add_argument(
+        "--translationese",
+        action="store_true",
+        help="Add translationese and cross-language fidelity review. Use only for an explicitly translated or localized draft.",
+    )
+
+    verify_chunk_audit = subparsers.add_parser(
+        "verify-chunk-audit",
+        help="Verify that every planned long-form agent task returned a usable coverage receipt.",
+    )
+    verify_chunk_audit.add_argument(
+        "--package-dir",
+        required=True,
+        help="Directory written by chunk-audit.",
+    )
+    verify_chunk_audit.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Output format.",
+    )
 
     lint = subparsers.add_parser(
         "lint",
@@ -580,11 +612,25 @@ def main(argv: list[str] | None = None) -> int:
                 baseline_chunk=args.baseline_chunk,
                 context_budget=args.context_budget,
                 baseline_budget=args.baseline_budget,
+                source_paths=args.source,
+                source_budget=args.source_budget,
+                agent_mode=args.agent_mode,
+                translationese=args.translationese,
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
-        print(f"Wrote {len(chunks)} bounded long-form audit prompts to {output.resolve()}")
-        print("Run 00-baseline-prompt.md first, then numbered chunks, then 9999-reconcile-prompt.md.")
+        print(f"Wrote {len(chunks)} bounded long-form audit chunks to {output.resolve()}")
+        print("Run the baseline, all tasks in agent-plan.json, verify coverage, then reconcile.")
+        return 0
+
+    if args.command == "verify-chunk-audit":
+        try:
+            report = verify_long_form_package(args.package_dir)
+        except (FileNotFoundError, OSError, ValueError, json.JSONDecodeError) as exc:
+            parser.error(str(exc))
+        print(format_long_form_verification(report, args.format), end="")
+        if not report["ready_for_reconciliation"]:
+            return 1
         return 0
 
     if args.command == "lint":

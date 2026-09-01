@@ -6,7 +6,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from humanwriting.cli import main
-from humanwriting.longform import split_long_text, write_long_form_audit
+from humanwriting.longform import (
+    split_long_text,
+    verify_long_form_package,
+    write_long_form_audit,
+)
 
 
 class LongFormAuditTests(unittest.TestCase):
@@ -122,7 +126,100 @@ class LongFormAuditTests(unittest.TestCase):
             self.assertTrue((output / "00-baseline-prompt.md").is_file())
             self.assertTrue((output / "00-style-drift.json").is_file())
             self.assertTrue((output / "9999-reconcile-prompt.md").is_file())
-            self.assertIn("bounded long-form audit prompts", stdout.getvalue())
+            self.assertTrue((output / "agent-plan.json").is_file())
+            self.assertTrue((output / "reports").is_dir())
+            self.assertIn("bounded long-form audit chunks", stdout.getvalue())
+
+    def test_deep_package_creates_gated_agent_tasks_and_blocks_reconciliation(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "novel.md"
+            outline = root / "outline.md"
+            output = root / "audit"
+            draft.write_text(
+                ("“你还要走吗？”她问。\n\n他没有回答。\n\n" + "雨落在窗外。" * 280)
+                + ("\n\n" + "他沿着河岸继续走。" + "天色渐暗。" * 280),
+                encoding="utf-8",
+            )
+            outline.write_text("两人仍因信件争执。", encoding="utf-8")
+            written, chunks = write_long_form_audit(
+                str(draft),
+                str(output),
+                style="fiction",
+                context_path=str(outline),
+                chunk_size=2000,
+                overlap=200,
+                agent_mode="deep",
+            )
+            plan = json.loads((written / "agent-plan.json").read_text(encoding="utf-8"))
+            kinds = {task["kind"] for task in plan["tasks"]}
+            verification = verify_long_form_package(str(written))
+            prose_prompt = (written / "0001-prose-audit.md").read_text(encoding="utf-8")
+            baseline_prompt = (written / "00-baseline-prompt.md").read_text(encoding="utf-8")
+
+        self.assertGreater(len(chunks), 1)
+        self.assertIn("deep-prose-audit", kinds)
+        self.assertIn("deep-dialogue-audit", kinds)
+        self.assertIn("Coverage Receipt", prose_prompt)
+        self.assertIn("Coverage Receipt", baseline_prompt)
+        self.assertFalse(verification["ready_for_reconciliation"])
+        self.assertEqual(
+            verification["planned"],
+            sum(task["required_before_reconciliation"] for task in plan["tasks"]),
+        )
+
+    def test_coverage_verification_accepts_completed_receipts(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            output = root / "audit"
+            draft.write_text("正文。" * 1500, encoding="utf-8")
+            written, _ = write_long_form_audit(
+                str(draft), str(output), style="fiction", chunk_size=2000
+            )
+            plan = json.loads((written / "agent-plan.json").read_text(encoding="utf-8"))
+            for task in plan["tasks"]:
+                if not task["required_before_reconciliation"]:
+                    continue
+                receipt = (
+                    "# Coverage Receipt\n\n"
+                    f"- Task ID: `{task['task_id']}`\n"
+                    "- Coverage: complete\n"
+                    "- Units checked: all assigned units\n"
+                    "- Confirmed findings: none\n"
+                )
+                report_path = written / task["report"]
+                report_path.write_text(receipt + "x" * 80, encoding="utf-8")
+            verification = verify_long_form_package(str(written))
+
+        self.assertTrue(verification["ready_for_reconciliation"])
+        self.assertFalse(verification["missing"])
+        self.assertFalse(verification["invalid"])
+        self.assertEqual(verification["deferred"], ["reconcile"])
+
+    def test_deep_serious_package_gates_source_tasks_and_translationese(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "report.md"
+            source = root / "source.md"
+            output = root / "audit"
+            draft.write_text("该项目在6月完成，样本为120人。" * 400, encoding="utf-8")
+            source.write_text("项目于6月完成，样本为120人。" * 100, encoding="utf-8")
+            written, _ = write_long_form_audit(
+                str(draft),
+                str(output),
+                style="news-report",
+                source_paths=[str(source)],
+                source_budget=1000,
+                chunk_size=2000,
+                agent_mode="deep",
+                translationese=True,
+            )
+            plan = json.loads((written / "agent-plan.json").read_text(encoding="utf-8"))
+            core_prompt = (written / "0001-chunk-audit.md").read_text(encoding="utf-8")
+
+        self.assertIn("deep-evidence-audit", {task["kind"] for task in plan["tasks"]})
+        self.assertIn("Audit Module: translationese-audit", core_prompt)
 
     def test_invalid_overlap_and_baseline_chunk_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "smaller than half"):

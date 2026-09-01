@@ -37,6 +37,12 @@ REGISTER_EVIDENCE_PATTERN = re.compile(
     r"nationality|birthplace|upbringing|American|Japanese|Korean)\b",
     re.IGNORECASE,
 )
+TRANSLATION_GENERATION_PATTERN = re.compile(
+    r"(?:翻译腔|翻译成|从.{0,12}(?:翻译|译为)|译文|本地化|源语言|目标语言)|"
+    r"\b(?:translate|translation|translated|locali[sz]e|localization|source language|target language|"
+    r"traducci[oó]n|traduc(?:ir|e)|traduz(?:ir|a)|traduction|tradui(?:re|s))\b",
+    re.IGNORECASE,
+)
 WORLD_GENERATION_PATTERN = re.compile(
     r"(?:世界观|架空|时代背景|历史背景|世界规则|科技水平|制度设定|社会规则|"
     r"古代|民国|唐朝|宋朝|明朝|清朝|赛博朋克|蒸汽朋克|修仙|魔法|星际)|"
@@ -97,6 +103,7 @@ LOGIC_AUDIT_MODULES = ["logic-causality-audit"]
 CHARACTER_AUDIT_MODULES = ["character-consistency-audit"]
 VOICE_AUDIT_MODULES = ["dialogue-voice-audit", "dialogue-performance-audit"]
 REGISTER_AUDIT_MODULES = ["speech-register-continuity"]
+TRANSLATIONESE_AUDIT_MODULES = ["translationese-audit"]
 CAPABILITY_AUDIT_MODULES = ["capability-state-audit"]
 SERIAL_AUDIT_MODULES = ["serial-reentry"]
 MOMENTUM_AUDIT_MODULES = ["chapter-momentum-audit"]
@@ -261,6 +268,8 @@ def compile_prompt(
             "\n".join(part for part in [task, context] if part)
         ):
             append_missing(selected_modules, REGISTER_AUDIT_MODULES)
+    if TRANSLATION_GENERATION_PATTERN.search("\n".join(part for part in [task, context] if part)):
+        append_missing(selected_modules, TRANSLATIONESE_AUDIT_MODULES)
     if style in DIALOGUE_GENERATION_STYLES and WORLD_GENERATION_PATTERN.search(
         "\n".join(part for part in [task, context] if part)
     ):
