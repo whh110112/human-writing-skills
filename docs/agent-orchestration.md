@@ -1,0 +1,90 @@
+# Agent Orchestration And MCP
+
+This project can run as more than a prompt-only Skill. Its local MCP server
+turns the verified long-form package into a small coordination surface that
+multiple agents can share without giving every session the whole manuscript.
+
+## What The Server Does
+
+`human-writing-mcp` operates only inside an explicit project root. It does not
+call a model and it does not upload drafts. It exposes seven operations:
+
+| Tool | Purpose |
+| --- | --- |
+| `plan_long_form_audit` | Build the bounded package and task graph. |
+| `list_audit_tasks` | Show dependencies, claims, receipt validity, and readiness. |
+| `claim_audit_task` | Give one agent one complete, focused prompt. |
+| `submit_audit_report` | Store a report only when its receipt declares complete coverage. |
+| `verify_audit_coverage` | Gate reconciliation on every required report. |
+| `get_reconciliation_task` | Return the cross-document editor prompt after the gate passes. |
+| `read_project_context` | Read a bounded ledger, outline, source note, or approved reference. |
+
+The server rejects file paths outside its root. A receipt must include the task
+ID, `Coverage: complete`, checked units, findings, and `Unchecked or blocked
+material: none`. A missing, blocked, or partial receipt keeps reconciliation
+closed.
+
+## Local Stdio Setup
+
+Install this project, then configure any MCP-capable host to launch:
+
+```text
+command: python
+args: ["-m", "humanwriting.mcp_server", "--root", "C:/writing-project"]
+```
+
+The project root should contain the manuscript, its outline or continuity
+ledger, and generated audit directories. Use project-relative paths in tool
+calls. The same server works with Codex, Claude Code, OpenCode, DeepSeek
+Harness, and Hermes when they are connected to the same local workspace.
+
+## Remote HTTP Setup
+
+For a host that only accepts remote MCP endpoints, start the server behind your
+own TLS reverse proxy:
+
+```powershell
+human-writing-mcp --root C:\writing-project --http --host 127.0.0.1 --port 8765 --auth-token <long-random-token>
+```
+
+Expose `POST /mcp` only through HTTPS and preserve the `Authorization: Bearer`
+header. A non-loopback bind is refused without `--auth-token`. Do not expose a
+manuscript workspace to the public internet merely to connect an agent.
+
+## Reliable Long-Form Run
+
+1. Call `plan_long_form_audit` with `agent_mode: "deep"`.
+2. Have one agent claim and submit `baseline`.
+3. Start fresh agents for the tasks that become ready. Each agent receives only
+   its body, read-only lead-in, compact canon, and specialist modules.
+4. Agents submit reports rather than merely saying that they finished.
+5. Call `verify_audit_coverage`. Repair every missing or invalid receipt.
+6. Call `get_reconciliation_task` and run one final editor only after the gate
+   passes.
+
+This is deliberately model-neutral. A host may use local subagents, API jobs,
+or separate conversations. The package remains the source of truth, not a
+single model's fading chat memory.
+
+## Host Adapters
+
+- **Codex:** Keep a concise `AGENTS.md` beside the writing project, install the
+  Skill for workflow discovery, and add the stdio MCP server for task state.
+- **Claude Code:** Put the matching project contract in `CLAUDE.md`; use its
+  subagents for ready tasks and a hook or final checklist that calls coverage
+  verification.
+- **OpenCode:** It discovers the existing `.agents/skills` format directly;
+  connect the same MCP command for shared queue state.
+- **DeepSeek Harness:** Use the included npm bundle under
+  `plugins/deepseek-harness`. It mounts the official DSH MCP client and starts
+  this server automatically for the active workspace.
+- **Manus:** Import the Skill from GitHub today. For MCP, deploy the HTTP mode
+  on infrastructure you control, behind HTTPS and bearer authentication; its
+  root must contain the intended project files.
+- **Hermes Agent:** Install the Skill from GitHub or a skills tap, then attach
+  the stdio or protected HTTP MCP server. Its subagents can claim separate
+  ready tasks.
+
+`integrations/project-context/AGENTS.md.example` is intentionally short. It
+points agents to the ledger and MCP workflow rather than duplicating all audit
+rules into every conversation.

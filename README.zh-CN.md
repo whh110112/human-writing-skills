@@ -24,6 +24,22 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 
 测试套件同时覆盖可执行工具和模块按需激活逻辑。
 
+## Agent 编排、MCP 与 DeepSeek Harness 插件
+
+对于整本小说、系列报道或无法交给单一聊天窗口可靠审完的大型材料，可安装零额外依赖的
+`human-writing-mcp` 服务。它把长篇任务图变成可由 Codex、Claude Code、OpenCode、DeepSeek
+Harness、Manus 和 Hermes 共用的执行界面：Agent 领取有边界的任务、提交覆盖回执，全部必需
+审查完成前不能领取统稿任务。服务只访问指定项目根目录，不会自行调用模型，也不会上传草稿。
+
+```powershell
+human-writing-mcp --root C:\writing-project
+```
+
+仓库还提供原生 DeepSeek Harness npm/Cordis Bundle，位于
+[`plugins/deepseek-harness`](plugins/deepseek-harness)。它会挂载官方 DSH MCP 客户端并启动同一套
+可验证本地协作服务。详见 [Agent 编排与 MCP 指南](docs/agent-orchestration.zh-CN.md) 与
+[DeepSeek Harness 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
+
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
 ## 长篇审查与文风统一

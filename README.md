@@ -28,6 +28,26 @@ different capability layers:
 
 The test suite exercises both the executable layer and module-selection gates.
 
+## Agent Orchestration, MCP, And DeepSeek Harness Plugin
+
+For book-length novels, report series, or research coverage that cannot be
+trusted to one chat window, install the dependency-free `human-writing-mcp`
+server. It makes the long-form task graph executable across Codex, Claude Code,
+OpenCode, DeepSeek Harness, Manus, and Hermes: agents claim bounded tasks,
+submit coverage receipts, and cannot unlock reconciliation until every required
+review is complete. The service stays inside a chosen project root and does not
+call a model or upload drafts.
+
+```powershell
+human-writing-mcp --root C:\writing-project
+```
+
+The repository also ships a native DeepSeek Harness npm/Cordis bundle under
+[`plugins/deepseek-harness`](plugins/deepseek-harness). It mounts the official
+DSH MCP client and starts the same verified local coordination service. See the
+[agent orchestration guide](docs/agent-orchestration.md) and
+[DeepSeek Harness plugin guide](plugins/deepseek-harness/README.md).
+
 It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
 The goal is not deception. The goal is better writing: clearer instructions, stronger revision habits, and reusable style constraints that make AI-assisted drafts feel edited by a human.

@@ -187,6 +187,7 @@ class LongFormAuditTests(unittest.TestCase):
                     "- Coverage: complete\n"
                     "- Units checked: all assigned units\n"
                     "- Confirmed findings: none\n"
+                    "- Unchecked or blocked material: none\n"
                 )
                 report_path = written / task["report"]
                 report_path.write_text(receipt + "x" * 80, encoding="utf-8")
@@ -196,6 +197,32 @@ class LongFormAuditTests(unittest.TestCase):
         self.assertFalse(verification["missing"])
         self.assertFalse(verification["invalid"])
         self.assertEqual(verification["deferred"], ["reconcile"])
+
+    def test_coverage_verification_rejects_blocked_or_undeclared_receipts(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "draft.md"
+            output = root / "audit"
+            draft.write_text("正文。" * 1500, encoding="utf-8")
+            written, _ = write_long_form_audit(
+                str(draft), str(output), style="fiction", chunk_size=2000
+            )
+            plan = json.loads((written / "agent-plan.json").read_text(encoding="utf-8"))
+            task = next(task for task in plan["tasks"] if task["required_before_reconciliation"])
+            (written / task["report"]).write_text(
+                "# Coverage Receipt\n\n"
+                f"- Task ID: `{task['task_id']}`\n"
+                "- Coverage: blocked\n"
+                "- Units checked: opening only\n"
+                "- Confirmed findings: none\n"
+                "- Unchecked or blocked material: remaining paragraphs\n"
+                + "x" * 80,
+                encoding="utf-8",
+            )
+            verification = verify_long_form_package(str(written))
+
+        self.assertFalse(verification["ready_for_reconciliation"])
+        self.assertTrue(any("coverage is blocked" in entry for entry in verification["invalid"]))
 
     def test_deep_serious_package_gates_source_tasks_and_translationese(self):
         with TemporaryDirectory() as directory:

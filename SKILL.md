@@ -21,6 +21,9 @@ continuity ledgers separate from optional style references.
 - A normal installation includes both layers. Verify the executable layer with
   `human-writing-skills list --kind module` and run a real draft through `lint`,
   `fix`, `verify`, or `pipeline` rather than judging the package from `SKILL.md` alone.
+- `human-writing-mcp` is an optional project-local coordination layer. It gives
+  separate agents bounded long-form assignments, stores receipts, and refuses
+  reconciliation until coverage verification passes. It does not call a model.
 
 ## Quick Humanize Route
 
@@ -63,6 +66,11 @@ continuity ledgers separate from optional style references.
    visible coverage receipt, then run `verify-chunk-audit` before reconciliation. Use
    `--translationese` only for an explicitly translated or localized work. Read
    `docs/long-form-consistency.md` only for this workflow.
+9. When multiple agents or sessions share a long-form project, use
+   `human-writing-mcp` rather than copying the entire manuscript into each chat.
+   Agents must claim a task, submit a complete receipt, and pass coverage
+   verification before one final reconciliation task is released. Read
+   `docs/agent-orchestration.md` only when an MCP-capable host is available.
 
 ## Commands
 
@@ -87,6 +95,7 @@ human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline
 human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline outline.md --agent-mode deep --output-dir novel-agent-audit
 human-writing-skills verify-chunk-audit --package-dir novel-agent-audit
 human-writing-skills chunk-audit --draft report-es.md --style news-report --source sources.md --translationese --agent-mode deep --output-dir report-audit
+human-writing-mcp --root C:\writing-project
 human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills stats --draft chapter.md --style fiction
 human-writing-skills fix --draft chapter.md --preview

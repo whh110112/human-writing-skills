@@ -21,6 +21,12 @@ NARRATIVE_STYLES = {"fiction", "webnovel"}
 SERIOUS_STYLES = {"academic-paper", "formal-document", "news-report"}
 AGENT_MODES = {"standard", "deep"}
 DIALOGUE_PATTERN = re.compile(r"[\"“‘「『].{1,240}?[\"”’」』]", re.DOTALL)
+RECEIPT_STATUS_PATTERN = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?Coverage\s*:\s*(complete|blocked)\b"
+)
+RECEIPT_UNCHECKED_PATTERN = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?Unchecked or blocked material\s*:\s*(.+?)\s*$"
+)
 SPLIT_PATTERNS = (
     re.compile(r"\n\s*\n"),
     re.compile(r"(?<=[。！？!?])(?:[\"”’」』】）)])?"),
@@ -223,6 +229,30 @@ def _write_agent_plan(output: Path, tasks: list[AgentTask], mode: str) -> None:
     )
 
 
+def validate_long_form_report(task: dict, report: str) -> str | None:
+    """Return a precise receipt error, or ``None`` when a report can be reconciled."""
+
+    task_id = task.get("task_id", "unknown")
+    normalized = report.strip()
+    if len(normalized) < 80:
+        return "report is too short"
+    if "Coverage Receipt" not in normalized:
+        return "Coverage Receipt heading is missing"
+    if task_id not in normalized:
+        return "task ID is not echoed in the receipt"
+    status = RECEIPT_STATUS_PATTERN.search(normalized)
+    if not status:
+        return "coverage status must explicitly be complete or blocked"
+    if status.group(1).lower() != "complete":
+        return "coverage is blocked"
+    unchecked = RECEIPT_UNCHECKED_PATTERN.search(normalized)
+    if not unchecked:
+        return "unchecked or blocked material line is missing"
+    if unchecked.group(1).strip().lower().rstrip(".") not in {"none", "n/a"}:
+        return "receipt declares unchecked or blocked material"
+    return None
+
+
 def verify_long_form_package(package_dir: str) -> dict:
     """Check that external reviewers returned a non-empty receipt for every planned task."""
 
@@ -249,9 +279,10 @@ def verify_long_form_package(package_dir: str) -> dict:
         if not report_path.is_file():
             missing.append(f"{task_id}: {report_value}")
             continue
-        report = report_path.read_text(encoding="utf-8").strip()
-        if len(report) < 80 or "Coverage Receipt" not in report or task_id not in report:
-            invalid.append(f"{task_id}: receipt missing, too short, or task ID not echoed")
+        report = report_path.read_text(encoding="utf-8")
+        receipt_error = validate_long_form_report(task, report)
+        if receipt_error:
+            invalid.append(f"{task_id}: {receipt_error}")
             continue
         complete.append(task_id)
 
