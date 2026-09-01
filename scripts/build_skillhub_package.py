@@ -38,6 +38,7 @@ EXCLUDED_PATHS = {
     "LICENSE",
     SKILLHUB_OVERVIEW_PATH.as_posix(),
 }
+EXCLUDED_PREFIXES = ("plugins/",)
 
 
 def project_version(root: Path) -> str:
@@ -61,6 +62,7 @@ def tracked_files(root: Path) -> list[Path]:
             not raw_path
             or raw_path in EXCLUDED_PATHS
             or raw_path.startswith(".github/")
+            or raw_path.startswith(EXCLUDED_PREFIXES)
         ):
             continue
         path = root.joinpath(raw_path)
