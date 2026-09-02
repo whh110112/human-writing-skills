@@ -336,6 +336,49 @@ class LinterTests(unittest.TestCase):
         self.assertNotIn("NAT001", rule_ids)
         self.assertNotIn("NAT002", rule_ids)
 
+    def test_reports_exact_sentence_echo_after_the_scene_has_moved(self):
+        repeated = "她把那张车票塞回口袋，决定先不去问站长。"
+        text = (
+            f"{repeated}\n\n"
+            "门外的广播换了班次，她把伞收起来，沿着走廊往售票处走。\n\n"
+            f"{repeated}"
+        )
+        report = lint_text(text, style="fiction")
+        self.assertIn("REP001", {item.rule_id for item in report.findings})
+
+    def test_reports_repeated_interpretation_and_action_choreography(self):
+        interpretive = "\n\n".join(
+            (
+                "她看着那只空杯，知道对方已经不想再谈了。",
+                "他把文件推回来，她明白这不是商量。",
+                "门锁响了一声，她意识到自己没有退路。",
+                "电话断线后，她心里清楚这件事不能拖。",
+            )
+        )
+        choreography = "\n\n".join(
+            (
+                "她一边翻找钥匙，一边听楼道里的脚步声。",
+                "他一边整理证据，又一边盯着门缝。",
+                "她一边把信折好，一边等电梯停下。",
+                "他一边擦掉桌上的水，又一边看向窗外。",
+                "她一边把外套搭在椅背上，一边关掉录音。",
+            )
+        )
+        rule_ids = {item.rule_id for item in lint_text(interpretive + "\n\n" + choreography, style="fiction").findings}
+        self.assertTrue({"NAT005", "NAT006"} <= rule_ids)
+
+    def test_repetition_findings_are_narrative_only_and_allowlisted(self):
+        text = (
+            "她知道对方已经不想再谈了。\n\n"
+            "她明白这不是商量。\n\n"
+            "她意识到自己没有退路。\n\n"
+            "她心里清楚这件事不能拖。"
+        )
+        serious = lint_text(text, style="news-report")
+        allowed = lint_text(text, style="fiction", allow={"interpretive-narration-recurrence"})
+        self.assertNotIn("NAT005", {item.rule_id for item in serious.findings})
+        self.assertNotIn("NAT005", {item.rule_id for item in allowed.findings})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -90,7 +90,12 @@ AI_TRACE_AUDIT_MODULES = [
     "surface-pattern-audit",
     "prose-progress-audit",
     "narrative-naturalness-audit",
+    "repetition-exposition-audit",
 ]
+NARRATIVE_AI_TRACE_MODULES = {
+    "narrative-naturalness-audit",
+    "repetition-exposition-audit",
+}
 RELATIONSHIP_AUDIT_MODULES = [
     "relationship-state",
     "relationship-stance-audit",
@@ -112,6 +117,7 @@ WORLD_AUDIT_MODULES = ["world-ontology-audit"]
 PROCESS_AUDIT_MODULES = ["process-earnedness-audit"]
 SALIENCE_AUDIT_MODULES = ["attention-budget-audit"]
 RECURRENCE_AUDIT_MODULES = ["chapter-pattern-audit"]
+REPETITION_AUDIT_MODULES = ["repetition-exposition-audit"]
 TEXTURE_AUDIT_MODULES = [
     "narrative-distance-control",
     "imagery-load-audit",
@@ -152,6 +158,7 @@ AUDIT_PROFILES = {
     "process",
     "salience",
     "recurrence",
+    "repetition",
     "texture",
     "physical",
     "relationship",
@@ -448,6 +455,9 @@ def compile_audit_prompt(
         text=draft,
         document_type=document_type,
     )
+    narrative_naturalness_enabled = document_type in NARRATIVE_NATURALNESS_DOCUMENT_TYPES or (
+        document_type == "auto" and not serious_document
+    )
     if source_pack.active and serious_document:
         requested_profiles.add("sources")
     unknown_profiles = requested_profiles - AUDIT_PROFILES
@@ -467,6 +477,8 @@ def compile_audit_prompt(
         raise ValueError("The sources profile requires one or more --source files.")
     if "sources" in requested_profiles and not serious_document:
         raise ValueError("The sources profile is limited to serious academic, formal, news, legal, or technical documents.")
+    if "repetition" in requested_profiles and not narrative_naturalness_enabled:
+        raise ValueError("The repetition profile is limited to fiction, webnovels, and narrative self-media.")
     if "physical" in requested_profiles and light_physical_requested:
         raise ValueError(
             "The physical profile already uses forensic-physical-audit; "
@@ -477,9 +489,6 @@ def compile_audit_prompt(
     )
     relationship_enabled = bool(requested_profiles & {"full", "relationship"})
     ai_trace_enabled = bool(requested_profiles & {"full", "ai-trace"})
-    narrative_naturalness_enabled = document_type in NARRATIVE_NATURALNESS_DOCUMENT_TYPES or (
-        document_type == "auto" and not serious_document
-    )
     numbers_enabled = bool(requested_profiles & {"full", "numbers"})
     logic_enabled = bool(requested_profiles & {"full", "logic"})
     character_enabled = bool(requested_profiles & {"full", "character"})
@@ -493,6 +502,7 @@ def compile_audit_prompt(
     process_enabled = "process" in requested_profiles
     salience_enabled = "salience" in requested_profiles
     recurrence_enabled = "recurrence" in requested_profiles
+    repetition_enabled = "repetition" in requested_profiles
     texture_enabled = "texture" in requested_profiles
     proofread_enabled = bool(requested_profiles & {"full", "proofread"})
     style_match_enabled = "style-match" in requested_profiles
@@ -524,6 +534,8 @@ def compile_audit_prompt(
         append_missing(selected_modules, SALIENCE_AUDIT_MODULES)
     if recurrence_enabled:
         append_missing(selected_modules, RECURRENCE_AUDIT_MODULES)
+    if repetition_enabled:
+        append_missing(selected_modules, REPETITION_AUDIT_MODULES)
     if texture_enabled:
         append_missing(selected_modules, TEXTURE_AUDIT_MODULES)
     if physical_enabled:
@@ -536,8 +548,7 @@ def compile_audit_prompt(
             [
                 module
                 for module in AI_TRACE_AUDIT_MODULES
-                if module != "narrative-naturalness-audit"
-                or narrative_naturalness_enabled
+                if module not in NARRATIVE_AI_TRACE_MODULES or narrative_naturalness_enabled
             ],
         )
     if numbers_enabled:
@@ -664,6 +675,12 @@ def compile_audit_prompt(
         task_lines.append(
             "For chapter recurrence, fingerprint at least three chapters by entry, pressure, "
             "transaction, turn, crest, and exit before flagging repeated architecture."
+        )
+    if repetition_enabled:
+        task_lines.append(
+            "For repetition, map exact echoes, repeated action/choreography frames, and narrator "
+            "explanations that merely restate visible dialogue or action; retain deliberate refrains, "
+            "motifs, and necessary recap, but identify the smallest cut, merge, or evidence-led repair."
         )
     if texture_enabled:
         task_lines.append(

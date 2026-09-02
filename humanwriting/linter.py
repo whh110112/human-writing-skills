@@ -122,6 +122,21 @@ VAGUE_NARRATIVE_MARKER_PATTERN = re.compile(
     r"仿佛|像是|似乎",
     re.IGNORECASE,
 )
+INTERPRETIVE_NARRATION_PATTERN = re.compile(
+    r"(?:他|她|我|他们|她们|这人|那人).{0,12}(?:知道|明白|发现|意识到|心里清楚|看在眼里|"
+    r"心里一(?:跳|紧|沉|酸)|一时不知道|终于懂得)|"
+    r"\b(?:he|she|they|i)\s+(?:knew|realized|understood|could see|felt sure|"
+    r"could not help but think)\b",
+    re.IGNORECASE,
+)
+ACTION_CHOREOGRAPHY_FRAME_PATTERN = re.compile(
+    r"一边[^。！？!?\n]{1,64}(?:一边|又)|"
+    r"(?:先|一会儿)[^。！？!?\n]{1,64}(?:再|一会儿)|"
+    r"\b(?:while\b[^.!?\n]{1,100}\b(?:and|while)\b|first\b[^.!?\n]{1,100}\bthen\b)"
+    r"|\b(?:mientras\b[^.!?\n]{1,100}\by\b|primero\b[^.!?\n]{1,100}\bluego\b)"
+    r"|\b(?:pendant que\b[^.!?\n]{1,100}\bet\b|d['’]abord\b[^.!?\n]{1,100}\bpuis\b)",
+    re.IGNORECASE,
+)
 DIALOGUE_QUOTE_PATTERN = re.compile(r"[\“\"](?P<content>[^\”\"\n]{4,240})[\”\"]")
 DIALOGUE_PRESSURE_PATTERN = re.compile(
     r"[？?！!]|你|你们|请|别|不要|告诉我|回答|为什么|怎么|必须|不会|不许|"
@@ -527,6 +542,40 @@ def _sentence_spans(text: str) -> list[tuple[int, int, str]]:
     ]
 
 
+def _normalized_sentence_for_repetition(sentence: str) -> str:
+    """Keep only enough surface form to catch verbatim, non-trivial echoes."""
+    return re.sub(r"[^\w\u4e00-\u9fff]+", "", sentence).casefold()
+
+
+def _exact_sentence_repetition_findings(
+    text: str,
+    masked: str,
+    allowed: set[str],
+) -> list[LintFinding]:
+    if "REP001" in allowed or "exact-sentence-recurrence" in allowed:
+        return []
+    seen: dict[str, tuple[int, int]] = {}
+    for start, end, sentence in _sentence_spans(masked):
+        normalized = _normalized_sentence_for_repetition(sentence)
+        if len(normalized) < 18:
+            continue
+        earlier = seen.get(normalized)
+        if earlier is not None and start - earlier[1] >= 24:
+            return [
+                _finding_from_span(
+                    text,
+                    "REP001",
+                    "exact-sentence-recurrence",
+                    "medium",
+                    start,
+                    end,
+                    "A non-trivial sentence repeats verbatim after the scene has moved. Keep it only when the return changes speaker, evidence, consequence, or meaning; otherwise cut, merge, or replace the echo with the next state change.",
+                )
+            ]
+        seen.setdefault(normalized, (start, end))
+    return []
+
+
 def _terminal_paragraphs(masked: str) -> list[tuple[int, int, str]]:
     paragraphs = _paragraph_spans(masked)
     if not paragraphs:
@@ -730,6 +779,52 @@ def _narrative_naturalness_findings(
                 "Vague affect and perception markers recur at high density; keep meaningful uncertainty, but replace repeated labels with owned evidence, action, or consequence.",
             )
         )
+
+    interpretive_matches = list(INTERPRETIVE_NARRATION_PATTERN.finditer(masked))
+    interpretive_paragraphs = {
+        index
+        for index, (start, end, _) in enumerate(paragraphs)
+        if any(start <= match.start() < end for match in interpretive_matches)
+    }
+    if (
+        len(interpretive_matches) >= 4
+        and len(interpretive_matches) * 1000 >= max(len(masked), 1)
+        and len(interpretive_paragraphs) >= 3
+        and enabled("NAT005", "interpretive-narration-recurrence")
+    ):
+        first = interpretive_matches[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "NAT005",
+                "interpretive-narration-recurrence",
+                "low",
+                first.start(),
+                first.end(),
+                "Narration repeatedly names what nearby dialogue or action can already show. Keep interpretations that add uncertainty, a misreading, or a consequence; otherwise let the evidence carry the beat.",
+            )
+        )
+
+    choreography_matches = list(ACTION_CHOREOGRAPHY_FRAME_PATTERN.finditer(masked))
+    if (
+        len(choreography_matches) >= 5
+        and len(choreography_matches) * 900 >= max(len(masked), 1)
+        and enabled("NAT006", "action-choreography-recurrence")
+    ):
+        first = choreography_matches[0]
+        findings.append(
+            _finding_from_span(
+                text,
+                "NAT006",
+                "action-choreography-recurrence",
+                "low",
+                first.start(),
+                first.end(),
+                "The same multi-action frame recurs at high density. Keep deliberate rhythm, but vary the next beat through a changed choice, interruption, consequence, or viewpoint-selected detail instead of another inventory.",
+            )
+        )
+
+    findings.extend(_exact_sentence_repetition_findings(text, masked, allowed))
 
     if enabled("END001", "reflective-bookend"):
         for start, end, _ in _terminal_paragraphs(masked):

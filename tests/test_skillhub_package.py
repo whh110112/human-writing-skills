@@ -35,6 +35,7 @@ class SkillHubPackageTests(unittest.TestCase):
             self.assertTrue(output.joinpath("humanwriting", "linter.py").is_file())
             self.assertTrue(output.joinpath("skills", "fiction.md").is_file())
             self.assertTrue(output.joinpath("skills", "earned-ending-audit.md").is_file())
+            self.assertTrue(output.joinpath("skills", "repetition-exposition-audit.md").is_file())
             self.assertTrue(output.joinpath("humanwriting", "longform.py").is_file())
             self.assertTrue(output.joinpath("tests", "test_linter.py").is_file())
             self.assertFalse(output.joinpath(".github").exists())

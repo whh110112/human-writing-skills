@@ -84,6 +84,25 @@ human-writing-skills lint --draft chapter.md --style fiction
 `END001` 负责。搜索关键词：**AI小说结尾、AI式结尾、生硬结尾审查、场景结尾审查、
 章节结尾审查、反思式结尾、总结式尾句、伪收束、无意义升华、去AI味结尾**。
 
+## 重复回声、解释性旁白与场景经济性
+
+有些稿子没有明显套话，读起来却仍然像模型生成：同一句、同一个意象、同一套动作或
+同一个旁白结论被换词重播，场景并没有新增后果。叙事专用的
+`repetition-exposition-audit` 会区分有意义的复沓、必要前情回顾与无效重复，审查逐字
+回声、动作编排循环、平均扫视式细节清单，以及对台词/动作已表达内容的重复解释。
+
+```powershell
+# 独立且 token 受控的叙事审查
+human-writing-skills audit --draft chapter.md --document-type fiction --profile repetition
+
+# 长稿只在匹配到叙事信号时加入这一阶段
+human-writing-skills pipeline --draft chapter.md --lint-style fiction --auto --output-dir chapter-audit
+```
+
+`REP001` 定位非短句的逐字回声；`NAT005`、`NAT006` 以低风险提示解释性旁白和
+动作框架的高密度复现。它们是编辑证据，不是作者身份判断，也可用 allowlist 放行。
+快速 humanize 与严肃文本流程不会加载这个模块。
+
 ## 这个项目解决什么
 
 | 常见问题 | 项目提供的办法 |
@@ -96,6 +115,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | 模糊归因、意义拔高、假范围、同义词轮换和排版套路反复出现 | 按文体和密度审查表层模式，不搞全局禁词 |
 | 小说被“下午”“某地”“新的决定”等小标题切碎 | 只对叙事文体检查，保留作品名和章节名，要求用正文完成场景过渡 |
 | 场景已经结束，又补风景、沉默、感悟或未来展望 | 定位最后一个有效变化，用删除测试清理伪收束，并按文体选择真正有功能的结尾 |
+| 同一动作、反应或旁白反复重播，场景像在原地打转 | 仅叙事文体检查逐字回声、动作编排循环、平均扫视和冗余解释 |
 | 不同文体都写成一种味道 | 为不同文体提供独立 `SKILLS` |
 | 长文本容易忘记剧情和设定 | 使用轻量级 ledger 记录人物、规则、伏笔和状态 |
 | 数月或一年间文风、人物对白因模型或提示词变化而漂移 | `chunk-audit` 用固定基准、大纲和唯一正文分块做跨块审查与文风统一 |
@@ -155,6 +175,7 @@ human-writing-skills lint --draft chapter.md --style fiction
 | `formulaic-structure-audit` | 过于整齐的三连式、双向“不是/是”对举、连续“比”比较和每段干净收束 |
 | `prose-progress-audit` | 段落没有新增状态，或关键台词/动作尚未被接收就切换话题与场景 |
 | `narrative-naturalness-audit` | 只在深度/显式 AI 痕迹审查中检查六拍以上反复出现的场景配方与开场/收束节拍 |
+| `repetition-exposition-audit` | 仅叙事文体检查逐字回声、动作编排循环、平均扫视与冗余解释性旁白 |
 | `earned-ending-audit` | 检查反思式尾句、风景渐隐、伪收束、套路 kicker 和最后有效变化之后的无意义升华 |
 | `imperfect-prose` | 文字太干净、太对称、太像统一润色 |
 | `vocal-rhythm` | 朗读时节奏单调、缺少呼吸点 |
@@ -413,7 +434,7 @@ tests/               标准库单元测试
 试探、安慰、和解、对峙等言语中心或人物互动场景时，才自动加入对白模块；普通叙述
 和严肃文体不会误触发。
 审稿中的 `voice`、`register`、`capability`、`serial`、`world`、`process`、`momentum`、`salience`、
-`recurrence`、`texture`、`sources`、`preservation` 仍不塞入宽覆盖的 `full`：
+`recurrence`、`repetition`、`texture`、`sources`、`preservation` 仍不塞入宽覆盖的 `full`：
 
 ```powershell
 human-writing-skills build --style fiction --task "写一场两位角色各有所求的谈判。"
@@ -432,7 +453,8 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 负责电影式开场堆料、叙事距离、比喻与感官负载、单行段落成串、动作后重复解释
 情绪以及人物资料倾倒。`world` 只在明确世界坐标出现时检查兼容性；`process`
 检查关键结果是否由过程赚到；`salience` 只对长稿检查注意力预算；`recurrence`
-至少需要三章；`sources` 需要严肃文体和明确来源文件。
+至少需要三章；`repetition` 只在足够长且出现重复解释/动作信号的叙事稿中加入；`sources`
+需要严肃文体和明确来源文件。
 
 生成时，`world`、`process` 和 `attention-budget-audit` 也只会分别在任务出现明确
 世界设定、关键过程、扩写/长稿/灌水审查信号时加入，不随普通 `--deep-review` 加载。
@@ -455,6 +477,7 @@ human-writing-skills audit --draft chapters.md --profile recurrence
 | `process` | 承诺、尝试、阻力、判断、代价、证据与结果的赚取链 |
 | `salience` | 长稿注意力分配、低价值扩写和跨段语义回声 |
 | `recurrence` | 三章以上的章节结构指纹和模板复读 |
+| `repetition` | 仅叙事文体检查逐字回声、动作框架复现和重复解释可见信息 |
 | `texture` | 叙事距离、场景入场负载、意象、段落节拍和资料投放 |
 | `physical` | 座位、空间、容量、触达、服装、道具和伤势 |
 | `relationship` | 关系立场、当前听众、信息权限、称谓和秘密泄露 |
@@ -528,7 +551,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、语言语域、战力状态、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 与 `capability` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`sources` 只有来源文件与严肃文体同时成立才加载。高成本的 `preservation` 不自动加入，使用 `--stage preservation --original original.md` 显式运行。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
+每个阶段应放到新的模型会话或独立 API 请求运行。自动模式会保留逻辑、AI 痕迹和校对，再按人物、关系、空间、精确数字、持续对白、语言语域、战力状态、世界坐标、关键过程、稿件长度和多章结构追加专项阶段。`serial` 与 `capability` 需要账本；`fidelity` 需要原文；`salience` 只处理至少 4000 字符且段落充分的长叙事；`recurrence` 至少需要三章；`repetition` 只处理足够长且出现重复解释或动作框架信号的叙事稿；`sources` 只有来源文件与严肃文体同时成立才加载。高成本的 `preservation` 不自动加入，使用 `--stage preservation --original original.md` 显式运行。只有需要统计诊断时再加 `--with-stats`。清单会说明每项选择和跳过原因。
 
 - 详细说明：[docs/audit-pipeline.zh-CN.md](docs/audit-pipeline.zh-CN.md)
 
@@ -613,6 +636,9 @@ python -m humanwriting.cli build `
 - `prose-progress-audit`：检查每段是否真的推进了事实、关系、证据、动作或压力
 - `narrative-naturalness-audit`：只在深度或显式 AI 痕迹审查中检查六拍以上重复的场景配方与开场/收束节拍；局部套话、结构和对白承接分别交给其主责模块；普通 quick 不加载
 - `natural-measurement`：小说、网文和自媒体中检查不合语境的假精确数字
+
+重复回声与解释性旁白属于成稿审查，不塞入普通生成提示词：使用 `audit --profile repetition`
+或叙事 `ai-trace`；长稿则让 `pipeline --auto` 在命中相应信号后单独增加这一阶段。
 
 `--strict-continuity` 会自动加入：
 

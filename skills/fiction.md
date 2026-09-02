@@ -26,6 +26,7 @@ Create prose that feels observed rather than generated. Let character desire, sc
   character knows, wants, can risk, or can no longer pretend.
 - Stop at the last earned consequence. Delete a terminal reflection or scenic dissolve
   when it adds no choice, knowledge, consequence, or changed image.
+- Keep returns only when they change meaning; let action and dialogue carry emotion before glossing it.
 - Do not insert unrequested time, place, mood, or action mini-headings inside narrative
   prose. Carry scene changes through prior residue, elapsed consequence, perception,
   or the first consequential action in the new time and place.

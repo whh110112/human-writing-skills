@@ -28,6 +28,14 @@ cinematic opening bundles (`OPEN002`), repeated vague introspection
 these rules for news or academic writing. Code, URLs, and Markdown
 quotations are masked.
 
+Narrative styles also receive conservative recurrence evidence: `REP001` marks a
+non-trivial sentence repeated verbatim after the passage has moved; `NAT005` marks
+high-density interpretive narration; and `NAT006` marks repeated multi-action frames.
+They do not ban refrain, recap, or a single action pattern. Review whether a return
+changes speaker, evidence, consequence, or meaning, then allowlist intentional use
+with `exact-sentence-recurrence`, `interpretive-narration-recurrence`, or
+`action-choreography-recurrence`.
+
 For `fiction` and `webnovel`, `END001` inspects only scene or document exits. It flags
 a terminal suffix when several cues combine into a reflective bookend: scenery or
 time dissolves, staged stillness, explicit reflection, and thematic summation after

@@ -17,6 +17,7 @@ PIPELINE_PROFILES = [
     "momentum",
     "salience",
     "recurrence",
+    "repetition",
     "physical",
     "ai-trace",
     "ending",
@@ -112,6 +113,13 @@ FORMULAIC_INTROSPECTION_PATTERN = re.compile(
     r"不是那种.{0,45}而是|像是.{0,35}(?:又像是|却又像)|"
     r"(?:他|她|我)不知道为什么|(?:他|她|我)?莫名(?:地|其妙|就)?|"
     r"说不清(?:是什么|为什么)|无法形容(?:的|这种)",
+)
+REPETITION_EXPOSITION_PATTERN = re.compile(
+    r"(?:他|她|我|他们|她们).{0,12}(?:知道|明白|发现|意识到|心里清楚|看在眼里)|"
+    r"一边.{0,48}(?:一边|又)|(?:先|一会儿).{0,48}(?:再|一会儿)|"
+    r"\b(?:he|she|they|i)\s+(?:knew|realized|understood|could see)|"
+    r"\b(?:while\b.{0,80}\b(?:and|while)\b|first\b.{0,80}\bthen\b)",
+    re.IGNORECASE,
 )
 WORLD_STRONG_PATTERN = re.compile(
     r"世界观|架空|世界规则|时代背景|历史背景|科技水平|制度设定|"
@@ -315,6 +323,17 @@ def _recurrence_reason(text: str) -> tuple[bool, str]:
     return True, f"Detected {headings} chapters for cross-chapter structural fingerprinting."
 
 
+def _repetition_reason(text: str, serious_document: bool) -> tuple[bool, str]:
+    if serious_document:
+        return False, "Repetition/exposition review is reserved for narrative prose, not serious factual documents."
+    markers = len(REPETITION_EXPOSITION_PATTERN.findall(text))
+    narrative = bool(NARRATIVE_PATTERN.search(text) or CHARACTER_PATTERN.search(text))
+    selected = narrative and len(text) >= 1400 and markers >= 4
+    if not selected:
+        return False, "No sufficiently long narrative with repeated explanation or choreography cues found."
+    return True, f"Detected narrative repetition/exposition cues={markers} across {len(text)} characters."
+
+
 def detect_audit_profiles(
     draft: str,
     reference_active: bool = False,
@@ -336,6 +355,7 @@ def detect_audit_profiles(
         "momentum": _momentum_reason(draft),
         "salience": _salience_reason(draft),
         "recurrence": _recurrence_reason(draft),
+        "repetition": _repetition_reason(draft, serious_document),
         "physical": _match_reason(PHYSICAL_PATTERN, draft, "space, movement, appearance, or prop"),
         "texture": _texture_reason(draft),
         "numbers": _match_reason(NUMBER_PATTERN, draft, "exact-number"),

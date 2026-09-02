@@ -22,6 +22,12 @@ human-writing-skills lint --draft chapter.md --allow PREC001 --fail-score 35
 `SYN001` 只定位“把、被、向、从、因为、如果”等结构词停在句末的高置信缺失
 症状；更复杂的漏字仍由 `proofread` 按谓词槽位、并列结构和指代关系复核。
 
+叙事文体还会给出保守的复现证据：`REP001` 定位场景已经推进后非短句的逐字回声；
+`NAT005` 定位解释性旁白的高密度复现；`NAT006` 定位多动作框架反复套用。它们不禁用
+复沓、回顾或单次动作结构，而是要求复核这次回返是否新增说话人、证据、后果或意义。
+有意保留时可用 `exact-sentence-recurrence`、`interpretive-narration-recurrence` 或
+`action-choreography-recurrence` 放行。
+
 对 `fiction` 和 `webnovel`，`END001` 只检查场景或全文出口。它要求风景/时间渐隐、
 刻意静止、人物反思、主题总结等多个信号在最后有效变化之后组成反思式尾巴；单个安静
 意象或一次合理思考不会因为出现某个词就被判定。修复先做删除测试，不把它机械换成

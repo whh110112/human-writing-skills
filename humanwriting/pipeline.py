@@ -95,6 +95,7 @@ def select_pipeline_profiles(
             "momentum",
             "salience",
             "recurrence",
+            "repetition",
             "texture",
             "ending",
             "sources",
@@ -119,6 +120,8 @@ def select_pipeline_profiles(
             reason = "No factual --source files were supplied."
         elif profile == "sources":
             reason = "The draft is not a serious factual document."
+        elif profile == "repetition":
+            reason = "Optional narrative-only repetition and exposition pass; use --auto or select it explicitly."
         else:
             reason = "Optional high-cost stage; use --auto or select it explicitly."
         decisions.append(ProfileDecision(profile, include, reason))
@@ -291,7 +294,7 @@ def write_audit_pipeline(
             "",
             "Merge confirmed findings only after all stages finish. Deduplicate findings,",
             "resolve conflicts using quoted draft evidence, and apply repairs in this order:",
-            "optional stats -> logic -> character/relationship/voice/register/capability/serial/world/process/momentum -> salience/recurrence -> physical -> AI trace/ending/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
+            "optional stats -> logic -> character/relationship/voice/register/capability/serial/world/process/momentum -> salience/recurrence/repetition -> physical -> AI trace/ending/texture -> style match/fidelity/optional preservation -> numbers -> sources -> proofreading.",
             "Re-run affected downstream stages after any structural rewrite.",
             "",
         ]

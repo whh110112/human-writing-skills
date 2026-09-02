@@ -26,7 +26,7 @@ from .longform import verify_long_form_package, write_long_form_audit
 from .skills import list_style_skills
 
 
-SERVER_INFO = {"name": "advanced-human-writing", "version": "0.14.1"}
+SERVER_INFO = {"name": "advanced-human-writing", "version": "0.14.2"}
 PROTOCOL_VERSION = "2025-03-26"
 MAX_CONTEXT_CHARACTERS = 20000
 

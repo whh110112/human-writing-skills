@@ -93,6 +93,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("rewrite-fidelity", list_module_skills())
         self.assertIn("surface-pattern-audit", list_module_skills())
         self.assertIn("narrative-naturalness-audit", list_module_skills())
+        self.assertIn("repetition-exposition-audit", list_module_skills())
         self.assertIn("voice-ambiguity-preservation", list_module_skills())
         self.assertIn("humanize-examples", list_module_skills())
         self.assertIn("long-form-style-consistency", list_module_skills())
@@ -127,6 +128,7 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("Technique Module: formulaic-structure-audit", deep)
         self.assertIn("Technique Module: prose-progress-audit", deep)
         self.assertIn("Technique Module: narrative-naturalness-audit", deep)
+        self.assertNotIn("Technique Module: repetition-exposition-audit", deep)
         self.assertIn("Technique Module: imperfect-prose", deep)
         self.assertNotIn("Technique Module: earned-ending-audit", deep)
         self.assertNotIn("Technique Module: humanize-examples", deep)
@@ -161,7 +163,30 @@ class CompilerTests(unittest.TestCase):
         self.assertNotIn("Audit Module: formulaic-structure-audit", ending)
         self.assertNotIn("Audit Module: earned-ending-audit", ai_trace)
         self.assertIn("Audit Module: narrative-naturalness-audit", ai_trace)
+        self.assertIn("Audit Module: repetition-exposition-audit", ai_trace)
         self.assertNotIn("Audit Module: earned-ending-audit", full)
+
+    def test_repetition_profile_is_narrative_only_and_isolated(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            fiction = root / "fiction.md"
+            news = root / "news.md"
+            fiction.write_text("她把钥匙放回抽屉，又把钥匙放回抽屉。", encoding="utf-8")
+            news.write_text("市交通局公布了新的封路安排。", encoding="utf-8")
+            prompt = compile_audit_prompt(
+                str(fiction),
+                profiles=["repetition"],
+                document_type="fiction",
+            )
+            with self.assertRaisesRegex(ValueError, "limited to fiction"):
+                compile_audit_prompt(
+                    str(news),
+                    profiles=["repetition"],
+                    document_type="news-report",
+                )
+        self.assertIn("Selected profiles: repetition", prompt)
+        self.assertIn("Audit Module: repetition-exposition-audit", prompt)
+        self.assertNotIn("Audit Module: formulaic-structure-audit", prompt)
 
     def test_serious_ending_profile_uses_same_module_without_narrative_naturalness(self):
         with TemporaryDirectory() as directory:
@@ -865,6 +890,24 @@ class CompilerTests(unittest.TestCase):
         long_draft = "\n\n".join(["她看着门，想起上一章的争执。" * 30] * 12)
         salience = {item.profile for item in detect_audit_profiles(long_draft) if item.selected}
         self.assertIn("salience", salience)
+
+    def test_auto_detection_gates_repetition_to_long_narrative_evidence(self):
+        short = {item.profile for item in detect_audit_profiles("她知道他不想再谈。") if item.selected}
+        dense = "\n\n".join(
+            [
+                "她知道对方不想再谈，一边收拾文件，一边等门锁响。"
+                for _ in range(64)
+            ]
+        )
+        selected = {item.profile for item in detect_audit_profiles(dense) if item.selected}
+        serious = {
+            item.profile
+            for item in detect_audit_profiles(dense, serious_document=True)
+            if item.selected
+        }
+        self.assertNotIn("repetition", short)
+        self.assertIn("repetition", selected)
+        self.assertNotIn("repetition", serious)
 
     def test_source_grounding_requires_sources_and_serious_document(self):
         with TemporaryDirectory() as directory:

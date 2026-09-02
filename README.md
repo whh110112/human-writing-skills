@@ -100,6 +100,27 @@ deterministic preflight for narrative endings. Discovery terms: **AI story endin
 reflective ending, scene ending audit, chapter ending audit, formulaic conclusion,
 false closure, AI reflective bookend, and can't-help-but-reflect ending**.
 
+## Repetition, Exposition, And Scene Economy
+
+Some drafts avoid obvious stock phrases yet still feel generated because they repeat a
+line, image, action sequence, or narrator explanation with no changed consequence.
+The narrative-only `repetition-exposition-audit` separates intentional refrains and
+needed recap from exact echoes, repeated choreography, inventory-like viewpoint scans,
+and explanation that merely tells the reader what dialogue or action already showed.
+
+```powershell
+# Isolated, token-bounded narrative pass
+human-writing-skills audit --draft chapter.md --document-type fiction --profile repetition
+
+# Long drafts: add it only when matching narrative cues appear
+human-writing-skills pipeline --draft chapter.md --lint-style fiction --auto --output-dir chapter-audit
+```
+
+`REP001` flags a non-trivial verbatim sentence echo; `NAT005` and `NAT006` are
+low-severity density prompts for repeated interpretive narration and action frames.
+They are editing evidence, not authorship claims, and can be allowlisted. Quick
+humanization and serious-document workflows do not load this module.
+
 ## Why This Exists
 
 AI writing often fails in predictable ways:
@@ -114,6 +135,7 @@ AI writing often fails in predictable ways:
 | Surface AI patterns recur across a passage | Genre-aware checks for vague attribution, inflated significance, false ranges, synonym cycling, formatting habits, and comparison ladders |
 | Fiction is chopped up by time/place mini-headings | Narrative-only checks that preserve titles and chapters but require scene changes to move through prose |
 | A finished scene grows a scenic, reflective, or moralizing tail | Last-meaningful-change and deletion tests for false closure, with genre-specific ending contracts |
+| A scene replays the same action, reaction, or explanation until it becomes mechanical | Narrative-only evidence for exact echoes, repeated action frames, viewpoint inventory, and redundant gloss |
 | One style fits every genre | Separate Markdown `SKILLS` for different writing forms |
 | Long text loses continuity | A compact ledger for facts, plot, promises, and voice anchors |
 | Prose and character dialogue drift across months or model versions | A fixed baseline, canonical outline, unique audit chunks, and cross-chunk reconciliation |
@@ -170,6 +192,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `formulaic-structure-audit` | triplets, bidirectional contrast frames, chained comparisons, and overly neat closure |
 | `prose-progress-audit` | static paragraphs and pressure-bearing interactions abandoned before uptake or explicit deferral |
 | `narrative-naturalness-audit` | in deep or explicit AI-trace review, catches recurring six-beat scene recipes and copied entry/closure cadence |
+| `repetition-exposition-audit` | narrative-only exact echoes, repeated action choreography, inventory drift, and redundant explanatory narration |
 | `earned-ending-audit` | reflective bookends, scenic dissolves, false closure, stock kickers, and conclusions added after the last meaningful change |
 | `imperfect-prose` | prose that is too clean, too symmetrical, or too polished |
 | `vocal-rhythm` | flat cadence and missing read-aloud breath points |
@@ -431,7 +454,7 @@ the dialogue modules only when a fiction or webnovel task explicitly asks for a
 speech-centered or character-interaction scene such as dialogue, negotiation, reunion,
 testing, reconciliation, confrontation, a meeting, interrogation, or argument.
 Narration-only and serious-document tasks do not trigger them. The `voice`,
-`serial`, `world`, `process`, `momentum`, `salience`, `recurrence`, `texture`, and
+`serial`, `world`, `process`, `momentum`, `salience`, `recurrence`, `repetition`, `texture`, and
 `sources` and `preservation` audit profiles remain outside broad `full` review:
 
 ```powershell
@@ -452,12 +475,16 @@ prior chapters or a ledger, `momentum` for a multi-chapter draft, and `texture` 
 narrative distance, cinematic opening stacks, imagery load, paragraph fragmentation,
 emotional over-explanation, and detail inventory. Use `world` only with explicit
 setting constraints, `process` for consequential domain work, `salience` for long
-drafts, `recurrence` for at least three chapters, and `sources` only with serious
+drafts, `recurrence` for at least three chapters, `repetition` for long enough narrative
+drafts with matching repetition/exposition cues, and `sources` only with serious
 documents and factual source files.
 
 During generation, world, process, and attention-budget modules activate only from
 explicit setting, consequential-process, expansion, long-form, or dilution signals;
 ordinary `--deep-review` does not load them.
+The repetition/exposition module is likewise audit-first: use `--profile repetition`
+or narrative `ai-trace`, and let `pipeline --auto` add its separate pass only when
+the draft supplies matching cues.
 
 ### Audit Profiles
 
@@ -477,6 +504,7 @@ ordinary `--deep-review` does not load them.
 | `process` | Promise, attempt, resistance, judgment, cost, evidence, and earned result |
 | `salience` | Long-draft attention allocation, dilution, and semantic echoes |
 | `recurrence` | Chapter fingerprints and repeated architecture across three or more chapters |
+| `repetition` | Narrative-only exact echoes, repeated action frames, and explanation that duplicates visible evidence |
 | `texture` | Narrative distance, scene-entry load, imagery, paragraph cadence, and detail disclosure |
 | `physical` | Position, capacity, reach, clothing, props, and injuries |
 | `relationship` | Audience, stance, information permissions, rank, and secret leaks |
@@ -557,7 +585,7 @@ human-writing-skills pipeline `
   --output-dir chapter-audit
 ```
 
-Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` and `capability` require context; `fidelity` requires an original; `salience` requires a long narrative of at least 4,000 characters; `recurrence` requires at least three chapters; and `sources` requires both a serious document and explicit factual sources. The higher-cost `preservation` comparison is explicit-only: use `--stage preservation --original original.md`. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
+Run every stage in a fresh model conversation or independent API request. Automatic mode keeps logic, AI-trace, and proofreading stages, then adds focused stages only when their cues and gates match. `serial` and `capability` require context; `fidelity` requires an original; `salience` requires a long narrative of at least 4,000 characters; `recurrence` requires at least three chapters; `repetition` requires a sufficiently long narrative with repeated explanation or choreography cues; and `sources` requires both a serious document and explicit factual sources. The higher-cost `preservation` comparison is explicit-only: use `--stage preservation --original original.md`. Add `--with-stats` only when distributional diagnostics are useful. The manifest explains every selection and skip.
 
 - Guide: [docs/audit-pipeline.md](docs/audit-pipeline.md)
 
