@@ -48,6 +48,58 @@ DSH MCP client and starts the same verified local coordination service. See the
 [agent orchestration guide](docs/agent-orchestration.md) and
 [DeepSeek Harness plugin guide](plugins/deepseek-harness/README.md).
 
+The MCP server also supports day-to-day single-document work: `lint_text`,
+`get_style_statistics`, `verify_protected_content`, `compile_humanize_prompt`,
+`compile_audit_prompt`, and `compile_ledger_extraction`. It advertises a small
+native prompt menu (`humanize-quick`, `dialogue-audit`, `continuity-audit`,
+`serious-rewrite`, and more) for hosts that implement MCP Prompts. These tools
+stay local and return evidence or compiled instructions; they never send a draft
+to a model themselves.
+
+## Ledger Auto-Extraction And Project Defaults
+
+Long-form continuity should not require hand-maintaining every fact from scratch.
+`extract-ledger` compiles an evidence-first prompt for turning existing chapters
+into a **candidate** continuity ledger. Its output distinguishes observed facts,
+inferences, conflicts, and unknowns, and requires a quote or location for every
+proposed state, object, obligation, injury, resource change, or spatial relation.
+Review it before making it canonical.
+
+```powershell
+human-writing-skills extract-ledger --draft chapters-01-10.md --context novel-ledger.md --output ledger-extraction-prompt.md
+```
+
+Use `.humanwriting.json` in a project root to persist only lightweight defaults:
+style, document type, a relative ledger path, and lint allow-list entries. Explicit
+CLI flags win, and the file cannot silently activate deep profiles or expensive
+reference/source passes. See the [ledger extraction guide](docs/ledger-extraction.md).
+Pass `--no-project-config` when a one-off command must ignore the nearest project file.
+
+```json
+{
+  "style": "fiction",
+  "document_type": "fiction",
+  "context": "novel-ledger.md",
+  "allow": ["END001"]
+}
+```
+
+## Editor, CI, And Python Distribution
+
+Text-facing commands accept `--draft -` for standard input. `lint --format github`
+emits GitHub Actions annotations, while `list --kind rule` prints the current rule
+catalog with severity, category, and repair direction.
+
+```powershell
+git diff -- docs\ | human-writing-skills lint --draft - --style general --format github --source-name docs-change.md
+human-writing-skills list --kind rule --format json
+```
+
+Each GitHub Release builds a wheel and source distribution, then attaches them as
+Release assets. PyPI publication uses GitHub Trusted Publishing only after the
+repository variable `PYPI_PUBLISH_ENABLED=true` and the PyPI trusted publisher
+have been configured; no PyPI token is stored in this repository.
+
 It helps a writing agent move away from generic, template-shaped output and toward prose that has intention, texture, continuity, and genre discipline. The project is especially useful for long-form generation, where characters, settings, arguments, facts, and unresolved threads often drift after several passages.
 
 The goal is not deception. The goal is better writing: clearer instructions, stronger revision habits, and reusable style constraints that make AI-assisted drafts feel edited by a human.

@@ -1,0 +1,14 @@
+---
+description: Produce reviewable, genre-aware prose while preserving facts and continuity.
+globs: ["**/*.md", "**/*.mdx", "**/*.txt"]
+alwaysApply: false
+---
+
+Use the project's selected writing style and preserve established facts, terminology,
+speaker identity, relationships, spatial state, props, injuries, unresolved promises,
+and sources. Do not claim that a detector can prove authorship.
+
+For fiction, let dialogue and action change the scene before explaining their emotion.
+For serious writing, preserve numbers, citations, URLs, code, named terms, and claim scope.
+Use `human-writing-skills lint`, `stats`, `verify`, or the MCP tools when the task asks
+for auditing. For long work, use a confirmed continuity ledger and chunked audit package.

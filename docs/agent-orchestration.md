@@ -7,7 +7,8 @@ multiple agents can share without giving every session the whole manuscript.
 ## What The Server Does
 
 `human-writing-mcp` operates only inside an explicit project root. It does not
-call a model and it does not upload drafts. It exposes seven operations:
+call a model and it does not upload drafts. It exposes long-form coordination,
+single-text analysis, and compiled editorial instructions:
 
 | Tool | Purpose |
 | --- | --- |
@@ -18,11 +19,25 @@ call a model and it does not upload drafts. It exposes seven operations:
 | `verify_audit_coverage` | Gate reconciliation on every required report. |
 | `get_reconciliation_task` | Return the cross-document editor prompt after the gate passes. |
 | `read_project_context` | Read a bounded ledger, outline, source note, or approved reference. |
+| `lint_text` | Return local deterministic findings and evidence spans for supplied text. |
+| `get_style_statistics` | Return sentence variation, MATTR, and transition density. |
+| `verify_protected_content` | Compare source and rewritten text for protected values and terms. |
+| `compile_humanize_prompt` / `compile_audit_prompt` | Return a bounded prompt for one supplied passage. |
+| `compile_ledger_extraction` | Return an evidence-backed candidate-ledger extraction prompt. |
 
 The server rejects file paths outside its root. A receipt must include the task
 ID, `Coverage: complete`, checked units, findings, and `Unchecked or blocked
 material: none`. A missing, blocked, or partial receipt keeps reconciliation
 closed.
+
+## Native Prompt Menu
+
+Hosts that implement MCP Prompts can discover a curated menu through `prompts/list`
+and resolve it through `prompts/get`. The server exposes task-level prompts rather
+than every internal module: `humanize-quick`, `humanize-deep`, `dialogue-audit`,
+`continuity-audit`, `style-match`, `serious-rewrite`, and `extract-ledger`.
+Client UI determines whether these appear as slash commands. Each prompt requires
+the passage text and may accept compact context; no prompt calls an external model.
 
 ## Local Stdio Setup
 

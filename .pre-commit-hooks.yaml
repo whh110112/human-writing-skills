@@ -1,0 +1,7 @@
+- id: human-writing-lint
+  name: human-writing-lint
+  description: Check Markdown prose for reviewable formulaic writing patterns.
+  entry: python -m humanwriting.precommit
+  language: system
+  files: \.(md|mdx|rst|txt)$
+  args: [--style, general, --fail-score, "15"]

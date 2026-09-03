@@ -22,13 +22,29 @@ from .audit_queue import (
     list_audit_tasks,
     submit_audit_report,
 )
+from .compiler import compile_audit_prompt_text, compile_humanize_prompt_text
+from .ledger import compile_ledger_extraction_prompt_text
+from .linter import lint_text
 from .longform import verify_long_form_package, write_long_form_audit
+from .protection import compare_protected_content
 from .skills import list_style_skills
+from .statistics import analyze_style_statistics
 
 
-SERVER_INFO = {"name": "advanced-human-writing", "version": "0.14.2"}
+SERVER_INFO = {"name": "advanced-human-writing", "version": "0.15.0"}
 PROTOCOL_VERSION = "2025-03-26"
 MAX_CONTEXT_CHARACTERS = 20000
+MAX_TEXT_CHARACTERS = 80000
+
+PROMPTS = [
+    ("humanize-quick", "Compile a compact rewrite prompt for one supplied passage."),
+    ("humanize-deep", "Compile a deeper rewrite prompt for one supplied passage."),
+    ("dialogue-audit", "Compile a fiction dialogue, register, and response-linkage audit."),
+    ("continuity-audit", "Compile a fiction continuity audit with physical and relationship checks."),
+    ("style-match", "Compile a rewrite prompt with an explicit style direction."),
+    ("serious-rewrite", "Compile a protected rewrite prompt for news, academic, legal, or technical prose."),
+    ("extract-ledger", "Compile an evidence-backed continuity-ledger extraction prompt."),
+]
 
 
 def _tool(name: str, description: str, properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
@@ -109,6 +125,67 @@ TOOLS = [
         },
         ["path"],
     ),
+    _tool(
+        "lint_text",
+        "Run deterministic writing-pattern checks on supplied text and return evidence locations. This is not an authorship detector.",
+        {
+            "text": {"type": "string", "description": "Text to inspect; kept in the local MCP process."},
+            "style": {"type": "string", "enum": ["general", *list_style_skills()], "default": "general"},
+            "allow": {"type": "array", "items": {"type": "string"}, "default": []},
+        },
+        ["text"],
+    ),
+    _tool(
+        "get_style_statistics",
+        "Calculate language-aware sentence variation, lexical diversity, and transition density for supplied text.",
+        {
+            "text": {"type": "string", "description": "Text to analyze locally."},
+            "style": {"type": "string", "enum": ["general", *list_style_skills()], "default": "general"},
+        },
+        ["text"],
+    ),
+    _tool(
+        "verify_protected_content",
+        "Compare source and rewritten text for changed numbers, citations, URLs, code, quotes, and named terms.",
+        {
+            "source_text": {"type": "string"},
+            "candidate_text": {"type": "string"},
+            "terms": {"type": "array", "items": {"type": "string"}, "default": []},
+        },
+        ["source_text", "candidate_text"],
+    ),
+    _tool(
+        "compile_humanize_prompt",
+        "Compile a local AI-ready humanization prompt from supplied text without sending it to a model.",
+        {
+            "draft": {"type": "string"},
+            "style": {"type": "string", "enum": list_style_skills()},
+            "mode": {"type": "string", "enum": ["quick", "deep"], "default": "quick"},
+            "task": {"type": "string"},
+            "context_text": {"type": "string"},
+        },
+        ["draft", "style"],
+    ),
+    _tool(
+        "compile_audit_prompt",
+        "Compile a bounded single-document audit prompt from supplied text without sending it to a model.",
+        {
+            "draft": {"type": "string"},
+            "document_type": {"type": "string", "default": "auto"},
+            "profiles": {"type": "array", "items": {"type": "string"}, "default": ["full"]},
+            "context_text": {"type": "string"},
+        },
+        ["draft"],
+    ),
+    _tool(
+        "compile_ledger_extraction",
+        "Compile a candidate-ledger extraction prompt that separates observed facts from inference and requires evidence.",
+        {
+            "draft": {"type": "string"},
+            "existing_ledger": {"type": "string"},
+        },
+        ["draft"],
+    ),
 ]
 
 
@@ -143,6 +220,45 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
 
     if not isinstance(arguments, dict):
         raise ValueError("Tool arguments must be an object.")
+    if name == "lint_text":
+        text = _bounded_string(arguments, "text", MAX_TEXT_CHARACTERS)
+        style = _optional_string(arguments, "style", "general")
+        allow = _string_list(arguments, "allow")
+        return _text_result(lint_text(text, style=style, allow=set(allow)).to_dict())
+    if name == "get_style_statistics":
+        text = _bounded_string(arguments, "text", MAX_TEXT_CHARACTERS)
+        style = _optional_string(arguments, "style", "general")
+        return _text_result(analyze_style_statistics(text, style=style).to_dict())
+    if name == "verify_protected_content":
+        source = _bounded_string(arguments, "source_text", MAX_TEXT_CHARACTERS)
+        candidate = _bounded_string(arguments, "candidate_text", MAX_TEXT_CHARACTERS)
+        return _text_result(compare_protected_content(source, candidate, terms=_string_list(arguments, "terms")).to_dict())
+    if name == "compile_humanize_prompt":
+        return _text_result(
+            compile_humanize_prompt_text(
+                _bounded_string(arguments, "draft", MAX_TEXT_CHARACTERS),
+                style=_string(arguments, "style"),
+                mode=_optional_string(arguments, "mode", "quick"),
+                task=_optional_nullable_string(arguments, "task"),
+                context_text=_optional_nullable_string(arguments, "context_text", MAX_CONTEXT_CHARACTERS),
+            )
+        )
+    if name == "compile_audit_prompt":
+        return _text_result(
+            compile_audit_prompt_text(
+                _bounded_string(arguments, "draft", MAX_TEXT_CHARACTERS),
+                document_type=_optional_string(arguments, "document_type", "auto"),
+                profiles=_string_list(arguments, "profiles") or ["full"],
+                context_text=_optional_nullable_string(arguments, "context_text", MAX_CONTEXT_CHARACTERS),
+            )
+        )
+    if name == "compile_ledger_extraction":
+        return _text_result(
+            compile_ledger_extraction_prompt_text(
+                _bounded_string(arguments, "draft", MAX_TEXT_CHARACTERS),
+                _optional_nullable_string(arguments, "existing_ledger", MAX_CONTEXT_CHARACTERS) or "",
+            )
+        )
     if name == "plan_long_form_audit":
         draft = _safe_path(root, _string(arguments, "draft_path"))
         output = _safe_path(root, _string(arguments, "output_dir"))
@@ -230,6 +346,93 @@ def _optional_string(arguments: dict[str, Any], name: str, default: str) -> str:
     return value
 
 
+def _optional_nullable_string(arguments: dict[str, Any], name: str, maximum: int | None = None) -> str | None:
+    value = arguments.get(name)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError(f"{name} must be a string.")
+    if maximum is not None and len(value) > maximum:
+        raise ValueError(f"{name} must be at most {maximum} characters.")
+    return value
+
+
+def _bounded_string(arguments: dict[str, Any], name: str, maximum: int) -> str:
+    value = _string(arguments, name)
+    if len(value) > maximum:
+        raise ValueError(f"{name} must be at most {maximum} characters.")
+    return value
+
+
+def _string_list(arguments: dict[str, Any], name: str) -> list[str]:
+    value = arguments.get(name, [])
+    if not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value):
+        raise ValueError(f"{name} must be a list of non-empty strings.")
+    return value
+
+
+def _prompt_descriptors() -> list[dict[str, Any]]:
+    return [
+        {
+            "name": name,
+            "description": description,
+            "arguments": [
+                {"name": "draft", "description": "Text to analyze or rewrite.", "required": True},
+                {"name": "style", "description": "Optional style such as fiction or news-report.", "required": False},
+                {"name": "context", "description": "Optional ledger or prior-context text.", "required": False},
+            ],
+        }
+        for name, description in PROMPTS
+    ]
+
+
+def get_prompt(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    draft = _bounded_string(arguments, "draft", MAX_TEXT_CHARACTERS)
+    context = _optional_nullable_string(arguments, "context", MAX_CONTEXT_CHARACTERS)
+    requested_style = _optional_string(arguments, "style", "fiction")
+    if name == "humanize-quick":
+        prompt = compile_humanize_prompt_text(draft, style=requested_style, context_text=context)
+    elif name == "humanize-deep":
+        prompt = compile_humanize_prompt_text(draft, style=requested_style, mode="deep", context_text=context)
+    elif name == "dialogue-audit":
+        prompt = compile_audit_prompt_text(
+            draft,
+            document_type="fiction",
+            profiles=["voice", "register"],
+            context_text=context,
+        )
+    elif name == "continuity-audit":
+        prompt = compile_audit_prompt_text(
+            draft,
+            document_type="fiction",
+            profiles=["full"],
+            strict_continuity=True,
+            context_text=context,
+        )
+    elif name == "style-match":
+        prompt = compile_humanize_prompt_text(
+            draft,
+            style=requested_style,
+            task="Rewrite with the explicitly supplied style direction while preserving facts and avoiding phrase copying.",
+            context_text=context,
+        )
+    elif name == "serious-rewrite":
+        prompt = compile_humanize_prompt_text(
+            draft,
+            style=requested_style if requested_style != "fiction" else "news-report",
+            context_text=context,
+            protect_content=True,
+        )
+    elif name == "extract-ledger":
+        prompt = compile_ledger_extraction_prompt_text(draft, context or "")
+    else:
+        raise ValueError(f"Unknown prompt: {name}")
+    return {
+        "description": dict(PROMPTS)[name],
+        "messages": [{"role": "user", "content": {"type": "text", "text": prompt}}],
+    }
+
+
 def handle_message(message: dict[str, Any], root: Path) -> dict[str, Any] | None:
     """Handle the MCP methods needed by current Agent hosts."""
 
@@ -244,7 +447,7 @@ def handle_message(message: dict[str, Any], root: Path) -> dict[str, Any] | None
             request_id,
             {
                 "protocolVersion": PROTOCOL_VERSION,
-                "capabilities": {"tools": {"listChanged": False}},
+                "capabilities": {"tools": {"listChanged": False}, "prompts": {"listChanged": False}},
                 "serverInfo": SERVER_INFO,
                 "instructions": "Use project-local paths only. Plan bounded reviews, submit complete receipts, verify coverage, then reconcile.",
             },
@@ -253,6 +456,16 @@ def handle_message(message: dict[str, Any], root: Path) -> dict[str, Any] | None
         return _result(request_id, {})
     if method == "tools/list":
         return _result(request_id, {"tools": TOOLS})
+    if method == "prompts/list":
+        return _result(request_id, {"prompts": _prompt_descriptors()})
+    if method == "prompts/get":
+        params = message.get("params", {})
+        if not isinstance(params, dict) or not isinstance(params.get("name"), str):
+            return _error(request_id, -32602, "prompts/get requires a prompt name")
+        try:
+            return _result(request_id, get_prompt(params["name"], params.get("arguments", {})))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            return _result(request_id, _text_result(f"{type(exc).__name__}: {exc}", is_error=True))
     if method == "tools/call":
         params = message.get("params", {})
         if not isinstance(params, dict) or not isinstance(params.get("name"), str):

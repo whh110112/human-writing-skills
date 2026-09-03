@@ -5,10 +5,18 @@ import json
 import sys
 from pathlib import Path
 
-from .compiler import compile_audit_prompt, compile_humanize_prompt, compile_prompt
+from .compiler import (
+    compile_audit_prompt,
+    compile_audit_prompt_text,
+    compile_humanize_prompt,
+    compile_humanize_prompt_text,
+    compile_prompt,
+)
+from .config import apply_project_defaults
 from .detection import PIPELINE_PROFILES
 from .fixer import fix_file, format_fix_report
-from .linter import format_lint_report, lint_file
+from .ledger import compile_ledger_extraction_prompt, compile_ledger_extraction_prompt_text
+from .linter import format_lint_report, lint_file, lint_rule_catalog, lint_text
 from .longform import (
     AGENT_MODES,
     DEFAULT_BASELINE_BUDGET,
@@ -23,7 +31,7 @@ from .pipeline import write_audit_pipeline
 from .protection import compare_protected_files, format_protection_report
 from .reference import DEFAULT_REFERENCE_BUDGET
 from .source import DEFAULT_SOURCE_BUDGET
-from .statistics import analyze_style_file, format_style_statistics
+from .statistics import analyze_style_file, analyze_style_statistics, format_style_statistics
 from .skills import list_module_skills, list_skills, list_style_skills
 
 
@@ -71,13 +79,19 @@ def build_parser() -> argparse.ArgumentParser:
     list_parser = subparsers.add_parser("list", help="List available writing skills.")
     list_parser.add_argument(
         "--kind",
-        choices=["all", "style", "module"],
+        choices=["all", "style", "module", "rule"],
         default="all",
         help="Filter skills by kind.",
     )
+    list_parser.add_argument(
+        "--format",
+        choices=["markdown", "json"],
+        default="markdown",
+        help="Rule catalog output format. Ignored for skill-name lists.",
+    )
 
     build = subparsers.add_parser("build", help="Build an instruction pack.")
-    build.add_argument("--style", required=True, help="Skill name, such as fiction or news-report.")
+    build.add_argument("--style", help="Skill name, such as fiction or news-report. May come from .humanwriting.json.")
     build.add_argument(
         "--module",
         action="append",
@@ -131,9 +145,8 @@ def build_parser() -> argparse.ArgumentParser:
     humanize.add_argument("--draft", required=True, help="Original Markdown/text file to humanize.")
     humanize.add_argument(
         "--style",
-        required=True,
         choices=list_style_skills(),
-        help="Genre contract for the rewrite.",
+        help="Genre contract for the rewrite. May come from .humanwriting.json.",
     )
     humanize.add_argument(
         "--mode",
@@ -302,9 +315,8 @@ def build_parser() -> argparse.ArgumentParser:
     chunk_audit.add_argument("--draft", required=True, help="Long Markdown/text draft to audit.")
     chunk_audit.add_argument(
         "--style",
-        required=True,
         choices=list_style_skills(),
-        help="Genre contract used for style-drift interpretation.",
+        help="Genre contract used for style-drift interpretation. May come from .humanwriting.json.",
     )
     chunk_audit.add_argument(
         "--context",
@@ -398,9 +410,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     lint.add_argument(
         "--format",
-        choices=["markdown", "json"],
+        choices=["markdown", "json", "github"],
         default="markdown",
         help="Output format.",
+    )
+    lint.add_argument(
+        "--source-name",
+        help="File name used by --format github when --draft - reads standard input.",
     )
     lint.add_argument(
         "--allow",
@@ -431,6 +447,14 @@ def build_parser() -> argparse.ArgumentParser:
         default="markdown",
         help="Output format.",
     )
+
+    extract_ledger = subparsers.add_parser(
+        "extract-ledger",
+        help="Compile an evidence-backed continuity-ledger extraction prompt; it never invents canon locally.",
+    )
+    extract_ledger.add_argument("--draft", required=True, help="Manuscript file to extract, or - for standard input.")
+    extract_ledger.add_argument("--context", help="Existing ledger to preserve and update cautiously.")
+    extract_ledger.add_argument("--output", help="Write the extraction prompt to this Markdown file instead of standard output.")
 
     fix = subparsers.add_parser(
         "fix",
@@ -480,11 +504,32 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _stdin_draft(path: str) -> str | None:
+    return sys.stdin.read() if path == "-" else None
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    raw_args = list(argv if argv is not None else sys.argv[1:])
+    parse_args = [item for item in raw_args if item != "--no-project-config"]
+    args = parser.parse_args(parse_args)
+    try:
+        apply_project_defaults(args, raw_args)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.command in {"build", "humanize", "chunk-audit"} and not args.style:
+        parser.error("--style is required unless .humanwriting.json supplies a style default.")
 
     if args.command == "list":
+        if args.kind == "rule":
+            catalog = lint_rule_catalog()
+            if args.format == "json":
+                print(json.dumps(catalog, ensure_ascii=False, indent=2))
+            else:
+                print("# Writing Pattern Rules\n")
+                for item in catalog:
+                    print(f"- `{item['id']}` ({item['severity']}, `{item['category']}`): {item['message']}")
+            return 0
         if args.kind == "style":
             skills = list_style_skills()
         elif args.kind == "module":
@@ -522,22 +567,27 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "humanize":
         try:
-            prompt = compile_humanize_prompt(
-                draft_path=args.draft,
-                style=args.style,
-                mode=args.mode,
-                task=args.task,
-                context_path=args.context,
-                modules=args.module,
-                strict_continuity=args.strict_continuity,
-                with_examples=args.with_examples,
-                reference_paths=args.reference,
-                reference_style=args.reference_style,
-                reference_budget=args.reference_budget,
-                source_paths=args.source,
-                source_budget=args.source_budget,
-                protect_content=args.protect_content,
-                protect_terms=args.protect_term,
+            draft_text = _stdin_draft(args.draft)
+            arguments = {
+                "style": args.style,
+                "mode": args.mode,
+                "task": args.task,
+                "context_path": args.context,
+                "modules": args.module,
+                "strict_continuity": args.strict_continuity,
+                "with_examples": args.with_examples,
+                "reference_paths": args.reference,
+                "reference_style": args.reference_style,
+                "reference_budget": args.reference_budget,
+                "source_paths": args.source,
+                "source_budget": args.source_budget,
+                "protect_content": args.protect_content,
+                "protect_terms": args.protect_term,
+            }
+            prompt = (
+                compile_humanize_prompt_text(draft_text, **arguments)
+                if draft_text is not None
+                else compile_humanize_prompt(draft_path=args.draft, **arguments)
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
@@ -546,22 +596,27 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "audit":
         try:
-            prompt = compile_audit_prompt(
-                draft_path=args.draft,
-                context_path=args.context,
-                modules=args.module,
-                strict_continuity=args.strict_continuity,
-                number_sense=args.numbers,
-                profiles=args.profile,
-                reference_paths=args.reference,
-                reference_style=args.reference_style,
-                reference_budget=args.reference_budget,
-                source_paths=args.source,
-                source_budget=args.source_budget,
-                original_path=args.original,
-                protect_content=args.protect_content,
-                protect_terms=args.protect_term,
-                document_type=args.document_type,
+            draft_text = _stdin_draft(args.draft)
+            arguments = {
+                "context_path": args.context,
+                "modules": args.module,
+                "strict_continuity": args.strict_continuity,
+                "number_sense": args.numbers,
+                "profiles": args.profile,
+                "reference_paths": args.reference,
+                "reference_style": args.reference_style,
+                "reference_budget": args.reference_budget,
+                "source_paths": args.source,
+                "source_budget": args.source_budget,
+                "original_path": args.original,
+                "protect_content": args.protect_content,
+                "protect_terms": args.protect_term,
+                "document_type": args.document_type,
+            }
+            prompt = (
+                compile_audit_prompt_text(draft_text, **arguments)
+                if draft_text is not None
+                else compile_audit_prompt(draft_path=args.draft, **arguments)
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
@@ -635,20 +690,51 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "lint":
         try:
-            report = lint_file(args.draft, style=args.style, allow=set(args.allow))
+            draft_text = _stdin_draft(args.draft)
+            report = (
+                lint_text(draft_text, style=args.style, allow=set(args.allow))
+                if draft_text is not None
+                else lint_file(args.draft, style=args.style, allow=set(args.allow))
+            )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
-        print(format_lint_report(report, args.format), end="")
+        source_name = args.source_name or ("stdin.md" if args.draft == "-" else args.draft)
+        print(format_lint_report(report, args.format, source_name=source_name), end="")
         if args.fail_score is not None and report.score >= args.fail_score:
             return 1
         return 0
 
     if args.command == "stats":
         try:
-            report = analyze_style_file(args.draft, style=args.style)
+            draft_text = _stdin_draft(args.draft)
+            report = (
+                analyze_style_statistics(draft_text, style=args.style)
+                if draft_text is not None
+                else analyze_style_file(args.draft, style=args.style)
+            )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
         print(format_style_statistics(report, args.format), end="")
+        return 0
+
+    if args.command == "extract-ledger":
+        try:
+            draft_text = _stdin_draft(args.draft)
+            prompt = (
+                compile_ledger_extraction_prompt_text(
+                    draft_text,
+                    Path(args.context).read_text(encoding="utf-8") if args.context else "",
+                )
+                if draft_text is not None
+                else compile_ledger_extraction_prompt(args.draft, args.context)
+            )
+            if args.output:
+                Path(args.output).write_text(prompt, encoding="utf-8")
+                print(f"Wrote evidence-backed ledger extraction prompt to {Path(args.output).resolve()}")
+            else:
+                print(prompt, end="")
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
         return 0
 
     if args.command == "fix":

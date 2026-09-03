@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 
 from http.server import ThreadingHTTPServer
 
-from humanwriting.mcp_server import TOOLS, _http_handler, call_tool, handle_message
+from humanwriting.mcp_server import TOOLS, _http_handler, call_tool, get_prompt, handle_message
 
 
 def complete_report(task_id: str) -> str:
@@ -49,6 +49,27 @@ class McpServerTests(unittest.TestCase):
         self.assertEqual(len(listed["result"]["tools"]), len(TOOLS))
         self.assertTrue(escaped["result"]["isError"])
         self.assertIn("within the configured project root", escaped["result"]["content"][0]["text"])
+
+    def test_single_text_tools_and_native_prompts_are_available(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            lint = call_tool("lint_text", {"text": "未来可期。"}, root)
+            stats = call_tool("get_style_statistics", {"text": "Short. A longer sentence follows."}, root)
+            protection = call_tool(
+                "verify_protected_content",
+                {"source_text": "API returned 200.", "candidate_text": "API returned 201."},
+                root,
+            )
+            ledger = call_tool("compile_ledger_extraction", {"draft": "Mara leaves the key."}, root)
+        self.assertIn("CLOSE001", lint["content"][0]["text"])
+        self.assertIn("sentence_length_cv", stats["content"][0]["text"])
+        self.assertIn("missing_or_changed", protection["content"][0]["text"])
+        self.assertIn("Continuity Ledger Extraction", ledger["content"][0]["text"])
+
+        prompts = handle_message({"jsonrpc": "2.0", "id": 5, "method": "prompts/list"}, root)
+        self.assertIn("humanize-quick", {item["name"] for item in prompts["result"]["prompts"]})
+        prompt = get_prompt("extract-ledger", {"draft": "Mara leaves the key."})
+        self.assertIn("Continuity Ledger Extraction", prompt["messages"][0]["content"]["text"])
 
     def test_agents_claim_submit_verify_then_unlock_reconciliation(self):
         with TemporaryDirectory() as directory:

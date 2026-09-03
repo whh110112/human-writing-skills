@@ -10,6 +10,7 @@ from pathlib import Path
 SEVERITY_WEIGHT = {"low": 2, "medium": 5, "high": 9}
 NARRATIVE_STYLES = {"fiction", "webnovel", "self-media"}
 FICTION_STYLES = {"fiction", "webnovel"}
+ARGUMENTATIVE_STYLES = {"argumentative", "self-media"}
 CHAPTER_HEADING_PATTERN = re.compile(
     r"(?m)^\s*(?:#{1,6}\s*)?(?:第\s*[一二三四五六七八九十百零〇\d]+\s*[章节回卷話话](?:\s+[^\n]{1,60})?|"
     r"(?:chapter|chapitre|cap[ií]tulo|capitulum|الفصل)\s+[^\n]{1,80})$",
@@ -96,6 +97,26 @@ INFLATED_CLUSTER_PATTERN = re.compile(
     r"赋能|助力|深耕|打造|构建|全方位|多维度|新篇章|新征程|持续推进|"
     r"\b(?:delve|tapestry|vibrant|crucial|robust|seamless|transformative|"
     r"multifaceted|pivotal|showcasing|underscores?|testament|evolving landscape)\b",
+    re.IGNORECASE,
+)
+DOUBLE_EDGED_PATTERN = re.compile(
+    r"双刃剑|双面刃|\bdouble[- ]edged sword\b|\barme [àa] double tranchant\b|"
+    r"\barma de doble filo\b|\bfaca de dois gumes\b",
+    re.IGNORECASE,
+)
+TIERED_CONNECTOR_PATTERN = re.compile(
+    r"不仅如此|更重要的是|毋庸置疑(?:的是)?|不可否认(?:的是)?|进一步(?:地)?说|"
+    r"\b(?:not only that|more importantly|it is undeniable that|needless to say|"
+    r"furthermore|what is more)\b|\b(?:no solo eso|m[aá]s importante|sin duda)\b|"
+    r"\b(?:n[aã]o s[oó] isso|mais importante|sem d[uú]vida)\b|"
+    r"\b(?:non seulement|plus important|il est ind[eé]niable)\b",
+    re.IGNORECASE,
+)
+FAKE_FINALITY_PATTERN = re.compile(
+    r"(?:但|可是).{0,18}(?:已经|早已|终究).{0,12}(?:不再重要|无关紧要)|"
+    r"有些事情.{0,24}(?:终究|到底).{0,12}(?:无需|不必|说不清)|"
+    r"\b(?:but (?:that|it) (?:no longer|didn't) matter|some things,? (?:after all|in the end)|"
+    r"none of it mattered now)\b",
     re.IGNORECASE,
 )
 ALIAS_CYCLING_GROUPS = (
@@ -481,6 +502,50 @@ RULES = [
     ),
 ]
 
+DYNAMIC_RULE_CATALOG = [
+    ("REP001", "exact-sentence-recurrence", "medium", "A non-trivial sentence repeats after the scene has moved."),
+    ("RHYTHM001", "uniform-rhythm", "medium", "Sentence lengths are unusually uniform for the selected style."),
+    ("PUNCT001", "dash-density", "low", "Em-dash use clusters too tightly to read as genuine interruption or turn."),
+    ("ARG001", "double-edged-sword-density", "low", "A double-edged-sword metaphor repeats in argumentative prose."),
+    ("ARG002", "tiered-connector-density", "low", "Layered logical connectors announce hierarchy more often than they add reasoning."),
+    ("END001", "reflective-bookend", "medium", "A narrative exit adds reflective scenery or thematic closure after the last material change."),
+    ("END002", "false-finality", "low", "A terminal pseudo-renunciation may simulate depth without changing the scene state."),
+    ("NAT001", "repeated-scene-recipe", "medium", "Narrative paragraphs repeat the same scene-entry formula."),
+    ("NAT002", "vague-affect-density", "low", "Vague affect markers cluster without concrete evidence."),
+    ("NAT003", "abstract-paragraph-closure", "low", "Paragraph exits repeatedly settle on abstraction instead of a changed state."),
+    ("NAT004", "orphaned-interaction", "medium", "Pressure-bearing dialogue or action lacks uptake or an explicit deferral."),
+    ("NAT005", "interpretive-narration-recurrence", "low", "Narration repeatedly explains what nearby action or dialogue already showed."),
+    ("NAT006", "action-choreography-recurrence", "low", "The same multi-action frame recurs at high density."),
+    ("STR002", "comparison-ladder", "medium", "A sentence chains multiple comparisons."),
+    ("STR003", "contrast-density", "medium", "Formulaic contrast repeats at passage scale."),
+    ("STR004", "comparison-ladder-density", "high", "A sentence stacks three or more decorative comparisons."),
+    ("LEX003", "inflated-vocabulary-density", "medium", "Prestige vocabulary clusters instead of carrying evidence."),
+    ("ALIAS001", "alias-cycling", "low", "Narration rotates labels for the same character without a viewpoint reason."),
+    ("FORMAT001", "narrative-mini-heading", "medium", "A narrative mini-heading substitutes for a prose transition."),
+    ("FORMAT002", "time-card-heading", "medium", "A standalone time card replaces a natural scene bridge."),
+    ("FORMAT003", "title-case-heading", "low", "A decorative title-case heading may fragment narrative flow."),
+    ("IMG001", "imagery-density", "low", "Sensory imagery accumulates faster than scene pressure changes."),
+    ("INFO001", "detail-inventory", "low", "Description inventories details at equal intensity rather than selecting by viewpoint pressure."),
+    ("OPEN002", "cinematic-opening-stack", "low", "A scene opening stacks clock, location, weather, appearance, and generalized feeling."),
+    ("EMO003", "body-cue-cluster", "low", "Generic body cues recur as a substitute for situated behavior."),
+    ("RESET001", "scenic-chapter-reset", "medium", "A new chapter restarts with scenery before carrying prior pressure forward."),
+    ("PARA001", "fragment-run", "medium", "Short paragraphs run together without distinct turns."),
+]
+
+
+def lint_rule_catalog() -> list[dict[str, str]]:
+    """Return stable rule metadata for CLI, CI, and editor integrations."""
+
+    items = [
+        {"id": rule.rule_id, "category": rule.category, "severity": rule.severity, "message": rule.message}
+        for rule in RULES
+    ]
+    items.extend(
+        {"id": rule_id, "category": category, "severity": severity, "message": message}
+        for rule_id, category, severity, message in DYNAMIC_RULE_CATALOG
+    )
+    return sorted(items, key=lambda item: item["id"])
+
 
 MASK_PATTERNS = [
     re.compile(r"```.*?```", re.DOTALL),
@@ -847,6 +912,24 @@ def _narrative_naturalness_findings(
                 )
             )
 
+    if enabled("END002", "false-finality"):
+        for start, end, _ in _terminal_paragraphs(masked):
+            fragment = masked[start:end]
+            match = FAKE_FINALITY_PATTERN.search(fragment)
+            if match is None:
+                continue
+            findings.append(
+                _finding_from_span(
+                    text,
+                    "END002",
+                    "false-finality",
+                    "low",
+                    start + match.start(),
+                    start + match.end(),
+                    "A terminal pseudo-renunciation may substitute for a changed consequence. Keep it only when the scene has earned the shift; otherwise end on the concrete choice, object, interruption, or unresolved pressure.",
+                )
+            )
+
     abstract_endings = [
         (start, end)
         for start, end, paragraph in paragraphs
@@ -970,8 +1053,14 @@ def lint_text(
 
     em_dash_count = masked.count("—")
     word_count = len(re.findall(r"[\u4e00-\u9fff]|\b[\w'-]+\b", masked))
-    if em_dash_count >= 3 and em_dash_count * 500 > max(word_count, 1):
-        first_dash = masked.find("—")
+    dash_clusters = [
+        (start, fragment.find("—"))
+        for start, _, fragment in _paragraph_spans(masked)
+        if fragment.count("—") >= 3
+        and fragment.count("—") * 60 > max(len(re.findall(r"[\u4e00-\u9fff]|\b[\w'-]+\b", fragment)), 1)
+    ]
+    if em_dash_count >= 3 and (em_dash_count * 500 > max(word_count, 1) or dash_clusters):
+        first_dash = dash_clusters[0][0] + dash_clusters[0][1] if dash_clusters else masked.find("—")
         findings.append(
             _finding_from_span(
                 text,
@@ -980,7 +1069,7 @@ def lint_text(
                 "low",
                 first_dash,
                 first_dash + 1,
-                "Em-dash density is high; verify that each dash marks a real interruption or turn.",
+                "Em-dash use clusters tightly; verify that each dash marks a real interruption, withheld clause, or turn rather than decorative depth.",
             )
         )
 
@@ -1033,6 +1122,48 @@ def lint_text(
                 "Inflated or prestige vocabulary clusters in this passage; replace the cluster with claims, actors, and observable proof.",
             )
         )
+
+    if style in ARGUMENTATIVE_STYLES:
+        double_edged_matches = list(DOUBLE_EDGED_PATTERN.finditer(masked))
+        if (
+            len(double_edged_matches) >= 2
+            and len(double_edged_matches) * 1400 >= max(len(masked), 1)
+            and "ARG001" not in allowed
+            and "double-edged-sword-density" not in allowed
+        ):
+            first = double_edged_matches[0]
+            findings.append(
+                _finding_from_span(
+                    text,
+                    "ARG001",
+                    "double-edged-sword-density",
+                    "low",
+                    first.start(),
+                    first.end(),
+                    "The double-edged-sword metaphor recurs in an argumentative passage. Replace at least one instance with the specific trade-off, affected party, and evidence.",
+                )
+            )
+        tiered_matches = list(TIERED_CONNECTOR_PATTERN.finditer(masked))
+        connector_forms = {match.group(0).casefold() for match in tiered_matches}
+        if (
+            len(tiered_matches) >= 4
+            and len(connector_forms) >= 2
+            and len(tiered_matches) * 1100 >= max(len(masked), 1)
+            and "ARG002" not in allowed
+            and "tiered-connector-density" not in allowed
+        ):
+            first = tiered_matches[0]
+            findings.append(
+                _finding_from_span(
+                    text,
+                    "ARG002",
+                    "tiered-connector-density",
+                    "low",
+                    first.start(),
+                    first.end(),
+                    "Layered connectors repeatedly announce importance without necessarily adding a premise, warrant, or evidence. Keep only the links that identify a real logical relation.",
+                )
+            )
 
     if style in NARRATIVE_STYLES:
         for alias_pattern in ALIAS_CYCLING_GROUPS:
@@ -1295,9 +1426,22 @@ def lint_file(path: str, style: str = "general", allow: set[str] | None = None) 
     return lint_text(Path(path).read_text(encoding="utf-8"), style=style, allow=allow)
 
 
-def format_lint_report(report: LintReport, output_format: str = "markdown") -> str:
+def format_lint_report(
+    report: LintReport,
+    output_format: str = "markdown",
+    source_name: str | None = None,
+) -> str:
     if output_format == "json":
         return json.dumps(report.to_dict(), ensure_ascii=False, indent=2) + "\n"
+    if output_format == "github":
+        file_name = (source_name or "draft.md").replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        lines = []
+        for finding in report.findings:
+            message = f"[{finding.rule_id}] {finding.message}".replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+            lines.append(
+                f"::warning file={file_name},line={finding.line},col={finding.column}::{message}"
+            )
+        return "\n".join(lines) + ("\n" if lines else "")
     lines = [
         "# Writing Pattern Lint",
         "",

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from .original import build_original_pack
+from .original import build_original_pack, build_original_pack_text
 from .protection import build_protection_manifest, detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
 from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
@@ -250,12 +250,16 @@ def compile_prompt(
     original_path: str | None = None,
     protect_content: bool = False,
     protect_terms: list[str] | None = None,
+    context_text: str | None = None,
+    original_text: str | None = None,
 ) -> str:
     skill = load_skill(style)
     if skill.kind != "style":
         raise ValueError(f"'{style}' is a module, not a primary style skill.")
     selected_modules = load_many(modules or [])
-    context = read_optional(context_path)
+    if context_path and context_text is not None:
+        raise ValueError("Provide either context_path or context_text, not both.")
+    context = context_text.strip() if context_text is not None else read_optional(context_path)
     reference_pack = build_reference_pack(
         reference_paths,
         reference_style,
@@ -263,7 +267,7 @@ def compile_prompt(
         budget=reference_budget,
     )
     source_pack = build_source_pack(source_paths, source_budget)
-    original_pack = build_original_pack(original_path)
+    original_pack = build_original_pack_text(original_text) if original_text is not None else build_original_pack(original_path)
     dialogue_generation_active = (
         style in DIALOGUE_GENERATION_STYLES
         and bool(DIALOGUE_GENERATION_PATTERN.search(task))
@@ -374,8 +378,46 @@ def compile_humanize_prompt(
     protect_terms: list[str] | None = None,
 ) -> str:
     draft = read_optional(draft_path)
+    return compile_humanize_prompt_text(
+        draft,
+        style=style,
+        mode=mode,
+        task=task,
+        context_path=context_path,
+        modules=modules,
+        strict_continuity=strict_continuity,
+        with_examples=with_examples,
+        reference_paths=reference_paths,
+        reference_style=reference_style,
+        reference_budget=reference_budget,
+        source_paths=source_paths,
+        source_budget=source_budget,
+        protect_content=protect_content,
+        protect_terms=protect_terms,
+    )
+
+
+def compile_humanize_prompt_text(
+    draft: str,
+    style: str,
+    mode: str = "quick",
+    task: str | None = None,
+    context_path: str | None = None,
+    context_text: str | None = None,
+    modules: list[str] | None = None,
+    strict_continuity: bool = False,
+    with_examples: bool = False,
+    reference_paths: list[str] | None = None,
+    reference_style: str | None = None,
+    reference_budget: int = DEFAULT_REFERENCE_BUDGET,
+    source_paths: list[str] | None = None,
+    source_budget: int = DEFAULT_SOURCE_BUDGET,
+    protect_content: bool = False,
+    protect_terms: list[str] | None = None,
+) -> str:
+    draft = draft.strip()
     if not draft:
-        raise ValueError("The humanize command requires a non-empty --draft file.")
+        raise ValueError("The humanize command requires a non-empty --draft input.")
     if mode not in {"quick", "deep"}:
         raise ValueError("Humanize mode must be 'quick' or 'deep'.")
 
@@ -401,6 +443,7 @@ def compile_humanize_prompt(
         style=style,
         task=rewrite_task,
         context_path=context_path,
+        context_text=context_text,
         modules=selected,
         strict_continuity=strict_continuity,
         reference_paths=reference_paths,
@@ -408,14 +451,14 @@ def compile_humanize_prompt(
         reference_budget=reference_budget,
         source_paths=source_paths,
         source_budget=source_budget,
-        original_path=draft_path,
+        original_text=draft,
         protect_content=protect_content,
         protect_terms=protect_terms,
     )
 
 
 def compile_audit_prompt(
-    draft_path: str,
+    draft_path: str | None,
     context_path: str | None = None,
     modules: list[str] | None = None,
     strict_continuity: bool = True,
@@ -431,12 +474,18 @@ def compile_audit_prompt(
     protect_terms: list[str] | None = None,
     document_type: str = "auto",
     auto_protect: bool = True,
+    draft_text: str | None = None,
+    context_text: str | None = None,
 ) -> str:
     selected_modules = load_many(modules or [])
     selected_names = {module.name for module in selected_modules}
     light_physical_requested = LIGHT_PHYSICAL_AUDIT_MODULE in selected_names
-    draft = read_optional(draft_path)
-    context = read_optional(context_path)
+    if draft_path and draft_text is not None:
+        raise ValueError("Provide either draft_path or draft_text, not both.")
+    if context_path and context_text is not None:
+        raise ValueError("Provide either context_path or context_text, not both.")
+    draft = draft_text.strip() if draft_text is not None else read_optional(draft_path)
+    context = context_text.strip() if context_text is not None else read_optional(context_path)
     requested_profiles = set(profiles or ["full"])
     reference_pack = build_reference_pack(
         reference_paths,
@@ -731,3 +780,12 @@ def compile_audit_prompt(
         )
     blocks.append("\n".join(task_lines))
     return "\n\n---\n\n".join(blocks) + "\n"
+
+
+def compile_audit_prompt_text(
+    draft: str,
+    **kwargs: object,
+) -> str:
+    """Compile an audit prompt from in-memory text for editors and MCP clients."""
+
+    return compile_audit_prompt(None, draft_text=draft, **kwargs)

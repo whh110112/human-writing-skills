@@ -256,6 +256,20 @@ class LinterTests(unittest.TestCase):
         report = lint_text(text, style="fiction")
         self.assertIn("END001", {item.rule_id for item in report.findings})
 
+    def test_reports_new_argument_and_false_finality_patterns_conservatively(self):
+        argumentative = (
+            "这是一柄双刃剑。双刃剑会影响不同群体。"
+            "不仅如此，更重要的是，毋庸置疑的是，进一步说，证据仍需展开。"
+        )
+        rules = {item.rule_id for item in lint_text(argumentative, style="argumentative").findings}
+        self.assertTrue({"ARG001", "ARG002"} <= rules)
+        single = lint_text("这项政策像一柄双刃剑，但报告列出了具体利弊。", style="argumentative")
+        self.assertNotIn("ARG001", {item.rule_id for item in single.findings})
+        ending = lint_text("她把钥匙交还给他。可是这已经不再重要了。", style="fiction")
+        self.assertIn("END002", {item.rule_id for item in ending.findings})
+        serious = lint_text("报告称，这已经不再重要了。", style="news-report")
+        self.assertNotIn("END002", {item.rule_id for item in serious.findings})
+
     def test_preserves_quiet_ending_that_changes_material_state(self):
         text = "燕子没说话，只把门卡塞进我掌心。"
         report = lint_text(text, style="fiction")

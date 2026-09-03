@@ -43,6 +43,16 @@ the last meaningful change. One quiet image or reflective sentence is not enough
 itself unless it uses a strong stock-reflection frame. The repair direction is a
 deletion test, not replacement with a cliffhanger.
 
+Recent-model patterns are handled as conditional signals rather than banned phrases.
+`PUNCT001` reports dense em-dash use only when it clusters within short prose;
+`ARG001` looks for repeated "double-edged sword"-style framing in argumentative or
+self-media prose; `ARG002` looks for stacked faux-hierarchy connectors such as
+"not only that" and "more importantly"; and `END002` adds conservative evidence for
+fake-finality lines that announce that something no longer matters without earning a
+change in the scene. These checks are scoped by document type and density. A valid
+technical aside, a genuine qualification, or a deliberately quiet ending should be
+kept or allowlisted after editorial review.
+
 Additional surface families include significance inflation (`SIGN001`), vague
 attribution (`ATTR001`), formulaic challenge closures (`CHALLENGE001`), elaborate
 English copulas (`COPULA001`), decorative participles (`ING001`), false-range density

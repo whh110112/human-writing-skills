@@ -40,6 +40,50 @@ human-writing-mcp --root C:\writing-project
 可验证本地协作服务。详见 [Agent 编排与 MCP 指南](docs/agent-orchestration.zh-CN.md) 与
 [DeepSeek Harness 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
 
+MCP 现在也可处理日常单篇任务：`lint_text`、`get_style_statistics`、
+`verify_protected_content`、`compile_humanize_prompt`、`compile_audit_prompt` 与
+`compile_ledger_extraction`。对于实现 MCP Prompts 的客户端，还会提供精简的原生指令菜单，
+如 `humanize-quick`、`dialogue-audit`、`continuity-audit`、`serious-rewrite` 等。它们只在
+本地返回证据或编译后的指令，不会自行把草稿发送给模型。
+
+## 账本自动提取与项目默认配置
+
+长篇连续性不应该从人工逐条维护事实开始。`extract-ledger` 会为已有章节编译一份以证据为先的
+提取 Prompt，供写作 Agent 生成**待确认连续性账本**。每项人物状态、道具、承诺、伤势、资源
+变化或空间关系都必须给出引文/位置，并区分观察到的事实、推断、冲突与未知项；确认前不能当作
+正式设定。
+
+```powershell
+human-writing-skills extract-ledger --draft chapters-01-10.md --context novel-ledger.md --output ledger-extraction-prompt.md
+```
+
+项目根目录可放置 `.humanwriting.json` 保存轻量默认项：文体、文档类型、相对账本路径与 lint
+allowlist。显式 CLI 参数永远优先；配置文件不能偷偷开启深度 Profile、参考文风或资料来源等
+高 token 阶段。临时命令需要忽略最近项目配置时可加 `--no-project-config`。详见[账本自动提取指南](docs/ledger-extraction.zh-CN.md)。
+
+```json
+{
+  "style": "fiction",
+  "document_type": "fiction",
+  "context": "novel-ledger.md",
+  "allow": ["END001"]
+}
+```
+
+## 编辑器、CI 与 Python 分发
+
+单篇文本命令支持 `--draft -` 从标准输入读取。`lint --format github` 会输出 GitHub Actions
+行内标记；`list --kind rule` 可打印全部规则 ID、级别、分类和修订方向。
+
+```powershell
+git diff -- docs\ | human-writing-skills lint --draft - --style general --format github --source-name docs-change.md
+human-writing-skills list --kind rule --format json
+```
+
+每个 GitHub Release 都会构建 wheel 与 source distribution，并附加到 Release Assets。PyPI 使用
+GitHub Trusted Publishing：只有完成 PyPI 可信发布者配置，并设置仓库变量
+`PYPI_PUBLISH_ENABLED=true` 后才会自动发布；仓库不保存 PyPI token。
+
 它适合小说、网文、议论文、新闻报告、自媒体文章、科研论文等不同写作场景。项目重点不是伪装作者身份，而是提升 AI 辅助写作的质量：减少模板腔，增强上下文衔接，让文本更像经过人类编辑认真处理过。
 
 ## 长篇审查与文风统一

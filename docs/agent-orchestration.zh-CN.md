@@ -5,7 +5,8 @@
 
 ## 服务做什么
 
-服务只访问明确指定的项目根目录；不会自行调用模型，也不会上传草稿。它提供七项工具：
+服务只访问明确指定的项目根目录；不会自行调用模型，也不会上传草稿。它提供长篇协作、
+单篇分析与编辑指令编译工具：
 
 | 工具 | 作用 |
 | --- | --- |
@@ -16,9 +17,22 @@
 | `verify_audit_coverage` | 对所有必需报告做统稿前门禁。 |
 | `get_reconciliation_task` | 门禁通过后才返回跨章统稿任务。 |
 | `read_project_context` | 读取有长度上限的账本、大纲、资料说明或文风参考。 |
+| `lint_text` | 对传入文本返回本地确定性发现项与证据位置。 |
+| `get_style_statistics` | 返回句长变化、MATTR 与转折词密度。 |
+| `verify_protected_content` | 比对原文与改写稿的受保护值和术语。 |
+| `compile_humanize_prompt` / `compile_audit_prompt` | 为单篇文本编译有边界的 Prompt。 |
+| `compile_ledger_extraction` | 编译带证据的待确认账本提取 Prompt。 |
 
 所有越出根目录的路径都会被拒绝。回执必须带任务 ID、`Coverage: complete`、检查单元、发现
 项以及 `Unchecked or blocked material: none`。漏审、阻塞或只审了一部分，均不能进入统稿。
+
+## 原生 Prompt 菜单
+
+支持 MCP Prompts 的客户端可通过 `prompts/list` 发现菜单，并通过 `prompts/get` 获取 Prompt。
+服务提供的是任务级快捷入口，而不是把全部内部模块暴露成冗长列表：`humanize-quick`、
+`humanize-deep`、`dialogue-audit`、`continuity-audit`、`style-match`、`serious-rewrite` 与
+`extract-ledger`。客户端是否将其显示为斜杠命令取决于客户端 UI；所有 Prompt 都要求传入正文，
+不会自行调用外部模型。
 
 ## 本地 stdio 接入
 
