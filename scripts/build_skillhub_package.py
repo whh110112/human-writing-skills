@@ -38,7 +38,7 @@ EXCLUDED_PATHS = {
     "LICENSE",
     SKILLHUB_OVERVIEW_PATH.as_posix(),
 }
-EXCLUDED_PREFIXES = ("plugins/",)
+EXCLUDED_PREFIXES = ("plugins/", ".cursor/")
 
 
 def project_version(root: Path) -> str:
