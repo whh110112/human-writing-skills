@@ -31,7 +31,7 @@ from .skills import list_style_skills
 from .statistics import analyze_style_statistics
 
 
-SERVER_INFO = {"name": "advanced-human-writing", "version": "0.15.1"}
+SERVER_INFO = {"name": "advanced-human-writing", "version": "0.15.2"}
 PROTOCOL_VERSION = "2025-03-26"
 MAX_CONTEXT_CHARACTERS = 20000
 MAX_TEXT_CHARACTERS = 80000

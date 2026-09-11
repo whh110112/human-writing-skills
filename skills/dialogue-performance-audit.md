@@ -11,8 +11,8 @@ or do next.
 
 Use only alongside `dialogue-voice-audit`: in drafting when a fiction or webnovel
 task explicitly asks for dialogue or a character-interaction scene, and in review
-through the `voice` profile or automatic detection of an actual multi-turn exchange.
-Do not load for narration-only passages, generic proofreading, news interviews,
+through the `voice` profile or detection of a spoken or wordless interpersonal exchange.
+Do not load for solitary narration, generic proofreading, news interviews,
 academic prose, or formal documents.
 
 ## Interaction Map
@@ -40,6 +40,9 @@ established uptake -> chosen visible beat (if needed) -> changed option or resid
    aim, what either person is willing to show, and the scene's usable objects,
    distance, witnesses, exits, and physical limits from the context.
 2. Use the listener uptake already established by `dialogue-voice-audit`.
+   For mixed speech and action, preserve each unresolved part of that map; a spoken
+   answer alone may not complete the physical exchange. Check visible consequences
+   for the viewpoint character as well as the other participants.
 3. Choose one concrete performance beat only when it changes the interaction.
    A hand staying on a door, a chair left empty, a phone turned face-down, or a
    step withheld can do work; a low voice, a faint smile, weather, clothing, or
@@ -56,7 +59,7 @@ established uptake -> chosen visible beat (if needed) -> changed option or resid
 
 ## Audit Mode
 
-For representative exchanges, map:
+For each obligated exchange identified by the response owner, map:
 
 ```text
 turn -> established uptake -> performance beat -> changed state

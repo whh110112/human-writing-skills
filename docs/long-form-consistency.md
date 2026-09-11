@@ -85,7 +85,7 @@ human-writing-skills verify-chunk-audit --package-dir novel-agent-audit
 ```
 
 Do not reconcile while this command reports missing or invalid receipts. Deep mode adds a
-paragraph-level prose pass to every block, dialogue review only where dialogue exists, and
+paragraph-level prose pass to every block, interaction review where dialogue or directed actions occur, and
 source-grounding only for serious documents with explicit `--source` files. Use
 `--translationese` only for an explicitly translated or localized work.
 
@@ -104,7 +104,7 @@ being forced toward an obsolete opening description.
 - Defaults: 8,000-character bodies and 600-character read-only lead-ins.
 - Context is sampled to 6,000 characters and baseline evidence to 4,000 by default.
 - Fiction loads authoritative character checks only when context exists and dialogue
-  voice checks only for chunks that contain dialogue.
+  voice checks only for chunks that contain dialogue or directed interpersonal actions.
 - Serious styles load protected-content rules instead of fiction-only modules.
 - Tune `--chunk-size`, `--context-budget`, and `--baseline-budget` for smaller models,
   while keeping complete scenes or argument units together when possible.

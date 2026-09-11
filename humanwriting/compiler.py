@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from .detection import has_directed_interaction
 from .original import build_original_pack, build_original_pack_text
 from .protection import build_protection_manifest, detect_serious_document
 from .reference import DEFAULT_REFERENCE_BUDGET, build_reference_pack
@@ -273,8 +274,13 @@ def compile_prompt(
         and bool(DIALOGUE_GENERATION_PATTERN.search(task))
         and not DIALOGUE_NEGATION_PATTERN.search(task)
     )
-    if dialogue_generation_active:
+    interaction_generation_active = (
+        style in DIALOGUE_GENERATION_STYLES
+        and has_directed_interaction(task + "\n" + (original_text or ""))
+    )
+    if dialogue_generation_active or interaction_generation_active:
         append_missing(selected_modules, VOICE_AUDIT_MODULES)
+    if dialogue_generation_active:
         if REGISTER_EVIDENCE_PATTERN.search(
             "\n".join(part for part in [task, context] if part)
         ):
@@ -674,6 +680,9 @@ def compile_audit_prompt(
             "check goals, topic, response linkage, knowledge, role constraints, audience, register, "
             "motivated change gates, and whether pressure-bearing turns receive uptake or become "
             "explicit interaction debt without relying on occupational stereotypes."
+            " Inspect every directed speech or action in the assigned scope, in both directions; "
+            "separate simultaneous verbal and physical obligations, check adjacent paragraphs, "
+            "and report a gap only when reception or an evidenced pending state is absent."
         )
     if register_enabled:
         task_lines.append(

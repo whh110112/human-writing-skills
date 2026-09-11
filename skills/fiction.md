@@ -10,8 +10,9 @@ Create prose that feels observed rather than generated. Let character desire, sc
 - Let emotion appear through action, hesitation, perception, and dialogue.
 - In speech-centered scenes, keep each speaker's baseline, knowledge limits, immediate
   goal, listener, and response tactic active; profession shapes constraints, not personality.
-- After a pressure-bearing line or action, show the other person's uptake through
-  speech, action, legible silence, interruption, or deliberate deferral before cutting away.
+- After a pressure-bearing line or action, including ordinary exchanges, check both
+  participants' uptake. A reply may leave an action pending. Before cutting away,
+  establish reception or legible deferral; implied completion needs no extra gesture.
 - Let relationship changes appear through altered distance, permission, trust,
   withheld answers, promises, and small status shifts.
 - Vary sentence length according to pressure in the scene.

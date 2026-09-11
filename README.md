@@ -459,10 +459,25 @@ the established relationship graph.
 
 ## Character- and Situation-Fit Dialogue
 
+**Bidirectional interaction review addresses missing reactions and unfinished actions.**
+It covers speech, wordless exchanges, and the viewpoint character's own responses.
+Track initiator, affected recipient, separate speech/action obligations, evidence of
+reception, and completed or pending state. A spoken answer may leave a simultaneous
+action unfinished; one person's movement does not establish that another followed.
+Refusal, unawareness, stillness, or delayed uptake can be valid. Clearly implied
+completion needs no added gesture or emotional commentary.
+
+Fiction and webnovel base Skills retain a brief check; detailed review uses the
+existing on-demand `voice` profile. Automatic pipelines and deep chunk reviews also
+route directed interpersonal actions. Use `--profile voice` when automatic cues miss
+a language or phrasing. Reconciliation checks responses across chunk boundaries.
+These are model-executed contextual checks; routing tests and deterministic lint do
+not establish that a model will catch every omitted reaction.
+
 `dialogue-voice-audit` and `dialogue-performance-audit` separate stable speaker baseline,
 situation-driven modulation, and the action each turn is trying to perform. Occupation, class, region, and trait
 labels supply possible knowledge, incentives, duties, and register pressure; they do
-not substitute for personality. An explicit speech-centered generation task activates
+not substitute for personality. An explicit speech or interpersonal-action task activates
 the module on demand. Review an existing scene with an independent `voice` pass:
 
 ```powershell
@@ -617,8 +632,8 @@ human-writing-skills verify-chunk-audit `
 ```
 
 Do not run `9999-reconcile-prompt.md` until verification reports complete coverage. Deep
-mode adds a paragraph-level prose pass for every block, a dialogue pass only where dialogue
-exists, and an evidence pass only for serious documents with explicit `--source` files.
+mode adds a paragraph-level prose pass for every block, an interaction pass where dialogue
+or directed actions occur, and an evidence pass only for serious documents with explicit `--source` files.
 Standard mode remains one complete audit per unique block. For an explicitly translated or
 localized long document, add `--translationese`; it never activates merely because the text
 uses another language.

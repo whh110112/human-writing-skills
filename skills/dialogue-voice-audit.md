@@ -8,10 +8,10 @@ temperament to a catchphrase.
 
 ## Activation Gate
 
-Use in drafting only when the task explicitly requests dialogue, negotiation,
-interview, interrogation, argument, meeting, or another speech-centered scene.
-Use in review when the draft contains sustained dialogue or the user selects the
-`voice` profile. Do not load for narration-only passages or generic proofreading.
+Use in fiction drafting when the task requests a spoken exchange or directed
+interpersonal action. Use in review for sustained dialogue, directed interaction
+(including wordless exchanges), or the explicit `voice` profile. A solitary action
+or scenery passage does not need this module.
 
 ## Evidence Hierarchy
 
@@ -101,6 +101,31 @@ ping-pong after greetings, incidental remarks, self-talk, rhetorical lines, or t
 whose uptake is already obvious. The failure is an important stimulus abandoned with
 no reception, consequence, or deliberate deferral.
 
+### Bidirectional Action And Response
+
+Check every materially affected recipient, including the viewpoint character.
+Ordinary gestures qualify when completion or the next beat depends on reception.
+
+- Identify initiator, recipient, perceptible stimulus, and proposed state change.
+  A bystander's reaction cannot settle the intended recipient's part.
+- Separate speech and action obligations: an answer may leave a transfer, invitation,
+  or contact pending. Check possession, position, attention, and access as needed.
+- Distinguish intention, attempt, and completion. An offer is not acceptance;
+  reaching is not contact. Establish completion, resistance, interruption, or a
+  legible pending state before relying on a result.
+- After a distance or posture change, establish whether the other person follows,
+  stays, calls after them, or loses contact when the next beat depends on it.
+- For action toward a person or their belongings, use character and relationship
+  evidence for awareness, cooperation, resistance, withdrawal, or stillness. Never
+  assume gratitude, intimacy, compliance, or an inaccessible internal feeling.
+- Same-clause uptake, shared action, or a later consequence may imply completion.
+  No extra sentence is needed. Supported unawareness can explain no response.
+- Before cutting away, check both directions and all unresolved parts. Carry who
+  owes what and the next relevant opportunity; deferral needs evidence in the prose.
+
+Use the smallest fitting continuation, without stock gestures, scenic filler, or
+emotional gloss. If the intended response is unknown, offer alternatives, not canon.
+
 ## Drafting Mode
 
 When this file is loaded as a `Technique Module`:
@@ -125,8 +150,11 @@ When this file is loaded as a `Technique Module`:
 When this file is loaded as an `Audit Module`:
 
 1. Extract speaker models and the scene speech contract from evidence.
-2. Map representative turns as
-   `stimulus -> response obligation -> uptake -> state change or interaction debt`.
+2. Within the assigned text, inspect every directed exchange, including wordless
+   actions and the viewpoint character's responses. Map only obligated beats as
+   `initiator -> recipient -> speech/action -> evidence of reception -> resolved,
+   partly resolved, blocked, or deferred state`. Sampling speaker style must not
+   replace interaction coverage. Check neighboring paragraphs before claiming a gap.
 3. Remove labels from several lines and test whether they remain attributable.
 4. Flag only evidence-backed failures:
    - interchangeable speakers or narrator-shaped exposition
@@ -160,6 +188,8 @@ Character-Fit Dialogue Audit
 - Turn or line:
 - Response obligation: none / immediate / refused / interrupted / deferred
 - Actual uptake or missing landing beat:
+- Initiator and affected recipient; separate speech/action obligations:
+- Evidence span searched, unresolved state, and next relevant opportunity:
 - Conflict: baseline / goal / topic / knowledge / role constraint / audience / response
 - Confirmed mismatch or uncertain inference:
 - Valid change gate, if any:

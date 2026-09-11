@@ -38,8 +38,8 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
   commitment instead of merely confirming the mood.
 - Preserve speaker baselines while letting audience, urgency, deception, and status
   motivate register shifts; do not turn occupation or temperament into a fixed voice mask.
-- Land consequential interactions before shifting focus, or carry the missing
-  response as visible debt.
+- Check both sides' speech/action uptake; replies may leave actions pending.
+  Implied completion suffices.
 
 ## Avoid
 

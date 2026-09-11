@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from .compiler import read_optional
+from .detection import has_directed_interaction
 from .reference import build_reference_pack, sample_reference
 from .source import DEFAULT_SOURCE_BUDGET, build_source_pack
 from .skills import list_style_skills, load_skill
@@ -499,7 +500,10 @@ def write_long_form_audit(
 
     for chunk, report in zip(chunks, reports):
         chunk_sections = list(shared_sections)
-        if style in NARRATIVE_STYLES and DIALOGUE_PATTERN.search(chunk.body):
+        interaction_active = style in NARRATIVE_STYLES and (
+            DIALOGUE_PATTERN.search(chunk.body) or has_directed_interaction(chunk.body)
+        )
+        if interaction_active:
             chunk_sections.append(_module_block("dialogue-voice-audit"))
         lead_in = chunk.lead_in or "[No prior lead-in: this is the first chunk.]"
         task_id = f"chunk-{chunk.index:04d}-core"
@@ -570,20 +574,23 @@ def write_long_form_audit(
                 )
             )
 
-            if style in NARRATIVE_STYLES and DIALOGUE_PATTERN.search(chunk.body):
+            if interaction_active:
                 dialogue_task_id = f"chunk-{chunk.index:04d}-dialogue"
                 dialogue_prompt_name = f"{chunk.index:04d}-dialogue-audit.md"
                 dialogue_prompt = "\n\n".join(
                     [
                         f"# Deep Dialogue Audit {chunk.index}/{len(chunks)}",
-                        "Audit only dialogue-bearing turns in the body. Map speaker, listener, pressure, uptake, and changed state. "
+                        "Audit every directed spoken or wordless interaction in the body. "
+                        "Map initiator, affected recipient, separate speech/action obligations, uptake, and changed state. "
+                        "Check both directions and implied completion before flagging a gap. "
+                        "If the response may fall beyond the chunk, report a pending boundary check for reconciliation, not a confirmed omission. "
                         "Do not demand a gesture after every line; flag a gap only when a consequential turn is abandoned or a beat is decorative.",
                         _module_block("dialogue-voice-audit"),
                         _module_block("dialogue-performance-audit"),
                         context_block,
                         f"# Audited Body ({chunk.start}:{chunk.end})\n\n{chunk.body}",
                         "# Required Output\n\n"
-                        "List every dialogue-bearing paragraph or turn range you inspected. Separate confirmed response, voice, knowledge, "
+                        "List every interaction-bearing paragraph or turn range you inspected, including wordless actions. Separate confirmed response, voice, knowledge, "
                         "or performance failures from deliberate evasion and silence.",
                         _coverage_receipt(dialogue_task_id, chunk),
                     ]
@@ -644,6 +651,9 @@ def write_long_form_audit(
             "Produce: a ranked cross-chunk drift table; recurring narrator-style changes; per-character dialogue and behavior conflicts; "
             "valid development or section-function changes; a minimal repair sequence; and ledger updates. Resolve facts and character canon before style, "
             "then voice, rhythm, and surface wording. Re-audit neighboring blocks after structural repairs.",
+            "Resolve pending interaction boundary checks against the next relevant block: "
+            "identify the recipient and every unresolved speech/action obligation. Preserve "
+            "supported delayed or implied uptake; do not turn a chunk boundary into a missing reaction.",
             _coverage_receipt("reconcile"),
         ]
     ) + "\n"
@@ -709,7 +719,7 @@ def write_long_form_audit(
             "`00-style-drift.md` is a deterministic triage map. Its outliers are review leads, not automatic defects.",
             "For fiction, an outline or continuity ledger is required for authoritative character-setting checks.",
             "For reports, use the outline/context file for terminology, claim scope, section purpose, and source boundaries.",
-            "`standard` writes one complete task per chunk. `deep` adds paragraph-by-paragraph prose tasks, dialogue tasks only where dialogue exists, and evidence tasks only for serious documents with explicit `--source` files.",
+            "`standard` writes one complete task per chunk. `deep` adds paragraph-by-paragraph prose tasks, interaction tasks only where dialogue or directed actions occur, and evidence tasks only for serious documents with explicit `--source` files.",
             "",
         ]
     )

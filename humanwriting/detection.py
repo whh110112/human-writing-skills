@@ -167,7 +167,27 @@ def _match_reason(pattern: re.Pattern[str], text: str, label: str) -> tuple[bool
     return True, f"Detected {label} cue: {cue!r}."
 
 
+# Routing cues only: these locate interpersonal actions, not missing responses.
+INTERACTION_PATTERN = re.compile(
+    r"(?:双向互动|互动承接|动作回应|人物反应|无声互动)|"
+    r"(?:递给|交给|递向|递到.{0,12}手|伸手.{0,12}(?:他|她|对方)|"
+    r"(?:拉住|扶住|碰了碰|拍了拍|靠近|走向|跟着|跟上)(?:他|她|对方)|"
+    r"(?:他|她|我|对方).{0,12}(?:跟来|跟过来|没有回应|没有反应))|"
+    r"\b(?:wordless interaction|reciprocal response|interaction uptake|missing reactions?)\b|"
+    r"\b(?:hand(?:s|ed|ing)?|pass(?:es|ed|ing)?|offer(?:s|ed|ing)?)\s+(?:him|her|them|me|you)\b|"
+    r"\b(?:hand(?:s|ed|ing)?|pass(?:es|ed|ing)?|offer(?:s|ed|ing)?)\b[^.!?\n]{0,55}\bto (?:him|her|them|me|you)\b|"
+    r"\b(?:touch(?:es|ed|ing)?|approach(?:es|ed|ing)?|follow(?:s|ed|ing)?)\s+(?:him|her|them|me|you)\b",
+    re.IGNORECASE,
+)
+
+
+def has_directed_interaction(text: str) -> bool:
+    return bool(INTERACTION_PATTERN.search(text))
+
+
 def _voice_reason(text: str, context_active: bool = False) -> tuple[bool, str]:
+    if has_directed_interaction(text):
+        return True, "Directed interpersonal action requires recipient and bidirectional uptake review."
     dialogue_marks = len(DIALOGUE_MARK_PATTERN.findall(text))
     attributions = len(DIALOGUE_ATTRIBUTION_PATTERN.findall(text))
     sustained = dialogue_marks >= 4 and attributions >= 2
@@ -346,7 +366,10 @@ def detect_audit_profiles(
     optional = {
         "character": _match_reason(CHARACTER_PATTERN, draft, "character-action or voice"),
         "relationship": _match_reason(RELATIONSHIP_PATTERN, draft, "dialogue or relationship"),
-        "voice": _voice_reason(draft, context_active),
+        "voice": (
+            (False, "Fiction interaction review is excluded for serious documents.")
+            if serious_document else _voice_reason(draft, context_active)
+        ),
         "register": _register_reason(draft, context),
         "capability": _capability_reason(draft, context),
         "serial": _serial_reason(draft, context_active),

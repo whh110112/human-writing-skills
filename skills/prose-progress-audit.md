@@ -43,6 +43,8 @@ deferral before the passage shifts. Otherwise flag an orphaned interaction beat.
 Require uptake only when a stimulus requests, challenges, reveals, touches a boundary,
 alters terms, or changes available choices. Delayed uptake is valid when the text
 carries the debt into the next relevant beat.
+Include ordinary actions awaiting cooperation. Delegate bidirectional and partially
+answered speech/action checks to `dialogue-voice-audit`.
 
 ## Audit Steps
 

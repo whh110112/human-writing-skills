@@ -43,6 +43,12 @@ continuity ledgers separate from optional style references.
    or AI-trace modules when the text actually needs them.
    `narrative-naturalness-audit` is reserved for deep or explicit AI-trace review of
    narrative prose; it is not loaded for ordinary quick humanization or serious documents.
+   For fiction with spoken or wordless interpersonal exchanges, use
+   `dialogue-voice-audit` and `dialogue-performance-audit` (CLI: `--profile voice`).
+   Check both participants and separate speech from simultaneous action; establish
+   reception, refusal, or an evidenced pending state before assuming completion.
+   During drafting, reconsider this route when an interaction enters the scene even
+   if the original request only said to continue a chapter.
 3. Treat user facts and `--context` as authoritative. Never borrow facts from a
    style sample. When `--original` is supplied for a rewrite, activate
    `rewrite-fidelity` and preserve meaning without preserving awkward wording.
