@@ -49,7 +49,7 @@ DSH MCP client and starts the same verified local coordination service. See the
 [DeepSeek Harness plugin guide](plugins/deepseek-harness/README.md).
 
 The MCP server also supports day-to-day single-document work: `lint_text`,
-`get_style_statistics`, `verify_protected_content`, `compile_humanize_prompt`,
+`get_style_statistics`, `verify_protected_content`, `verify_fidelity`, `compile_humanize_prompt`,
 `compile_audit_prompt`, and `compile_ledger_extraction`. It advertises a small
 native prompt menu (`humanize-quick`, `dialogue-audit`, `continuity-audit`,
 `serious-rewrite`, and more) for hosts that implement MCP Prompts. These tools
@@ -106,6 +106,11 @@ The goal is not deception. The goal is better writing: clearer instructions, str
 
 ## Long-Form Audit And Style Unification
 
+Optional `chunk-audit --book-level` adds one whole-book architecture pass after
+chunk reports for fiction/webnovels with at least three chapter headings. It
+checks consequential choices, conflict development, time movement, and
+over-explained ambiguity. It is not loaded into every chunk or serious report.
+
 The executable `chunk-audit` workflow splits a year-long novel, article series, or
 large report at natural boundaries. Each body span is audited once, with a small
 read-only lead-in and the same user-confirmed style baseline plus outline or project ledger.
@@ -120,6 +125,7 @@ facts, attribution, claim scope, and section purpose without loading fiction rul
 
 ```powershell
 human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --book-level --output-dir book-audit
 ```
 
 Discovery terms: **long-form audit, chunked manuscript audit, writing style
@@ -234,6 +240,7 @@ These modules target deeper AI-writing artifacts, not only surface phrases.
 | `process-earnedness-audit` | promised processes skipped before an unsupported result |
 | `attention-budget-audit` | low-value expansion and semantic echoes displacing consequential material |
 | `chapter-pattern-audit` | repeated chapter architecture across three or more chapters |
+| `story-architecture-audit` | opt-in whole-book decisions, escalation, temporal shape, and ambiguity with chapter evidence |
 | `narrative-distance-control` | unmotivated zoom, missing orientation, and viewpoint-distance drift |
 | `imagery-load-audit` | stacked comparisons, competing sensory channels, and show-then-gloss repetition |
 | `paragraph-rhythm-audit` | mechanical one-line paragraph runs and overloaded long blocks |
@@ -316,6 +323,23 @@ The narrative heading scanner recognizes time cards across the languages above, 
 `stats` profiles Han, kana, Arabic, and several Latin-script language families. Use
 genre context and human review for mixed-language or low-resource text.
 
+Untyped serious-document detection uses multiple language-specific cues for
+French, Spanish, Portuguese, Japanese, and Arabic as well as Chinese and English.
+Set `--document-type` explicitly when cues are sparse. Non-Chinese, non-English
+style statistics remain descriptive, without purportedly validated thresholds.
+
+## Quality Evaluation
+
+Developer-written multilingual seed cases test routing false positives/negatives
+and rewrite-fidelity triage. They are regression examples, not native-speaker
+validation. `evaluate` reports separately by language, genre, and reviewer status:
+
+```powershell
+human-writing-skills evaluate --cases tests/fixtures/quality/multilingual-benchmark.json
+```
+
+See the [annotation protocol](docs/evaluation.md) before making accuracy claims.
+
 ## Example Output Shape
 
 ```text
@@ -354,6 +378,13 @@ dialogue cadence, emotion handling, and transitions. Plot facts still come from
 reference. See [docs/reference-style.md](docs/reference-style.md).
 
 ## Original-Text Fidelity
+
+`verify` checks only exact protected tokens. For consequential revisions, also
+run `verify-fidelity --source original.md --candidate revised.md`. It locates
+changed claim spans and potential actor, negation, uncertainty, scope, or
+attribution changes. Changed prose is **needs review**, never an automatic
+semantic pass. Exit codes: 0 identical, 1 literal mismatch, 2 changed prose
+requiring claim review. See [protected-content guidance](docs/protected-content.md).
 
 Use `--original` only when revising an existing text and meaning must remain stable.
 It activates a dedicated fidelity module for rewrite and review; ordinary drafting

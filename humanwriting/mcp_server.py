@@ -23,6 +23,7 @@ from .audit_queue import (
     submit_audit_report,
 )
 from .compiler import compile_audit_prompt_text, compile_humanize_prompt_text
+from .fidelity import compare_fidelity
 from .ledger import compile_ledger_extraction_prompt_text
 from .linter import lint_text
 from .longform import verify_long_form_package, write_long_form_audit
@@ -73,6 +74,7 @@ TOOLS = [
             "source_paths": {"type": "array", "items": {"type": "string"}},
             "agent_mode": {"type": "string", "enum": ["standard", "deep"], "default": "deep"},
             "translationese": {"type": "boolean", "default": False},
+            "book_level": {"type": "boolean", "default": False},
             "chunk_size": {"type": "integer", "minimum": 2000},
         },
         ["draft_path", "output_dir", "style"],
@@ -146,7 +148,17 @@ TOOLS = [
     ),
     _tool(
         "verify_protected_content",
-        "Compare source and rewritten text for changed numbers, citations, URLs, code, quotes, and named terms.",
+        "Compare source and rewritten text for changed literal numbers, citations, URLs, code, quotes, and named terms; not a semantic check.",
+        {
+            "source_text": {"type": "string"},
+            "candidate_text": {"type": "string"},
+            "terms": {"type": "array", "items": {"type": "string"}, "default": []},
+        },
+        ["source_text", "candidate_text"],
+    ),
+    _tool(
+        "verify_fidelity",
+        "Locate changed claim spans and semantic-risk cues; changed prose always needs review even when protected literals match.",
         {
             "source_text": {"type": "string"},
             "candidate_text": {"type": "string"},
@@ -233,6 +245,10 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
         source = _bounded_string(arguments, "source_text", MAX_TEXT_CHARACTERS)
         candidate = _bounded_string(arguments, "candidate_text", MAX_TEXT_CHARACTERS)
         return _text_result(compare_protected_content(source, candidate, terms=_string_list(arguments, "terms")).to_dict())
+    if name == "verify_fidelity":
+        source = _bounded_string(arguments, "source_text", MAX_TEXT_CHARACTERS)
+        candidate = _bounded_string(arguments, "candidate_text", MAX_TEXT_CHARACTERS)
+        return _text_result(compare_fidelity(source, candidate, terms=_string_list(arguments, "terms")).to_dict())
     if name == "compile_humanize_prompt":
         return _text_result(
             compile_humanize_prompt_text(
@@ -273,6 +289,9 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
         translationese = arguments.get("translationese", False)
         if not isinstance(translationese, bool):
             raise ValueError("translationese must be a boolean.")
+        book_level = arguments.get("book_level", False)
+        if not isinstance(book_level, bool):
+            raise ValueError("book_level must be a boolean.")
         output_path, chunks = write_long_form_audit(
             str(draft),
             str(output),
@@ -283,6 +302,7 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
             chunk_size=chunk_size,
             agent_mode=mode,
             translationese=translationese,
+            book_level=book_level,
         )
         return _text_result(
             {

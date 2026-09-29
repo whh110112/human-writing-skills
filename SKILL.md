@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Advanced multilingual AI humanizer for natural rewriting, fiction editing, long-form audit and continuity, verified chunked agent review, translationese review, and character consistency. Humanize AI text, remove robotic tone, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register and performance, scene geography, relationships, numbers, citations, source meaning, and translated-text fidelity. Use for AI writing cleanup, supplied-sample style matching, long-context fiction, essays, news, official, academic, legal, and technical prose. Trigger on humanize AI text, de-AI writing, natural rewriting, novel writing assistant, story consistency checker, scene ending audit, reflective ending, chunked audit, long-form agent audit, translationese audit, style consistency review, character consistency audit, dialogue audit, dialogue action audit, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、文风统一、统一文风、人物设定统一、人物一致性审查、跨章一致性、小说审查、报告审查、人物口吻、人物对白审查、对话生硬、对白动作、方言语域、翻译腔、翻译审查、战力设定、场景空间审查.
+description: Advanced multilingual AI humanizer for natural rewriting, fiction editing, long-form audit and continuity, verified chunked agent review, translationese review, character consistency, opt-in whole-book story architecture review, and semantic rewrite-fidelity triage. Humanize AI text, remove robotic tone, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register and performance, scene geography, relationships, numbers, citations, source meaning, and translated-text fidelity. Use for AI writing cleanup, supplied-sample style matching, long-context fiction, essays, news, official, academic, legal, and technical prose. Trigger on humanize AI text, de-AI writing, natural rewriting, novel writing assistant, story consistency checker, scene ending audit, reflective ending, chunked audit, long-form agent audit, whole-book review, translationese audit, style consistency review, character consistency audit, dialogue audit, dialogue action audit, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、全书审查、文风统一、统一文风、人物设定统一、人物一致性审查、跨章一致性、小说审查、报告审查、人物口吻、人物对白审查、对话生硬、对白动作、方言语域、翻译腔、翻译审查、战力设定、场景空间审查、语义保真审查.
 ---
 
 # Advanced Human Writing & AI Humanizer
@@ -58,7 +58,9 @@ continuity ledgers separate from optional style references.
 5. Treat `--source` as factual evidence only. Activate `source-grounding` only for
    serious academic, formal, news, legal, or technical work with explicit source files.
 6. For important revisions, run deterministic `lint`, then independent audit
-   profiles, then `verify` protected content against the source. Run `stats` only
+   profiles, then `verify` protected literals against the source. For consequential
+   rewrites use `verify-fidelity` too: changed claims require review even if every
+   number and citation is unchanged. Run `stats` only
    when distributional diagnostics help; use `fix` as a preview before writing.
 7. Keep `voice`, `serial`, `world`, `process`, `momentum`, `salience`, `recurrence`,
    `ending`, `texture`, `fidelity`, `preservation`, examples, and `sources` separate from the default audit. Activate them explicitly
@@ -72,6 +74,8 @@ continuity ledgers separate from optional style references.
    visible coverage receipt, then run `verify-chunk-audit` before reconciliation. Use
    `--translationese` only for an explicitly translated or localized work. Read
    `docs/long-form-consistency.md` only for this workflow.
+   Add `--book-level` only for an explicitly requested whole-book fiction/webnovel
+   review with at least three identifiable chapters; run it after chunk reports.
 9. When multiple agents or sessions share a long-form project, use
    `human-writing-mcp` rather than copying the entire manuscript into each chat.
    Agents must claim a task, submit a complete receipt, and pass coverage
@@ -106,6 +110,8 @@ human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills stats --draft chapter.md --style fiction
 human-writing-skills fix --draft chapter.md --preview
 human-writing-skills verify --source original.md --candidate revised.md
+human-writing-skills verify-fidelity --source original.md --candidate revised.md
+human-writing-skills evaluate --cases tests/fixtures/quality/multilingual-benchmark.json
 ```
 
 Read `README.md` or `README.zh-CN.md` for user-facing guidance. Read files under

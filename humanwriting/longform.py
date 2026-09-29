@@ -22,6 +22,9 @@ NARRATIVE_STYLES = {"fiction", "webnovel"}
 SERIOUS_STYLES = {"academic-paper", "formal-document", "news-report"}
 AGENT_MODES = {"standard", "deep"}
 DIALOGUE_PATTERN = re.compile(r"[\"“‘「『].{1,240}?[\"”’」』]", re.DOTALL)
+BOOK_CHAPTER_PATTERN = re.compile(
+    r"(?im)^[ \t]*(?:#{1,3}[ \t]*)?(?:第[零一二三四五六七八九十百千万\d]+[章节回]|chapter[ \t]+\d+)"
+)
 RECEIPT_STATUS_PATTERN = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?Coverage\s*:\s*(complete|blocked)\b"
 )
@@ -219,9 +222,9 @@ def _write_agent_plan(output: Path, tasks: list[AgentTask], mode: str) -> None:
         "schema": 1,
         "mode": mode,
         "instructions": (
-            "Run baseline first. Tasks that share only the baseline dependency may run in "
-            "parallel in fresh model sessions. Save each response at its expected report path. "
-            "Run reconciliation only after every required report is present."
+            "Run tasks in dependency order. Tasks that share only the baseline dependency "
+            "may run in parallel in fresh model sessions. Save each response at its expected "
+            "report path. Run reconciliation only after every required report is present."
         ),
         "tasks": [task.to_dict() for task in tasks],
     }
@@ -382,6 +385,7 @@ def write_long_form_audit(
     source_budget: int = DEFAULT_SOURCE_BUDGET,
     agent_mode: str = "standard",
     translationese: bool = False,
+    book_level: bool = False,
 ) -> tuple[Path, list[TextChunk]]:
     if style not in list_style_skills():
         raise ValueError(f"Unknown style '{style}'.")
@@ -391,11 +395,31 @@ def write_long_form_audit(
         raise ValueError("Baseline budget must be at least 1000 characters.")
     if agent_mode not in AGENT_MODES:
         raise ValueError(f"Agent mode must be one of: {', '.join(sorted(AGENT_MODES))}.")
+    if book_level and style not in NARRATIVE_STYLES:
+        raise ValueError("Whole-book architecture review is limited to fiction and webnovels.")
 
     draft = Path(draft_path).read_text(encoding="utf-8")
     if not draft.strip():
         raise ValueError("Long-form audit requires a non-empty --draft file.")
+    chapter_matches = list(BOOK_CHAPTER_PATTERN.finditer(draft))
+    chapter_count = len(chapter_matches)
+    if book_level and chapter_count < 3:
+        raise ValueError("Whole-book architecture review requires at least three identifiable chapter headings.")
     chunks = split_long_text(draft, chunk_size=chunk_size, overlap=overlap)
+    chapter_index = [
+        {
+            "index": index + 1,
+            "heading": match.group(0).strip(),
+            "start": match.start(),
+            "end": chapter_matches[index + 1].start() if index + 1 < chapter_count else len(draft),
+            "chunks": [
+                chunk.index for chunk in chunks
+                if chunk.start < (chapter_matches[index + 1].start() if index + 1 < chapter_count else len(draft))
+                and chunk.end > match.start()
+            ],
+        }
+        for index, match in enumerate(chapter_matches)
+    ] if book_level else []
     if not 1 <= baseline_chunk <= len(chunks):
         raise ValueError(f"Baseline chunk must be between 1 and {len(chunks)}.")
 
@@ -637,6 +661,34 @@ def write_long_form_audit(
                     )
                 )
 
+    if book_level:
+        (output / "00-chapter-map.json").write_text(
+            json.dumps(chapter_index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        architecture_dependencies = tuple(task.task_id for task in agent_tasks)
+        architecture_prompt = "\n\n".join(
+            [
+                "# Whole-Book Story Architecture Review",
+                "Read `00-chapter-map.json`, the canonical outline, the completed baseline report, and every core and specialist chunk report in agent-plan.json. "
+                "This pass compares chapter functions across the complete work, not just adjacent prose. "
+                "If evidence is absent from reports, request precise manuscript spans rather than inventing them.",
+                _module_block("story-architecture-audit"),
+                context_block,
+                "# Chapter Index\n\n" + json.dumps(chapter_index, ensure_ascii=False, indent=2),
+                "# Required Output\n\nReturn a chapter-function table covering every chapter, cited cross-chapter patterns, "
+                "intentional variation, unresolved source-span requests, and a minimal structural repair plan.",
+                _coverage_receipt("book-architecture"),
+            ]
+        ) + "\n"
+        (output / "9000-book-architecture-prompt.md").write_text(architecture_prompt, encoding="utf-8")
+        agent_tasks.append(AgentTask(
+            task_id="book-architecture",
+            kind="whole-book-architecture-audit",
+            prompt="9000-book-architecture-prompt.md",
+            report="reports/9000-book-architecture-report.md",
+            depends_on=architecture_dependencies,
+        ))
+
     reconcile_prompt = "\n\n".join(
         [
             "# Long-Form Cross-Chunk Reconciliation",
@@ -645,6 +697,8 @@ def write_long_form_audit(
             "Do not infer a global defect from one statistical outlier. Require quoted or located evidence from at least two relevant blocks, "
             "unless one block directly contradicts the canonical outline.",
             _module_block("long-form-style-consistency"),
+            "Use the completed whole-book architecture report as structural evidence when one was requested. "
+            "Do not infer that every local pattern is a global flaw.",
             context_block,
             diagnostic_text.strip(),
             "# Required Output\n\n"
@@ -679,6 +733,8 @@ def write_long_form_audit(
         "source_names": list(source_pack.source_names),
         "agent_mode": agent_mode,
         "translationese_review": translationese,
+        "book_level_review": book_level,
+        "identified_chapters": chapter_count,
         "chunks": [
             {
                 "index": chunk.index,
@@ -709,12 +765,14 @@ def write_long_form_audit(
             f"- Factual source files: `{len(source_pack.source_names)}`",
             f"- Agent mode: `{agent_mode}`",
             f"- Translationese review: `{'enabled' if translationese else 'not requested'}`",
+            f"- Whole-book architecture review: `{'enabled' if book_level else 'not requested'}`",
             "",
             "1. Run `00-baseline-prompt.md` first and save its response as `reports/00-baseline-report.md`.",
             "2. Run every task listed in `agent-plan.json` whose only dependency is `baseline`; they may run in parallel in fresh sessions.",
             "3. Save each response at its planned report path. Every response must retain its Coverage Receipt; the lead-in is context only, so adjacent blocks are not double-counted.",
-            "4. Run `human-writing-skills verify-chunk-audit --package-dir <this-directory>` before reconciliation. Fix missing or invalid receipts first.",
-            "5. Run `9999-reconcile-prompt.md`, save the final report, then apply repairs from canon and meaning to character state, voice, rhythm, and surface wording. Re-audit affected neighbors.",
+            "4. If enabled, run `9000-book-architecture-prompt.md` after all chunk reports and save its report.",
+            "5. Run `human-writing-skills verify-chunk-audit --package-dir <this-directory>` before reconciliation. Fix missing or invalid receipts first.",
+            "6. Run `9999-reconcile-prompt.md`, save the final report, then apply repairs from canon and meaning to character state, voice, rhythm, and surface wording. Re-audit affected neighbors.",
             "",
             "`00-style-drift.md` is a deterministic triage map. Its outliers are review leads, not automatic defects.",
             "For fiction, an outline or continuity ledger is required for authoritative character-setting checks.",

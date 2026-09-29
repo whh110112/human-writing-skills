@@ -14,6 +14,10 @@ Este repositorio contiene instrucciones reutilizables y un compilador ligero de 
 - Traducción y localización: evita el orden literal, conectores heredados, falsos amigos y una voz neutra de traducción, sin borrar términos ni referencias culturales.
 - Textos largos: divide novelas, series de artículos e informes en bloques auditables, mantiene una línea base y reconcilia cambios entre bloques.
 
+Para novelas de al menos tres capítulos, `chunk-audit --book-level` añade una sola revisión de decisiones, consecuencias y evolución del conflicto después de los bloques. No se activa en informes ni en la revisión normal de un capítulo.
+
+`verify` comprueba cifras y citas literalmente; `verify-fidelity --source original.md --candidate revisado.md` señala cambios de afirmación y exige revisar el sentido. La detección automática de documentos serios necesita varias pistas; indique `--document-type` si son escasas. Los ejemplos multilingües incluidos son pruebas preliminares, no una validación por hablantes nativos.
+
 ## Inicio rápido
 
 ```powershell

@@ -41,7 +41,7 @@ human-writing-mcp --root C:\writing-project
 [DeepSeek Harness 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
 
 MCP 现在也可处理日常单篇任务：`lint_text`、`get_style_statistics`、
-`verify_protected_content`、`compile_humanize_prompt`、`compile_audit_prompt` 与
+`verify_protected_content`、`verify_fidelity`、`compile_humanize_prompt`、`compile_audit_prompt` 与
 `compile_ledger_extraction`。对于实现 MCP Prompts 的客户端，还会提供精简的原生指令菜单，
 如 `humanize-quick`、`dialogue-audit`、`continuity-audit`、`serious-rewrite` 等。它们只在
 本地返回证据或编译后的指令，不会自行把草稿发送给模型。
@@ -88,6 +88,10 @@ GitHub Trusted Publishing：只有完成 PyPI 可信发布者配置，并设置�
 
 ## 长篇审查与文风统一
 
+小说/网文达到至少三个可识别章节时，可显式使用 `chunk-audit --book-level`。
+它会在逐块审查完成后只增加**一次全书结构审查**，对照人物选择与代价、冲突
+发展、时间结构和过早解释主题等跨章问题，不给每块重复塞模块，也不用于报告。
+
 项目现在提供可执行的 `chunk-audit`：把一年跨度的小说、系列文章或大体量报告按自然边界
 切成唯一正文块，给每块附上少量只读前文，并统一对照“经用户确认的文风基准 + 大纲/账本”。它会
 生成逐块审查提示词、跨块文风统计差异和最终汇总提示词，用于发现模型升级或长期写作造成的
@@ -99,6 +103,7 @@ GitHub Trusted Publishing：只有完成 PyPI 可信发布者配置，并设置�
 
 ```powershell
 human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
+human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --book-level --output-dir book-audit
 ```
 
 搜索关键词：**长篇审查、分块审查、文风统一、统一文风、人物设定统一、人物一致性审查、
@@ -281,6 +286,10 @@ human-writing-skills humanize --draft chapter.md --style fiction --with-examples
 
 ## 多语言范围
 
+法语、西语、葡语、日语和阿语的严肃文体自动识别现在要求组合线索；线索不足
+时可显式指定 `--document-type`。非中英语言的 `stats` 只展示描述性统计，
+不把统一阈值冒充经过各语种标定的判断。
+
 技能指令没有中文限定，可以用于模型所支持的英文、日文、法文、西班牙文、
 葡萄牙文、阿拉伯文、拉丁文及其他语言的小说和严肃写作。确定性词汇规则天然会
 受语言影响，但连续性、物理状态、人物关系、场景衔接和大部分审稿标准与语言无关。
@@ -325,6 +334,12 @@ human-writing-skills audit `
 
 ## 原文改写保真
 
+原有 `verify` 只核对数字、引文等字面内容。重要改写还应运行
+`verify-fidelity --source original.md --candidate revised.md`：它会标出改动
+的主张片段及主体、否定、可能性、范围、归因变化线索。只要正文改动就标为
+**需逐条复核**，不会把“数字相同”误判为语义已通过。退出码 0=原样一致，
+1=字面内容变化，2=改写后需审稿。
+
 只有改写现有文字并且必须保持原意时才传入 `--original`。它会为生成或审稿单独
 加载语义保真模块；普通创作不会承担这部分 Token。
 
@@ -343,6 +358,17 @@ human-writing-skills audit `
 `--original` 是改写语义依据，`--reference` 只提供文风依据，`--source` 只为严肃
 文本提供事实证据。三种材料隔离加载，避免范文改写事实，也避免原文被误当成模仿
 目标。详见 [docs/editing-tools.zh-CN.md](docs/editing-tools.zh-CN.md)。
+
+## 多语言质量评测
+
+仓库内置种子样例，可检查文体误报/漏报和改写保真分流：
+
+```powershell
+human-writing-skills evaluate --cases tests/fixtures/quality/multilingual-benchmark.json
+```
+
+**种子样例通过不等于母语盲审准确率。**经独立审稿人标注的样例单独计数，
+并按语言和文体报告结果。流程见[质量评测指南](docs/evaluation.zh-CN.md)。
 
 ## 严肃文本来源依据
 

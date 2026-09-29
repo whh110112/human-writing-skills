@@ -14,6 +14,10 @@ Este projeto reúne instruções reutilizáveis e um compilador leve de prompts.
 - Tradução e localização: reduz calques, conectores herdados, falsos cognatos e voz neutra de tradução, sem apagar significado ou contexto cultural.
 - Obras longas: divide o material em blocos auditáveis e reconcilia mudanças de estilo, voz e fatos entre capítulos ou seções.
 
+Para romances com pelo menos três capítulos, `chunk-audit --book-level` acrescenta uma única revisão da arquitetura da obra após os blocos: decisões, consequências, evolução do conflito e saltos temporais. Não é ativada em relatórios ou capítulos isolados.
+
+`verify` confere literalmente números e citações; `verify-fidelity --source original.md --candidate revisado.md` localiza afirmações alteradas e exige revisão do sentido. A identificação automática de documentos sérios usa múltiplos indícios por idioma; informe `--document-type` quando o texto for curto. Os exemplos incluídos são testes preliminares, não validação independente por falantes nativos.
+
 ## Uso rápido
 
 ```powershell

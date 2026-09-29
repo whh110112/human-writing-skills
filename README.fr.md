@@ -14,6 +14,10 @@ Ce dépôt fournit des instructions réutilisables et un compilateur léger de p
 - Traduction et localisation : repère les calques, l'ordre syntaxique importé, les faux amis et la voix de traduction uniforme sans supprimer les références culturelles.
 - Textes longs : découpe les romans, séries d'articles et rapports en blocs auditables puis réconcilie style, voix et faits entre sections.
 
+Pour un roman d'au moins trois chapitres, `chunk-audit --book-level` ajoute une seule lecture de l'architecture d'ensemble après les blocs : choix, conséquences, évolution du conflit et déplacements temporels. Cette option ne s'active ni pour les rapports ni pour un chapitre isolé.
+
+`verify` contrôle littéralement chiffres et citations ; `verify-fidelity --source original.md --candidate revision.md` localise les affirmations modifiées et demande une vérification du sens. La détection automatique des documents sérieux utilise plusieurs indices selon la langue ; précisez `--document-type` si le texte est trop court. Les exemples fournis ne constituent pas une validation indépendante par des locuteurs natifs.
+
 ## Démarrage rapide
 
 ```powershell

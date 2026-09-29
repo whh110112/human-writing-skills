@@ -168,6 +168,38 @@ class LongFormAuditTests(unittest.TestCase):
             sum(task["required_before_reconciliation"] for task in plan["tasks"]),
         )
 
+    def test_whole_book_stage_is_explicit_and_depends_on_all_chunk_reports(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "novel.md"
+            draft.write_text(
+                "\n\n".join(f"第{index}章\n\n" + "人物作出选择，代价随之改变。" * 130 for index in range(1, 4)),
+                encoding="utf-8",
+            )
+            output = root / "audit"
+            written, _ = write_long_form_audit(
+                str(draft), str(output), style="fiction", chunk_size=2000, book_level=True
+            )
+            plan = json.loads((written / "agent-plan.json").read_text(encoding="utf-8"))
+            book = next(task for task in plan["tasks"] if task["kind"] == "whole-book-architecture-audit")
+            chapter_map = json.loads((written / "00-chapter-map.json").read_text(encoding="utf-8"))
+            self.assertTrue(book["required_before_reconciliation"])
+            self.assertEqual(len(chapter_map), 3)
+            self.assertTrue(all(item["chunks"] for item in chapter_map))
+            self.assertTrue(all(task["task_id"] in book["depends_on"] for task in plan["tasks"][:-2]))
+            self.assertIn("Audit Module: story-architecture-audit", (written / book["prompt"]).read_text(encoding="utf-8"))
+            self.assertFalse(verify_long_form_package(str(written))["ready_for_reconciliation"])
+
+    def test_whole_book_stage_rejects_other_genres_and_too_few_chapters(self):
+        with TemporaryDirectory() as directory:
+            draft = Path(directory) / "draft.md"
+            draft.write_text("第一章\n\n正文。" * 900, encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "limited to fiction"):
+                write_long_form_audit(str(draft), str(Path(directory) / "formal"), style="formal-document", book_level=True)
+            draft.write_text("第一章\n\n正文。" * 900 + "\n第二章\n正文。", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "at least three"):
+                write_long_form_audit(str(draft), str(Path(directory) / "short"), style="fiction", book_level=True)
+
     def test_coverage_verification_accepts_completed_receipts(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

@@ -84,6 +84,21 @@ human-writing-skills verify-chunk-audit --package-dir novel-agent-audit
 全量激活，也避免把小说规则或资料来源塞进不相关任务。明确的翻译或本地化长文可加
 `--translationese`，普通多语言写作不会自动触发这项审查。
 
+## 按需开启全书结构审查
+
+小说或网文有至少三个可识别的章节标题时，可显式加 `--book-level`。它在逐块审查之后
+只增加**一次** `9000-book-architecture-prompt.md`，不会给每个普通分块重复塞模块。
+该任务汇总章节选择及后果、冲突变化、时间跳跃，以及叙述是否过早解释并消解歧义；
+`00-chapter-map.json` 记录各章标题、正文范围和相交分块，便于精确回查原文；
+缺少原文证据时必须要求补查具体位置，不能凭报告想象情节。
+
+```powershell
+human-writing-skills chunk-audit --draft novel.md --style fiction --outline outline.md --book-level --output-dir book-audit
+```
+
+先完成全部分块报告，再运行全书任务；随后执行 `verify-chunk-audit`，最后统稿。
+这是由模型执行、要求证据的审稿步骤，不是程序自动给故事打分。单章、公文和报告不加载。
+
 ## 如何依托大纲保证人物统一
 
 大纲不是一句“他很阴沉”就能约束所有对白。流程会从大纲或账本提取：目标、知识、关系、
