@@ -34,4 +34,19 @@ human-writing-skills verify --source original.md --candidate revised.md --protec
 
 Exit code `0` means all source items remain present; exit code `1` means at least
 one is missing or changed. Added protected-looking values are reported separately.
-Verification checks textual preservation, not whether the source fact was correct.
+`verify` checks literal preservation only. It cannot determine whether the same
+percentage was assigned to the wrong group or a cautious claim became certain.
+
+For a consequential rewrite, also run the opt-in semantic-risk triage:
+
+```powershell
+human-writing-skills verify-fidelity --source original.md --candidate revised.md
+```
+
+`verify-fidelity` lists every changed claim span with source/candidate offsets and
+lines. Shared numbers and citations are anchors for detecting changes in actor,
+negation, uncertainty, scope, or attribution. `pass-exact` (exit `0`) requires
+identical text; a changed literal is `fail-literal` (exit `1`); changed prose with
+unchanged protected tokens is `needs-review` (exit `2`). The cue scan is not a
+semantic proof. Resolve each changed claim against the original and, for factual
+documents, its supplied source. The original may itself be wrong.

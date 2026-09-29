@@ -98,6 +98,21 @@ class ProtectionTests(unittest.TestCase):
             detect_serious_document("API endpoint 的 request 参数见 `schema.json`。", "auto")[0]
         )
 
+    def test_multilingual_serious_detection_requires_multiple_cues(self):
+        samples = {
+            "fr": ("Cette étude présente les résultats [1].", "Elle lut les résultats [1] et ferma le livre."),
+            "es": ("Esta investigación presenta los resultados [1].", "Leyó los resultados [1] y cerró el libro."),
+            "pt": ("Esta pesquisa apresenta os resultados [1].", "Ela leu os resultados [1] e fechou o livro."),
+            "ja": ("本研究の結果を報告する。[1]", "彼女は結果[1]を読んで、本を閉じた。"),
+            "ar": ("تقدم هذه الدراسة نتائج البحث [1].", "قرأت نتائج [1] ثم أغلقت الكتاب."),
+        }
+        for language, (serious, narrative) in samples.items():
+            with self.subTest(language=language):
+                self.assertTrue(detect_serious_document(serious, "auto")[0])
+                self.assertFalse(detect_serious_document(narrative, "auto")[0])
+                self.assertFalse(detect_serious_document(serious, "fiction")[0])
+        self.assertFalse(detect_serious_document("她反复读着结果，结果，结果[1]。", "auto")[0])
+
     def test_audit_auto_protection_respects_document_type_override(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

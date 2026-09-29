@@ -89,6 +89,25 @@ paragraph-level prose pass to every block, interaction review where dialogue or 
 source-grounding only for serious documents with explicit `--source` files. Use
 `--translationese` only for an explicitly translated or localized work.
 
+## Optional Whole-Book Story Review
+
+For a fiction or webnovel manuscript with at least three identifiable chapter
+headings, add `--book-level`. This writes one extra `9000-book-architecture-prompt.md`
+after the chunk tasks, not another module in every chunk. The pass maps chapter
+decisions and consequences, conflict change, time movement, and whether the work
+repeatedly explains away its own ambiguities. It uses completed chunk reports and
+the canonical outline. `00-chapter-map.json` records chapter headings, body offsets,
+and intersecting chunk IDs so source spans can be reopened; missing evidence is
+requested rather than invented.
+
+```powershell
+human-writing-skills chunk-audit --draft novel.md --style fiction --outline outline.md --book-level --output-dir book-audit
+```
+
+Run the book task after the chunk reports and before `verify-chunk-audit` and final
+reconciliation. It is an evidence-backed model review, not a deterministic plot
+grader. Formal reports and single chapters do not load it.
+
 ## Outline-Backed Character Consistency
 
 The audit compiles supported goals, knowledge, relationships, limits, capabilities,

@@ -60,10 +60,16 @@ class McpServerTests(unittest.TestCase):
                 {"source_text": "API returned 200.", "candidate_text": "API returned 201."},
                 root,
             )
+            fidelity = call_tool(
+                "verify_fidelity",
+                {"source_text": "The rate may be 20% [1].", "candidate_text": "The rate is 20% [1]."},
+                root,
+            )
             ledger = call_tool("compile_ledger_extraction", {"draft": "Mara leaves the key."}, root)
         self.assertIn("CLOSE001", lint["content"][0]["text"])
         self.assertIn("sentence_length_cv", stats["content"][0]["text"])
         self.assertIn("missing_or_changed", protection["content"][0]["text"])
+        self.assertEqual(json.loads(fidelity["content"][0]["text"])["status"], "needs-review")
         self.assertIn("Continuity Ledger Extraction", ledger["content"][0]["text"])
 
         prompts = handle_message({"jsonrpc": "2.0", "id": 5, "method": "prompts/list"}, root)
@@ -140,6 +146,41 @@ class McpServerTests(unittest.TestCase):
         self.assertEqual(reconciliation["task_id"], "reconcile")
         self.assertIn("Reconciliation", reconciliation["content"])
         self.assertEqual(len(state["tasks"]), verification["planned"])
+
+    def test_mcp_can_plan_opt_in_whole_book_review(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            draft = root / "novel.md"
+            draft.write_text(
+                "\n\n".join(f"Chapter {index}\n\n" + "A choice changes the next scene. " * 100 for index in range(1, 4)),
+                encoding="utf-8",
+            )
+            call_tool("plan_long_form_audit", {
+                "draft_path": "novel.md", "output_dir": "audit", "style": "fiction",
+                "chunk_size": 2000, "book_level": True,
+            }, root)
+            plan = json.loads((root / "audit" / "agent-plan.json").read_text(encoding="utf-8"))
+            self.assertIn("whole-book-architecture-audit", {task["kind"] for task in plan["tasks"]})
+            self.assertTrue((root / "audit" / "00-chapter-map.json").is_file())
+            with self.assertRaisesRegex(ValueError, "not ready"):
+                call_tool("claim_audit_task", {"package_dir": "audit", "task_id": "book-architecture"}, root)
+            for task in plan["tasks"]:
+                if task["task_id"] in {"book-architecture", "reconcile"}:
+                    continue
+                call_tool("claim_audit_task", {"package_dir": "audit", "task_id": task["task_id"]}, root)
+                call_tool("submit_audit_report", {
+                    "package_dir": "audit", "task_id": task["task_id"],
+                    "report_markdown": complete_report(task["task_id"]),
+                }, root)
+            with self.assertRaisesRegex(ValueError, "not ready"):
+                call_tool("claim_audit_task", {"package_dir": "audit", "task_id": "reconcile"}, root)
+            call_tool("claim_audit_task", {"package_dir": "audit", "task_id": "book-architecture"}, root)
+            call_tool("submit_audit_report", {
+                "package_dir": "audit", "task_id": "book-architecture",
+                "report_markdown": complete_report("book-architecture"),
+            }, root)
+            coverage = json.loads(call_tool("verify_audit_coverage", {"package_dir": "audit"}, root)["content"][0]["text"])
+            self.assertTrue(coverage["ready_for_reconciliation"])
 
     def test_submit_rejects_a_blocked_receipt(self):
         with TemporaryDirectory() as directory:

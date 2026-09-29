@@ -25,29 +25,44 @@ SERIOUS_TASK_PATTERN = re.compile(
     r"法律文书|合同(?:条款|文本)?|"
     r"判决书|起诉状|答辩状|法律意见书|技术文档|接口文档|API\s*文档|"
     r"academic paper|research paper|news report|official document|formal memorandum|legal document|contract|"
-    r"technical documentation|API documentation",
+    r"technical documentation|API documentation|"
+    r"\b(?:article scientifique|rapport de recherche|reportage|article de presse|document juridique|documentation technique|"
+    r"artículo científico|informe de investigación|noticia periodística|documento jurídico|documentación técnica|"
+    r"artigo científico|relatório de pesquisa|reportagem jornalística|documento jurídico|documentação técnica)\b|"
+    r"研究論文|学術論文|新聞記事|法律文書|技術文書|بحث علمي|تقرير صحفي|وثيقة قانونية|توثيق تقني",
     re.IGNORECASE,
 )
 ACADEMIC_CUE = re.compile(
     r"研究(?:方法|结果|结论)|实验(?:方法|结果)|样本量|显著性|置信区间|"
-    r"参考文献|doi\b|methodology|results?|conclusion|sample size|p\s*[<=>]",
+    r"参考文献|\b(?:doi|methodology|results?|conclusion|sample size)\b|p\s*[<=>]|"
+    r"\b(?:étude|résultats|échantillon|investigación|resultados|amostra|pesquisa|resultados)\b|"
+    r"研究|結果|考察|調査|دراسة|نتائج|بحث",
     re.IGNORECASE,
 )
 NEWS_CUE = re.compile(
     r"据.{0,30}(?:报道|消息)|记者|通讯员|消息人士|新闻发布会|截至.{0,20}[时日]|"
-    r"reported by|according to|news conference|spokesperson",
+    r"\b(?:reported by|according to|news conference|spokesperson|selon|a déclaré|"
+    r"según|declaró|segundo|afirmou)\b|によると|報道|記者|بحسب|صرح|أفاد",
     re.IGNORECASE,
 )
 LEGAL_CUE = re.compile(
     r"本合同|甲方|乙方|第[一二三四五六七八九十百\d]+条|依法|法定|"
     r"判决如下|诉讼请求|违约责任|管辖法院|hereby|pursuant to|"
-    r"governing law|liability|jurisdiction",
+    r"\b(?:governing law|liability|jurisdiction|contrat|tribunal|juridiction|"
+    r"contrato|tribunal|jurisdição|jurisdicción)\b|契約|裁判所|法令|العقد|المحكمة|القانون",
     re.IGNORECASE,
 )
 TECHNICAL_CUE = re.compile(
     r"\bAPI\b|接口参数|请求参数|返回值|错误码|版本号|配置文件|数据类型|"
     r"函数签名|schema|endpoint|request|response|error code|configuration|"
-    r"data type|function signature",
+    r"data type|function signature|\b(?:schéma|paramètre|réponse|esquema|parámetro|resposta|"
+    r"parâmetro|configuração)\b|設定|引数|戻り値|الإعدادات|المعاملات|استجابة",
+    re.IGNORECASE,
+)
+MULTILINGUAL_FORMAL_CUE = re.compile(
+    r"\b(?:communiqué officiel|note administrative|arrêté|circulaire|"
+    r"comunicado oficial|resolução administrativa|resolución administrativa|ofício)\b|"
+    r"公文書|通達|告示|公式声明|تعميم رسمي|مذكرة رسمية|قرار إداري",
     re.IGNORECASE,
 )
 
@@ -99,7 +114,7 @@ PROTECTED_PATTERNS = [
     ("named-term", NAMED_TERM_PATTERN),
 ]
 NUMBER_PATTERN = re.compile(
-    r"(?<![\w.])[+-]?\d+(?:\.\d+)?(?:\s*(?:%|毫米|厘米|米|公里|秒|分钟|小时|"
+    r"(?<![A-Za-z0-9_.])[+-]?\d+(?:\.\d+)?(?:\s*(?:%|毫米|厘米|米|公里|秒|分钟|小时|"
     r"元|美元|岁|mg|g|kg|mm|cm|km|ms|s|min|h))?",
     re.IGNORECASE,
 )
@@ -125,11 +140,11 @@ def detect_serious_document(
 
     has_citation = bool(CITATION_PATTERN.search(text))
     has_equation = bool(EQUATION_PATTERN.search(text))
-    academic = bool(ACADEMIC_CUE.search(text)) and (has_citation or has_equation)
-    legal_hits = len(LEGAL_CUE.findall(text))
-    technical_hits = len(TECHNICAL_CUE.findall(text))
-    news_hits = len(NEWS_CUE.findall(text))
-    formal_hits = len(FORMAL_DOCUMENT_CUE.findall(text))
+    academic = len({match.casefold() for match in ACADEMIC_CUE.findall(text)}) >= 2 and (has_citation or has_equation)
+    legal_hits = len({match.casefold() for match in LEGAL_CUE.findall(text)})
+    technical_hits = len({match.casefold() for match in TECHNICAL_CUE.findall(text)})
+    news_hits = len({match.casefold() for match in NEWS_CUE.findall(text)})
+    formal_hits = len({match.casefold() for pattern in (FORMAL_DOCUMENT_CUE, MULTILINGUAL_FORMAL_CUE) for match in pattern.findall(text)})
     if academic:
         return True, "Academic cues occur with a citation or equation."
     if legal_hits >= 2:
@@ -241,6 +256,7 @@ def format_protection_report(report: ProtectionReport, output_format: str = "mar
         "# Protected Content Verification",
         "",
         f"- Status: {'PASS' if report.ok else 'FAIL'}",
+        "- Scope: literal token counts only; this does not verify actor, polarity, uncertainty, attribution, or claim meaning.",
         f"- Source items: {len(report.source_items)}",
         f"- Missing or changed: {len(report.missing_or_changed)}",
         f"- Added protected-looking items: {len(report.added)}",

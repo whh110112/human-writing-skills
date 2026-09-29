@@ -83,7 +83,7 @@ def _tokens(text: str, language: str) -> list[str]:
 
 
 def _sentence_lengths(text: str, language: str) -> list[int]:
-    parts = [part.strip() for part in re.split(r"[。！？.!?]+", text) if part.strip()]
+    parts = [part.strip() for part in re.split(r"[。！？.!?؟｡]+", text) if part.strip()]
     return [len(_tokens(part, language)) for part in parts if _tokens(part, language)]
 
 
@@ -136,14 +136,19 @@ def analyze_style_statistics(text: str, style: str = "general") -> StyleStatisti
 
     warnings: list[str] = []
     serious = style in {"academic-paper", "formal-document", "news-report"}
-    if len(sentence_lengths) >= 6 and sentence_cv < (0.12 if serious else 0.18):
+    calibrated = language in {"zh", "en"}
+    if not calibrated:
+        warnings.append(
+            "No validated language-and-genre thresholds for this profile; inspect metrics against native reference samples."
+        )
+    if calibrated and len(sentence_lengths) >= 6 and sentence_cv < (0.12 if serious else 0.18):
         warnings.append("Sentence lengths are unusually uniform for this style and sample length.")
-    if paragraph_cv is not None and len(paragraph_lengths) >= 5 and paragraph_cv < 0.16:
+    if calibrated and paragraph_cv is not None and len(paragraph_lengths) >= 5 and paragraph_cv < 0.16:
         warnings.append("Paragraph blocks are unusually uniform; verify that breaks mark real turns.")
     trigram_ratio = _repeated_trigram_ratio(tokens)
-    if trigram_ratio is not None and trigram_ratio > (0.18 if serious else 0.12):
+    if calibrated and trigram_ratio is not None and trigram_ratio > (0.18 if serious else 0.12):
         warnings.append("Repeated three-token sequences are dense; inspect phrase and transition reuse.")
-    if len(tokens) >= 100 and transition_density > (35 if serious else 22):
+    if calibrated and len(tokens) >= 100 and transition_density > (35 if serious else 22):
         warnings.append("Explicit transition markers are dense relative to the sample length.")
 
     confidence = "low" if len(tokens) < 120 else "medium" if len(tokens) < 400 else "high"

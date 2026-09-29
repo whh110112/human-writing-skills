@@ -39,6 +39,13 @@ class StatisticsTests(unittest.TestCase):
             with self.subTest(language=expected):
                 self.assertEqual(analyze_style_statistics(text).language, expected)
 
+    def test_non_calibrated_languages_do_not_receive_english_threshold_claims(self):
+        arabic = "هذه جملة قصيرة؟ " * 8
+        report = analyze_style_statistics(arabic)
+        self.assertEqual(report.sentence_count, 8)
+        self.assertTrue(any("No validated language-and-genre thresholds" in item for item in report.warnings))
+        self.assertFalse(any("Sentence lengths are unusually uniform" in item for item in report.warnings))
+
     def test_json_output_is_structured(self):
         payload = json.loads(format_style_statistics(analyze_style_statistics("短句。再来一句。"), "json"))
         self.assertIn("sentence_length_cv", payload)

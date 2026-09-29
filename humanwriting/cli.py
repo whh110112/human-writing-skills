@@ -14,6 +14,8 @@ from .compiler import (
 )
 from .config import apply_project_defaults
 from .detection import PIPELINE_PROFILES
+from .evaluation import evaluate_cases, format_evaluation
+from .fidelity import compare_fidelity_files, format_fidelity_report
 from .fixer import fix_file, format_fix_report
 from .ledger import compile_ledger_extraction_prompt, compile_ledger_extraction_prompt_text
 from .linter import format_lint_report, lint_file, lint_rule_catalog, lint_text
@@ -380,6 +382,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Add translationese and cross-language fidelity review. Use only for an explicitly translated or localized draft.",
     )
+    chunk_audit.add_argument(
+        "--book-level",
+        action="store_true",
+        help="Add one evidence-backed whole-book architecture stage for fiction/webnovels with at least three chapters.",
+    )
 
     verify_chunk_audit = subparsers.add_parser(
         "verify-chunk-audit",
@@ -501,6 +508,19 @@ def build_parser() -> argparse.ArgumentParser:
         default="markdown",
         help="Output format.",
     )
+    fidelity = subparsers.add_parser(
+        "verify-fidelity",
+        help="Locate every changed claim span and semantic-risk cue after rewriting; changed prose never passes automatically.",
+    )
+    fidelity.add_argument("--source", required=True, help="Pre-rewrite source file.")
+    fidelity.add_argument("--candidate", required=True, help="Rewritten candidate file.")
+    fidelity.add_argument("--protect-term", action="append", default=[], help="Additional exact term; repeatable.")
+    fidelity.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    evaluation = subparsers.add_parser(
+        "evaluate", help="Run labeled multilingual document-routing and rewrite-fidelity benchmarks."
+    )
+    evaluation.add_argument("--cases", required=True, help="JSON case file with provenance and review status.")
+    evaluation.add_argument("--format", choices=["markdown", "json"], default="markdown")
     return parser
 
 
@@ -671,6 +691,7 @@ def main(argv: list[str] | None = None) -> int:
                 source_budget=args.source_budget,
                 agent_mode=args.agent_mode,
                 translationese=args.translationese,
+                book_level=args.book_level,
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))
@@ -760,6 +781,22 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(str(exc))
         print(format_protection_report(report, args.format), end="")
         return 0 if report.ok else 1
+
+    if args.command == "verify-fidelity":
+        try:
+            report = compare_fidelity_files(args.source, args.candidate, args.protect_term)
+        except (FileNotFoundError, OSError, ValueError) as exc:
+            parser.error(str(exc))
+        print(format_fidelity_report(report, args.format), end="")
+        return {"pass-exact": 0, "fail-literal": 1, "needs-review": 2}[report.status]
+
+    if args.command == "evaluate":
+        try:
+            report = evaluate_cases(args.cases)
+        except (FileNotFoundError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+            parser.error(str(exc))
+        print(format_evaluation(report, args.format), end="")
+        return 0 if all(row["passed"] for row in report["cases"]) else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 2
