@@ -1,7 +1,8 @@
 {
   "name": "dsh-advanced-human-writing",
-  "version": "0.1.0",
-  "description": "DeepSeek Harness bundle for verified long-form writing audit, continuity ledgers, and bounded reviewer coordination.",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Source adapter for the repository-root DSH writing bundle; publish the root package to include its Python runtime.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -23,7 +24,7 @@
     "humanizer"
   ],
   "engines": {
-    "node": ">=20"
+    "node": "^22.19.0 || >=24.0.0"
   },
   "type": "module",
   "main": "index.js",
@@ -44,6 +45,7 @@
     }
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-mcp-client": "^0.1.2-alpha.3"
+    "@deepseek-ai/dsh-mcp-client": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.3.0-0",
+    "@deepseek-ai/dsh-system-prompt": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.3.0-0"
   }
 }

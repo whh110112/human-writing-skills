@@ -1,0 +1,56 @@
+name: Publish DSH Writing Plugin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - pnpm-lock.yaml
+      - plugins/deepseek-harness/**
+      - .github/workflows/publish-dsh.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-dsh
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned tooling
+        run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: python -m unittest discover -s tests -q
+      - name: Pack the complete runtime
+        run: |
+          mkdir -p dist
+          pnpm pack --pack-destination dist
+          mv dist/dsh-advanced-human-writing-*.tgz dist/dsh-advanced-human-writing.tgz
+          python scripts/verify_dsh_package.py dist/dsh-advanced-human-writing.tgz
+      - name: Publish installable GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
+          tag="dsh-v${version}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; keeping its immutable package."
+            exit 0
+          fi
+          gh release create "$tag" dist/dsh-advanced-human-writing.tgz \
+            --target "$GITHUB_SHA" --latest=false \
+            --title "DSH Writing Plugin $version" \
+            --notes-file plugins/deepseek-harness/RELEASE.md

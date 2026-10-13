@@ -25,6 +25,23 @@ def complete_report(task_id: str) -> str:
 
 
 class McpServerTests(unittest.TestCase):
+    def test_generation_sources_and_voice_references_are_root_bounded(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "source.md").write_text("Observed battery runtime: six hours.", encoding="utf-8")
+            (root / "voice.md").write_text("Short, plain sentences. A limited conclusion.", encoding="utf-8")
+            prompt = call_tool("compile_generation_prompt", {
+                "style": "self-media", "task": "Write a review from the supplied observation.",
+                "source_paths": ["source.md"], "reference_paths": ["voice.md"],
+            }, root)["content"][0]["text"]
+            self.assertIn("Observed battery runtime", prompt)
+            self.assertIn("Supplied Factual Sources", prompt)
+            self.assertIn("reference-style-alignment", prompt)
+            with self.assertRaisesRegex(ValueError, "within the configured"):
+                call_tool("compile_generation_prompt", {
+                    "style": "fiction", "task": "Write a scene.", "reference_paths": ["../voice.md"],
+                }, root)
+
     def test_initialize_lists_tools_and_blocks_path_escape(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
