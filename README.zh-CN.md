@@ -2,6 +2,15 @@
 
 > 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
+**DSH 插件安装：**用于在 DSH 中生成小说、论文和报告，前置去 AI 味规则并挂载本地审查工具。
+
+```powershell
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.0/dsh-advanced-human-writing.tgz
+```
+
+桌面版把 web 换成 desktop；需要 Python 3.9+，无须另行 pip 安装核心。
+详见 [DSH 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
+
 ## 生成时前置去 AI 味与独立复核
 
 `build`、`humanize` 和 MCP 的 `compile_generation_prompt` 默认加载精简的

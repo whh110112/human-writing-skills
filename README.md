@@ -12,6 +12,16 @@ writing style unification, and character consistency review.
 
 [中文说明](README.zh-CN.md) | English | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Français](README.fr.md)
 
+**DeepSeek Harness plugin:** generate novels, papers, and reports with generation-time
+quality guidance and local review tools. Install the complete bundled runtime:
+
+```powershell
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.0/dsh-advanced-human-writing.tgz
+```
+
+Use `desktop` for the desktop profile. Python 3.9+ required; no separate core pip
+install. See [DSH compatibility and usage](plugins/deepseek-harness/README.md).
+
 Advanced Human Writing & AI Humanizer is an open-source, modular skill pack and lightweight prompt compiler for natural multilingual AI-assisted writing. The package, repository, and ClawHub slug remain `human-writing-skills` for compatibility.
 
 This is not an empty prompt collection. The repository contains two deliberately

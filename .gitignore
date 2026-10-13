@@ -11,5 +11,8 @@ build/
 *.egg-info/
 .DS_Store
 .learnings/
+node_modules/
+*.tgz
+.tmp-dsh*/
 *-audit-pipeline/
 *-long-form-audit/

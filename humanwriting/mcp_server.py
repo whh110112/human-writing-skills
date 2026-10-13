@@ -72,6 +72,8 @@ TOOLS = [
             "context_text": {"type": "string"},
             "original_text": {"type": "string"},
             "reference_style": {"type": "string"},
+            "source_paths": {"type": "array", "items": {"type": "string"}, "description": "Factual source files relative to the configured writing workspace."},
+            "reference_paths": {"type": "array", "items": {"type": "string"}, "description": "Voice reference files relative to the workspace; never used as factual sources."},
         },
         ["style", "task"],
     ),
@@ -259,6 +261,8 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
             context_text=_optional_nullable_string(arguments, "context_text", MAX_CONTEXT_CHARACTERS),
             original_text=_optional_nullable_string(arguments, "original_text", MAX_TEXT_CHARACTERS),
             reference_style=_optional_nullable_string(arguments, "reference_style", MAX_CONTEXT_CHARACTERS),
+            source_paths=[str(_safe_path(root, path)) for path in _string_list(arguments, "source_paths")],
+            reference_paths=[str(_safe_path(root, path)) for path in _string_list(arguments, "reference_paths")],
         )})
     if name == "compile_critique_prompt":
         return _text_result({"prompt": compile_critique_prompt(
@@ -503,7 +507,7 @@ def handle_message(message: dict[str, Any], root: Path) -> dict[str, Any] | None
                 "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {"tools": {"listChanged": False}, "prompts": {"listChanged": False}},
                 "serverInfo": SERVER_INFO,
-                "instructions": "Use project-local paths only. Plan bounded reviews, submit complete receipts, verify coverage, then reconcile.",
+                "instructions": "For requested prose, compile_generation_prompt before drafting and apply the genre-aware quality constraints. For rewriting use compile_humanize_prompt, then verify meaning and protected literals. Keep factual source_paths separate from voice reference_paths and use project-local paths only. For long-form review, plan bounded tasks, submit complete receipts, verify coverage, then reconcile.",
             },
         )
     if method == "ping":

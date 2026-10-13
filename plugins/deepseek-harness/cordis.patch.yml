@@ -7,3 +7,4 @@
         pythonCommand: !!js process.env.PYTHON ?? 'python'
         serverName: 'human-writing'
         toolCallTimeoutMs: 60000
+        generationGuidance: true
