@@ -104,6 +104,34 @@ It helps a writing agent move away from generic, template-shaped output and towa
 
 The goal is not deception. The goal is better writing: clearer instructions, stronger revision habits, and reusable style constraints that make AI-assisted drafts feel edited by a human.
 
+## Generation-Time Quality And Independent Review
+
+`build`, `humanize`, and the MCP `compile_generation_prompt` tool now include a
+compact generation-quality protocol by default. It prevents repeated rhetorical
+moves, padded explanations, decorative details, invented specificity, translation-like
+register, and unearned endings while writing. Fiction receives scene/dialogue priorities;
+factual prose receives reader-purpose and evidence priorities. Full ending and other
+deep audits remain opt-in. Direct emotion labels, deliberate repetition, smooth formal
+prose, and useful conclusions are valid; no roughness or sensory-detail quota applies.
+
+Explicit sources also support factual self-media and argumentative essays. Rewrites
+with an original automatically preserve evidenced voice as well as meaning.
+
+```powershell
+human-writing-skills build --style self-media --task "Explain the supplied test results for buyers." --source test-notes.md
+human-writing-skills critique --draft article.md --style self-media --output diagnosis.md
+human-writing-skills compare-blind --original original.md --candidate revised.md --style self-media --brief writing-brief.md --output-dir blind-review
+human-writing-skills stats --draft article.md --language de --format json
+human-writing-skills evaluate-editorial --cases ballots.json --format json
+```
+
+Send only `blind-review/comparison.md` to an independent reviewer and retain
+`version-key.json` locally. These commands compile prompts or aggregate recorded
+ratings; they never call a model. See [editorial evaluation](docs/evaluation.md).
+Real-world quality still requires independent fluent reviewers; unit tests do not
+prove naturalness. Compact-review and deep-rewrite character budgets are 25,000 and
+34,000 respectively (quick rewrite remains below 15,000 on the regression fixture).
+
 ## Long-Form Audit And Style Unification
 
 Optional `chunk-audit --book-level` adds one whole-book architecture pass after

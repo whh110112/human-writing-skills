@@ -362,7 +362,9 @@ def detect_audit_profiles(
     source_active: bool = False,
     serious_document: bool = False,
     context: str = "",
+    source_eligible: bool | None = None,
 ) -> list[ProfileDecision]:
+    factual_sources_enabled = serious_document if source_eligible is None else source_eligible
     optional = {
         "character": _match_reason(CHARACTER_PATTERN, draft, "character-action or voice"),
         "relationship": _match_reason(RELATIONSHIP_PATTERN, draft, "dialogue or relationship"),
@@ -405,9 +407,9 @@ def detect_audit_profiles(
             "Covered by the core ai-trace stage; select ending explicitly for an isolated pass.",
         ),
         "sources": (
-            source_active and serious_document,
-            "Supplied factual sources and a serious document type were detected."
-            if source_active and serious_document
+            source_active and factual_sources_enabled,
+            "Supplied factual sources and an eligible factual document type were detected."
+            if source_active and factual_sources_enabled
             else (
                 "Source files were supplied, but the draft is not a serious factual document."
                 if source_active

@@ -1,5 +1,9 @@
 # Multilingual Quality Evaluation
 
+For recorded judgments of meaning, voice, readability, concision, factual support,
+and restraint, use the new [independent editorial comparison workflow](editorial-evaluation.md).
+`evaluate` below remains deterministic triage; `evaluate-editorial` never generates ratings.
+
 `evaluate` runs a labeled, local JSON case file. The bundled cases under
 `tests/fixtures/quality/multilingual-benchmark.json` are **developer-written seed
 tests**. They prevent regressions but do not establish real-world accuracy or

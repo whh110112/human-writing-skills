@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Advanced multilingual AI humanizer for natural rewriting, fiction editing, long-form audit and continuity, verified chunked agent review, translationese review, character consistency, opt-in whole-book story architecture review, and semantic rewrite-fidelity triage. Humanize AI text, remove robotic tone, edit fiction and novels, continue webnovel chapters, proofread writing, and audit story continuity, character voice, dialogue register and performance, scene geography, relationships, numbers, citations, source meaning, and translated-text fidelity. Use for AI writing cleanup, supplied-sample style matching, long-context fiction, essays, news, official, academic, legal, and technical prose. Trigger on humanize AI text, de-AI writing, natural rewriting, novel writing assistant, story consistency checker, scene ending audit, reflective ending, chunked audit, long-form agent audit, whole-book review, translationese audit, style consistency review, character consistency audit, dialogue audit, dialogue action audit, 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI人性化改写、AI文本润色、AI文章润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、全书审查、文风统一、统一文风、人物设定统一、人物一致性审查、跨章一致性、小说审查、报告审查、人物口吻、人物对白审查、对话生硬、对白动作、方言语域、翻译腔、翻译审查、战力设定、场景空间审查、语义保真审查.
+description: Multilingual AI humanizer for genre-aware generation, humanize AI text, de-AI writing, natural rewriting, fiction and novels, novel writing assistant, story continuity, long-form audit, chunked audit, style consistency review, character consistency audit, scene ending audit, translationese review, and rewrite fidelity. Use for supplied-draft cleanup, sample-backed voice matching, novel continuation, and factual essays, news, academic, official, legal, or technical prose. Includes generation-time quality guards and independent editorial review. 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI文本润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、全书审查、文风统一、人物设定统一、人物一致性审查、人物对白审查、方言语域、翻译腔、战力设定、语义保真审查.
 ---
 
 # Advanced Human Writing & AI Humanizer
@@ -38,6 +38,12 @@ continuity ledgers separate from optional style references.
 
 1. Select one base style from `skills/`: `fiction`, `webnovel`, `argumentative`,
    `news-report`, `formal-document`, `self-media`, or `academic-paper`.
+   Before producing prose, read `skills/generation-quality.md` and apply its compact
+   protocol during drafting. The CLI `build` and MCP `compile_generation_prompt`
+   include it automatically. Prevent repeated rhetorical moves, redundant explanation,
+   decorative details, invented specificity, and unearned closure before they accumulate.
+   Let genre, source evidence, and author voice govern choices; do not force roughness,
+   body reactions, fragment runs, or open endings as proof of naturalness.
 2. Read only the relevant modules. Add continuity, spatial, relationship, number,
    dialogue, dialogue-performance, register, capability, world, process, salience, recurrence, source, rhythm, preservation,
    or AI-trace modules when the text actually needs them.
@@ -55,8 +61,9 @@ continuity ledgers separate from optional style references.
    In fiction and webnovels, do not let time/place mini-headings replace scene bridges.
 4. Activate `reference-style-alignment` only when the user supplies reference
    material, gives an explicit style direction, or directly asks to match a style.
-5. Treat `--source` as factual evidence only. Activate `source-grounding` only for
-   serious academic, formal, news, legal, or technical work with explicit source files.
+5. Treat `--source` as factual evidence only. Activate `source-grounding` for
+   serious documents or explicitly selected factual `self-media` / `argumentative`
+   work with source files. Personal experience and product reviews need evidence too.
 6. For important revisions, run deterministic `lint`, then independent audit
    profiles, then `verify` protected literals against the source. For consequential
    rewrites use `verify-fidelity` too: changed claims require review even if every
@@ -67,7 +74,11 @@ continuity ledgers separate from optional style references.
    or through `pipeline --auto`. `serial` requires context, `recurrence` requires at
    least three chapters, `fidelity` requires `--original`, `preservation` requires
    both explicit selection and `--original`, examples require an explicit request,
-   and `sources` requires both a serious document and `--source`.
+   and `sources` requires a factual document type and `--source`.
+   For diagnosis without replacement prose use `critique`. For important revisions,
+   `compare-blind` writes an A/B prompt and a separate version key: send only the prompt
+   to a reviewer without revision history. Accept ties and original wins. Stop when
+   further edits have no evidenced benefit; never use AI-trace scores as quality proof.
 8. For a book-length manuscript or large report, use `chunk-audit` instead of placing
    the whole draft in one prompt. Supply `--outline` or `--context` for authoritative
    character or report rules. Use `--agent-mode deep` only when every block needs a

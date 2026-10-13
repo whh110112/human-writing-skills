@@ -65,7 +65,7 @@ Automatic mode always keeps `logic`, `ai-trace`, and `proofread`. It adds:
 - `style-match` only when `--reference` or `--reference-style` explicitly activates it
 - `fidelity` only when `--original` supplies the pre-rewrite text
 - `preservation` only with explicit selection and `--original`; automatic mode skips it
-- `sources` only when factual source files and a serious document type are both present
+- `sources` only when factual source files and a serious or explicitly selected factual self-media/argumentative document type are both present
 
 The `voice` stage checks stable baseline, current goal, knowledge and role constraints,
 audience, response linkage, motivated register shifts, and whether pressure-bearing

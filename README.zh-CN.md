@@ -2,6 +2,30 @@
 
 > 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
 
+## 生成时前置去 AI 味与独立复核
+
+`build`、`humanize` 和 MCP 的 `compile_generation_prompt` 默认加载精简的
+`generation-quality` 协议：写之前确认读者、目的和材料，写作中约束套话、
+修辞结构重复、冗余解释、装饰性细节、虚构经历、翻译腔和无意义收尾。
+小说关注行动、对白回应与场景推进；事实类文章关注读者任务、证据和不确定性。
+允许直接表达情绪、正式文风、必要重复和清楚结论，不强制加入犹豫、身体反应或悬念。
+完整结尾审查等深度模块仍按需加载；有原文的改写自动保护作者声音。
+
+事实类自媒体、产品体验和议论文可使用显式 `--source`；小说不会自动启用事实来源审查。
+
+```powershell
+human-writing-skills build --style self-media --task "根据测试记录写给购买者的说明" --source test-notes.md
+human-writing-skills critique --draft article.md --style self-media --output diagnosis.md
+human-writing-skills compare-blind --original original.md --candidate revised.md --style self-media --brief writing-brief.md --output-dir blind-review
+human-writing-skills stats --draft article.md --language de --format json
+human-writing-skills evaluate-editorial --cases ballots.json --format json
+```
+
+`critique` 只生成指出问题的提示，不代写。盲评时只把 `comparison.md` 交给不知道
+修改历史的评审，另存 `version-key.json`；允许原稿胜出、平局或证据不足。
+这些工具不会调用模型，人工评分也不会自动生成。参见[质量评测](docs/evaluation.zh-CN.md)。
+单元测试验证程序行为，真实自然度仍需独立母语评审。
+
 **增强版去 AI 写作 Skill / 高级 AI 写作工具**：支持去AI味、去AI写作、消除AI腔、
 AI 人性化改写、AI 文本润色、小说润色、小说续写、长篇分块审查、文风统一和人物设定统一。
 

@@ -20,7 +20,13 @@ Use an iterative workflow instead of expecting one perfect generation. Draft, di
 
 4. Re-score
    - Evaluate the revised passage with the AI Trace Rubric.
-   - If two or more dimensions remain weak, run one more local rewrite.
+   - Continue only when a concrete defect remains and a local repair offers a clear
+     benefit without losing meaning or voice. Stop after at most two local revisions;
+     keep or restore the original when the revision is worse or the benefit is unclear.
+   - Do not equate a lower AI-trace score with better writing or encourage the author
+     in place of criticism. Explain actual defects when notes are requested.
+   - For an important revision, use an independent A/B comparison with hidden order
+     and no edit history. Allow original wins, ties, and insufficient evidence.
 
 5. Final Output
    - Check sentence skeletons for missing subjects, objects, complements, head nouns,

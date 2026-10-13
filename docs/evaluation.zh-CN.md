@@ -1,5 +1,12 @@
 # 多语言质量评测
 
+新增 `critique`（只诊断）、`compare-blind`（随机 A/B 提示和独立版本密钥）及
+`evaluate-editorial`（人工评票汇总）。盲评时仅发送 `comparison.md`，评审不能知道
+修改历史；允许原稿胜出、平局与证据不足。六项评分为原意、声音、可读性、冗余控制、
+事实支持和修辞克制。无评票为 pending，不提供质量证据；母语评审记录需两位
+独立评审和材料来源。完整数据格式见[编辑质量评估](editorial-evaluation.md)。
+当前没有附带真实母语编辑评票，工具不会调用模型或自动编造评分。
+
 `evaluate` 可以运行带标签的本地 JSON 样例集。仓库附带的
 `tests/fixtures/quality/multilingual-benchmark.json` 是**开发者编写的种子用例**，
 只用于发现规则回归，不能据此宣称真实世界准确率或母语编辑质量。

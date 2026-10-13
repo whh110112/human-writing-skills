@@ -19,12 +19,12 @@ Score each dimension from 0 to 3:
 
 | Dimension | Warning Sign | Repair Direction |
 | --- | --- | --- |
-| Cognitive smoothness | Every transition is safe and complete | Add doubt, drift, or fragile inference |
+| Cognitive smoothness | Transitions conceal a real gap or uncertainty | Expose the evidenced gap; do not manufacture doubt or drift |
 | Generic diction | Sentences fit any topic | Use specific objects, places, actions, or voice |
 | Cliche phrase cluster | Stock phrases, cues, or transitions recur | Use scene evidence, specific action, or plain speech |
 | Formulaic structure | Neat threes, repeated contrast frames, chained "比", identical cadence | Use owner evidence |
 | Polished stagnation | Paragraphs restate one premise | Cut, merge, or change the state |
-| Emotional flatness | Emotion is named, not embodied | Use action, body signal, sensation, or contradiction |
+| Emotional flatness | The wording loses an evidenced emotional distinction | Restore the distinction; use embodiment only when the scene needs it |
 | Rhythm monotony | One speed throughout | Vary breath, brakes, and cadence |
 | Context drift | Facts, stakes, or timeline blur | Obey the ledger |
 | Relationship stance drift | A reference conflicts with speaker, listener, or audience | Audit the triad; motivate, code, redirect, or add consequence |
@@ -34,8 +34,8 @@ Score each dimension from 0 to 3:
 | False precision | Unmeasured micro-actions get exact numbers | Keep useful facts; use felt or plot-relevant scale elsewhere |
 | Physical drift | Position, clothing, props, or injuries jump | Restore state or a change gate |
 | Occupancy conflict | A resource has impossible or unclear occupants | Establish capacity, transformation, zones, or movement |
-| Cultural vacuum | Era, place, class, and community vanish | Add one precise anchor |
-| Over-clean prose | No hesitation, revision, roughness, or pressure | Add genre-valid imperfection |
+| Cultural vacuum | Relevant supplied cultural context disappears | Restore the supported context; do not invent local color |
+| Over-clean prose | Editing removes meaningful source roughness | Restore evidenced voice; do not add hesitation by quota |
 | Closure addiction | Every thought resolves | Leave useful pressure open |
 | Sentence incompleteness | A verb, connector, parallel clause, or reference loses a required slot | Restore recoverable words; report ambiguity |
 
@@ -51,3 +51,6 @@ AI Trace Review
 ## Revision Check
 
 Keep genre-valid friction; do not optimize every dimension to zero.
+Scores are subjective editing leads, not measured AI probabilities. A smooth,
+formal, or clearly resolved passage can need no change. Evidence and author intent
+outrank scores; do not praise a revision simply because it is newer.

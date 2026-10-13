@@ -211,7 +211,8 @@ class CompilerTests(unittest.TestCase):
             quick = compile_humanize_prompt(str(draft), style="fiction")
             deep = compile_humanize_prompt(str(draft), style="fiction", mode="deep")
         self.assertLess(len(quick), 15000)
-        self.assertLess(len(deep), 30000)
+        # Deep rewrite includes preservation plus the generation-time protocol.
+        self.assertLess(len(deep), 34000)
         self.assertLess(len(quick), len(deep) * 0.6)
 
     def test_humanize_rejects_an_empty_draft(self):
@@ -518,7 +519,8 @@ class CompilerTests(unittest.TestCase):
             review=True,
             strict_continuity=True,
         )
-        self.assertLess(len(prompt), 22000)
+        # Includes the default generation protocol and genre brief, not full audits.
+        self.assertLess(len(prompt), 25000)
 
     def test_duplicate_modules_are_loaded_once(self):
         prompt = compile_prompt(

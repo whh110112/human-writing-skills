@@ -22,7 +22,8 @@ from .audit_queue import (
     list_audit_tasks,
     submit_audit_report,
 )
-from .compiler import compile_audit_prompt_text, compile_humanize_prompt_text
+from .compiler import compile_audit_prompt_text, compile_humanize_prompt_text, compile_prompt
+from .review import compile_critique_prompt
 from .fidelity import compare_fidelity
 from .ledger import compile_ledger_extraction_prompt_text
 from .linter import lint_text
@@ -32,7 +33,7 @@ from .skills import list_style_skills
 from .statistics import analyze_style_statistics
 
 
-SERVER_INFO = {"name": "advanced-human-writing", "version": "0.15.3"}
+SERVER_INFO = {"name": "advanced-human-writing", "version": "0.16.0"}
 PROTOCOL_VERSION = "2025-03-26"
 MAX_CONTEXT_CHARACTERS = 20000
 MAX_TEXT_CHARACTERS = 80000
@@ -62,6 +63,24 @@ def _tool(name: str, description: str, properties: dict[str, Any], required: lis
 
 
 TOOLS = [
+    _tool(
+        "compile_generation_prompt",
+        "Compile genre-aware writing instructions with generation-time anti-filler, repetition, voice, and factual constraints. Does not call a model.",
+        {
+            "style": {"type": "string", "enum": list_style_skills()},
+            "task": {"type": "string"},
+            "context_text": {"type": "string"},
+            "original_text": {"type": "string"},
+            "reference_style": {"type": "string"},
+        },
+        ["style", "task"],
+    ),
+    _tool(
+        "compile_critique_prompt",
+        "Compile an evidence-based diagnosis-only prompt without praise or replacement prose.",
+        {"draft": {"type": "string"}, "style": {"type": "string", "enum": list_style_skills()}, "brief": {"type": "string"}},
+        ["draft", "style"],
+    ),
     _tool(
         "plan_long_form_audit",
         "Split a local manuscript or report into bounded review tasks, reports, and a verified agent plan.",
@@ -142,6 +161,7 @@ TOOLS = [
         "Calculate language-aware sentence variation, lexical diversity, and transition density for supplied text.",
         {
             "text": {"type": "string", "description": "Text to analyze locally."},
+            "language": {"type": "string", "default": "auto", "description": "Language tag such as de or pt-BR; unsupported transition profiles return null."},
             "style": {"type": "string", "enum": ["general", *list_style_skills()], "default": "general"},
         },
         ["text"],
@@ -232,6 +252,20 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
 
     if not isinstance(arguments, dict):
         raise ValueError("Tool arguments must be an object.")
+    if name == "compile_generation_prompt":
+        return _text_result({"prompt": compile_prompt(
+            style=_string(arguments, "style"),
+            task=_bounded_string(arguments, "task", MAX_CONTEXT_CHARACTERS),
+            context_text=_optional_nullable_string(arguments, "context_text", MAX_CONTEXT_CHARACTERS),
+            original_text=_optional_nullable_string(arguments, "original_text", MAX_TEXT_CHARACTERS),
+            reference_style=_optional_nullable_string(arguments, "reference_style", MAX_CONTEXT_CHARACTERS),
+        )})
+    if name == "compile_critique_prompt":
+        return _text_result({"prompt": compile_critique_prompt(
+            _bounded_string(arguments, "draft", MAX_TEXT_CHARACTERS),
+            _string(arguments, "style"),
+            _optional_nullable_string(arguments, "brief", MAX_CONTEXT_CHARACTERS) or "",
+        )})
     if name == "lint_text":
         text = _bounded_string(arguments, "text", MAX_TEXT_CHARACTERS)
         style = _optional_string(arguments, "style", "general")
@@ -240,7 +274,7 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
     if name == "get_style_statistics":
         text = _bounded_string(arguments, "text", MAX_TEXT_CHARACTERS)
         style = _optional_string(arguments, "style", "general")
-        return _text_result(analyze_style_statistics(text, style=style).to_dict())
+        return _text_result(analyze_style_statistics(text, style=style, language=_optional_string(arguments, "language", "auto")).to_dict())
     if name == "verify_protected_content":
         source = _bounded_string(arguments, "source_text", MAX_TEXT_CHARACTERS)
         candidate = _bounded_string(arguments, "candidate_text", MAX_TEXT_CHARACTERS)
