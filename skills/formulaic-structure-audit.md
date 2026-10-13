@@ -35,8 +35,9 @@ or argued into existence.
    or cadence, merge, cut, or disturb one.
    Count structure families, not exact phrases: forward contrast, reverse contrast,
    repeated comparative clauses, setup-contrast-summary, and neat three-part escalation.
-3. Check endings. If every paragraph lands cleanly, leave one paragraph with
-   a productive pressure, question, sensory residue, or contradiction.
+3. Check endings. Mark a closure only if it repeats, over-explains, or resolves
+   uncertainty the material actually leaves open. Clear closure is valid; do not
+   add a question, sensory residue, or contradiction merely to break the pattern.
 4. Replace symmetrical rhetoric with scene-specific movement:
    - an object passing between people
    - a detail that changes meaning
@@ -62,12 +63,12 @@ not a repair. Change the information path, not only the connective.
 
 | Formulaic Shape | Repair |
 | --- | --- |
-| Three balanced claims | Keep the strongest two; make the third a complication or example |
+| Three balanced claims | Keep all necessary claims; cut or reorganize only redundant ones |
 | "Not X, but Y" | State the actual observation without the frame |
 | "X is Y, not Z" | Keep only if Z is a live alternative; otherwise show the evidence for Y |
 | Repeated "比...比..." | Keep one shared comparison axis, split unlike axes, or replace the ladder with an observed consequence |
 | Smooth transition | Use an object, action, quote, or unresolved question as bridge |
-| Clean paragraph closure | Let one consequence remain open |
+| Redundant paragraph closure | Cut the recap; preserve the material's actual resolution |
 | Abstract conclusion | Return to a concrete detail that has changed |
 
 ## Output Check

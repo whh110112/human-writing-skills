@@ -9,6 +9,76 @@ from .protection import detect_serious_document
 
 VALID_KINDS = {"serious-detection", "fidelity"}
 VALID_REVIEWS = {"seed", "native-reviewed"}
+EDITORIAL_DIMENSIONS = ("meaning", "voice", "readability", "concision", "factual_support", "restraint")
+
+
+def evaluate_editorial_cases(path: str) -> dict:
+    """Aggregate independently recorded human ratings, never synthesize ratings."""
+    cases = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(cases, list):
+        raise ValueError("Editorial benchmark must be a JSON array.")
+    rows, seen = [], set()
+    for case in cases:
+        if not isinstance(case, dict) or not isinstance(case.get("id"), str) or case["id"] in seen:
+            raise ValueError("Each editorial case needs a unique string id.")
+        seen.add(case["id"])
+        if not case.get("language") or not case.get("genre") or case.get("review_status") not in VALID_REVIEWS:
+            raise ValueError(f"{case['id']}: language, genre, and valid review_status are required.")
+        key = case.get("version_key")
+        if not isinstance(key, dict) or set(key) != {"A", "B"} or set(key.values()) != {"original", "candidate"}:
+            raise ValueError(f"{case['id']}: version_key must map A/B to original/candidate.")
+        ballots = case.get("ballots")
+        if not isinstance(ballots, list):
+            raise ValueError(f"{case['id']}: ballots must be a list.")
+        reviewers, votes, deltas = set(), [], []
+        for ballot in ballots:
+            if not isinstance(ballot, dict):
+                raise ValueError("Each ballot must be an object.")
+            reviewer = ballot.get("reviewer")
+            if not isinstance(reviewer, str) or not reviewer or reviewer in reviewers or not ballot.get("annotation_date"):
+                raise ValueError("Each ballot requires a unique reviewer and annotation_date.")
+            reviewers.add(reviewer)
+            scores = ballot.get("scores")
+            if not isinstance(scores, dict) or set(scores) != {"A", "B"}:
+                raise ValueError("Scores must cover both A and B.")
+            for values in scores.values():
+                if not isinstance(values, dict) or set(values) != set(EDITORIAL_DIMENSIONS):
+                    raise ValueError("Each version needs all six editorial dimensions.")
+                if any(type(value) is not int or not 0 <= value <= 4 for value in values.values()):
+                    raise ValueError("Editorial scores must be integers from 0 to 4; higher is better.")
+            vote = ballot.get("verdict")
+            if vote not in {"A", "B", "tie", "insufficient-evidence"}:
+                raise ValueError("Invalid editorial verdict.")
+            votes.append(key.get(vote, vote))
+            unblinded = {key[label]: values for label, values in scores.items()}
+            deltas.append({dim: unblinded["candidate"][dim] - unblinded["original"][dim] for dim in EDITORIAL_DIMENSIONS})
+        if case["review_status"] == "native-reviewed" and (len(reviewers) < 2 or not case.get("source_provenance")):
+            raise ValueError("Native-reviewed editorial cases require two independent reviewers and source_provenance.")
+        rows.append({
+            "id": case["id"], "language": case["language"], "genre": case["genre"],
+            "review_status": case["review_status"], "reviewer_count": len(reviewers),
+            "pending": not ballots, "disagreement": len(set(votes)) > 1,
+            "verdicts": votes,
+            "mean_candidate_minus_original": {
+                dim: round(sum(delta[dim] for delta in deltas) / len(deltas), 3) if deltas else None
+                for dim in EDITORIAL_DIMENSIONS
+            },
+        })
+    return {"cases": rows, "disclaimer": "Recorded editorial judgments, not automatic quality scores. Seed and native-reviewed cases remain separate; pending cases provide no quality evidence."}
+
+
+def format_editorial_evaluation(report: dict, output_format: str = "markdown") -> str:
+    if output_format == "json":
+        return json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+    lines = ["# Editorial Comparison Results", "", report["disclaimer"], ""]
+    for row in report["cases"]:
+        lines.extend([
+            f"## {row['id']} / {row['language']} / {row['genre']} / {row['review_status']}",
+            f"- Reviewers: {row['reviewer_count']}; pending: {row['pending']}; disagreement: {row['disagreement']}",
+            f"- Verdicts: {', '.join(row['verdicts']) or 'none'}",
+            f"- Candidate minus original by dimension: {json.dumps(row['mean_candidate_minus_original'])}", "",
+        ])
+    return "\n".join(lines) + "\n"
 
 
 def evaluate_cases(path: str) -> dict:

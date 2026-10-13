@@ -35,6 +35,8 @@ from .reference import DEFAULT_REFERENCE_BUDGET
 from .source import DEFAULT_SOURCE_BUDGET
 from .statistics import analyze_style_file, analyze_style_statistics, format_style_statistics
 from .skills import list_module_skills, list_skills, list_style_skills
+from .review import compile_critique_prompt, prepare_blind_comparison
+from .evaluation import evaluate_editorial_cases, format_editorial_evaluation
 
 
 def add_reference_arguments(parser: argparse.ArgumentParser) -> None:
@@ -61,7 +63,7 @@ def add_source_arguments(parser: argparse.ArgumentParser) -> None:
         "--source",
         action="append",
         default=[],
-        help="Factual source file for serious-document grounding. Can be repeated.",
+        help="Factual source file for factual-document grounding, including essays and self-media. Can be repeated.",
     )
     parser.add_argument(
         "--source-budget",
@@ -77,6 +79,21 @@ def build_parser() -> argparse.ArgumentParser:
         description="Compile writing SKILLS and continuity context into AI-ready instructions.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+    editorial = subparsers.add_parser("evaluate-editorial", help="Aggregate recorded blind-review ballots; never generate scores.")
+    editorial.add_argument("--cases", required=True)
+    editorial.add_argument("--format", choices=["markdown", "json"], default="markdown")
+
+    critique = subparsers.add_parser("critique", help="Compile a diagnosis-only prompt; no replacement prose.")
+    critique.add_argument("--draft", required=True)
+    critique.add_argument("--style", required=True, choices=list_style_skills())
+    critique.add_argument("--brief", help="Reader purpose and authoritative material file.")
+    critique.add_argument("--output", help="Prompt output file; default stdout.")
+    blind = subparsers.add_parser("compare-blind", help="Prepare randomly ordered A/B prompt and a separate private version key.")
+    blind.add_argument("--original", required=True)
+    blind.add_argument("--candidate", required=True)
+    blind.add_argument("--style", required=True, choices=list_style_skills())
+    blind.add_argument("--brief", help="Reader purpose and authoritative material file.")
+    blind.add_argument("--output-dir", required=True, help="New or empty directory; keep version-key.json away from the reviewer.")
 
     list_parser = subparsers.add_parser("list", help="List available writing skills.")
     list_parser.add_argument(
@@ -442,6 +459,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Report optional language-aware style statistics without authorship claims.",
     )
     stats.add_argument("--draft", required=True, help="Markdown/text file to inspect.")
+    stats.add_argument("--language", default="auto", help="Language tag, e.g. en, de, pt-BR; auto uses heuristic detection.")
     stats.add_argument(
         "--style",
         choices=["general", *list_style_skills()],
@@ -558,6 +576,39 @@ def main(argv: list[str] | None = None) -> int:
             skills = list_skills()
         for skill in skills:
             print(skill)
+        return 0
+
+    if args.command == "evaluate-editorial":
+        try:
+            report = evaluate_editorial_cases(args.cases)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            parser.error(str(exc))
+        print(format_editorial_evaluation(report, args.format), end="")
+        return 0
+
+    if args.command in {"critique", "compare-blind"}:
+        try:
+            brief = Path(args.brief).read_text(encoding="utf-8") if args.brief else ""
+            if args.command == "critique":
+                prompt = compile_critique_prompt(Path(args.draft).read_text(encoding="utf-8"), args.style, brief)
+                if args.output:
+                    Path(args.output).write_text(prompt, encoding="utf-8")
+                else:
+                    print(prompt, end="")
+            else:
+                directory = Path(args.output_dir)
+                if directory.exists() and any(directory.iterdir()):
+                    raise ValueError("Comparison output directory must be new or empty.")
+                prompt, key = prepare_blind_comparison(
+                    Path(args.original).read_text(encoding="utf-8"),
+                    Path(args.candidate).read_text(encoding="utf-8"), args.style, brief,
+                )
+                directory.mkdir(parents=True, exist_ok=True)
+                (directory / "comparison.md").write_text(prompt, encoding="utf-8")
+                (directory / "version-key.json").write_text(json.dumps(key, indent=2) + "\n", encoding="utf-8")
+                print("Send only comparison.md to an independent reviewer; retain version-key.json locally.")
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
         return 0
 
     if args.command == "build":
@@ -729,9 +780,9 @@ def main(argv: list[str] | None = None) -> int:
         try:
             draft_text = _stdin_draft(args.draft)
             report = (
-                analyze_style_statistics(draft_text, style=args.style)
+                analyze_style_statistics(draft_text, style=args.style, language=args.language)
                 if draft_text is not None
-                else analyze_style_file(args.draft, style=args.style)
+                else analyze_style_file(args.draft, style=args.style, language=args.language)
             )
         except (FileNotFoundError, OSError, ValueError) as exc:
             parser.error(str(exc))

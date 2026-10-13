@@ -76,7 +76,7 @@ human-writing-skills pipeline `
 - 明确传入 `--reference` 或 `--reference-style`：`style-match`
 - 明确传入改写前原文 `--original`：`fidelity`
 - 显式选择并传入改写前原文：`preservation`；自动模式不会加入
-- 严肃文体与一个以上 `--source` 同时存在：`sources`
+- 严肃文体，或明确选择的事实类 self-media / argumentative，与一个以上 `--source` 同时存在：`sources`
 
 `voice` 会对照人物稳定语言基线、当场目的、知识与角色约束、听众、回应衔接和
 变调依据，并检查关键台词或动作是否得到语言、动作、可读沉默、明确打断或延迟

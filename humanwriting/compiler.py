@@ -132,6 +132,25 @@ SOURCE_AUDIT_MODULES = ["source-grounding"]
 FIDELITY_AUDIT_MODULES = ["rewrite-fidelity"]
 PRESERVATION_AUDIT_MODULES = ["voice-ambiguity-preservation"]
 PROTECTED_CONTENT_MODULES = ["protected-content"]
+FACTUAL_SOURCE_STYLES = {"academic-paper", "formal-document", "news-report", "argumentative", "self-media"}
+
+
+def generation_brief(style: str) -> str:
+    if style in {"fiction", "webnovel"}:
+        direction = (
+            "Advance the scene through a choice, discovery, resistance, or changed interpretation. "
+            "Dialogue responds with speaker-specific knowledge and aims. Avoid repeated gestures "
+            "and explaining what action already showed. Quiet scenes and direct emotion labels are valid."
+        )
+    else:
+        direction = (
+            "Identify what the reader needs to understand, decide, or do. Put evidence or limits "
+            "next to claims. Distinguish facts, inferences, and missing inputs. Do not invent personal experience "
+            "or erase uncertainty. Keep terminology stable; formal prose need not be casual."
+        )
+    return "# Genre-Specific Generation Brief\n\n" + direction
+
+
 HUMANIZE_QUICK_MODULES = [
     "surface-pattern-audit",
     "voice-ambiguity-preservation",
@@ -258,6 +277,7 @@ def compile_prompt(
     if skill.kind != "style":
         raise ValueError(f"'{style}' is a module, not a primary style skill.")
     selected_modules = load_many(modules or [])
+    append_missing(selected_modules, ["generation-quality"])
     if context_path and context_text is not None:
         raise ValueError("Provide either context_path or context_text, not both.")
     context = context_text.strip() if context_text is not None else read_optional(context_path)
@@ -315,10 +335,12 @@ def compile_prompt(
     )
     if protection_active:
         append_missing(selected_modules, PROTECTED_CONTENT_MODULES)
-    if source_pack.active and auto_protection:
+    source_grounding_active = source_pack.active and (auto_protection or style in FACTUAL_SOURCE_STYLES)
+    if source_grounding_active:
         append_missing(selected_modules, SOURCE_AUDIT_MODULES)
     if original_pack.active:
         append_missing(selected_modules, FIDELITY_AUDIT_MODULES)
+        append_missing(selected_modules, PRESERVATION_AUDIT_MODULES)
     if strict_continuity:
         append_missing(
             selected_modules,
@@ -339,6 +361,7 @@ def compile_prompt(
         selected_modules.append(load_skill("natural-measurement"))
     blocks = [
         CORE_DIRECTIVE.strip(),
+        generation_brief(style),
         CONTINUITY_DIRECTIVE.strip(),
         f"# Selected Skill: {skill.name}\n\n{skill.content}",
     ]
@@ -348,7 +371,7 @@ def compile_prompt(
         blocks.append(f"# Project Context\n\n{context}")
     if reference_pack.active:
         blocks.append(reference_pack.block)
-    if source_pack.active and auto_protection:
+    if source_grounding_active:
         blocks.append(source_pack.block)
     if original_pack.active:
         blocks.append(original_pack.block)
@@ -510,10 +533,11 @@ def compile_audit_prompt(
         text=draft,
         document_type=document_type,
     )
+    source_eligible = serious_document or document_type in FACTUAL_SOURCE_STYLES
     narrative_naturalness_enabled = document_type in NARRATIVE_NATURALNESS_DOCUMENT_TYPES or (
         document_type == "auto" and not serious_document
     )
-    if source_pack.active and serious_document:
+    if source_pack.active and source_eligible:
         requested_profiles.add("sources")
     unknown_profiles = requested_profiles - AUDIT_PROFILES
     if unknown_profiles:
@@ -530,8 +554,8 @@ def compile_audit_prompt(
         raise ValueError("The capability profile requires --context with prior state or a continuity ledger.")
     if "sources" in requested_profiles and not source_pack.active:
         raise ValueError("The sources profile requires one or more --source files.")
-    if "sources" in requested_profiles and not serious_document:
-        raise ValueError("The sources profile is limited to serious academic, formal, news, legal, or technical documents.")
+    if "sources" in requested_profiles and not source_eligible:
+        raise ValueError("The sources profile is limited to serious or explicitly factual document types; choose self-media or argumentative for factual essays.")
     if "repetition" in requested_profiles and not narrative_naturalness_enabled:
         raise ValueError("The repetition profile is limited to fiction, webnovels, and narrative self-media.")
     if "physical" in requested_profiles and light_physical_requested:

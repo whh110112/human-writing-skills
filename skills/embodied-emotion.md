@@ -6,11 +6,13 @@ Turn emotion into perception, body response, action, and contradiction. Avoid na
 
 ## Technique
 
-- Identify two emotions that can coexist in the moment.
-- Choose one visible action and one involuntary body signal.
-- Distort one sense in a way that belongs to the emotion.
-- Let the character or speaker misread themselves before understanding.
-- Use objects as emotional witnesses: cups, sleeves, dust, receipts, door handles.
+- First identify whether the emotional beat needs expansion at all. A direct label,
+  restrained statement, or silence can be appropriate to the voice and genre.
+- When the scene supports mixed emotion, preserve it without requiring two emotions.
+- Use an action, body signal, or sensory detail only when it belongs to the established
+  character and adds information. No gesture-plus-body-response quota applies.
+- Keep self-misreading only when the viewpoint supports it; do not invent confusion.
+- Use an existing object when its role changes the scene, not as automatic decoration.
 
 ## Emotion Transform Examples
 
@@ -30,4 +32,5 @@ Turn emotion into perception, body response, action, and contradiction. Avoid na
 
 ## Revision Check
 
-If the emotion label is removed, can the reader still feel what is happening?
+If expansion is warranted, does it add something beyond the emotion label? If not,
+keep the simpler wording. Never invent bodily evidence in memoir or factual prose.

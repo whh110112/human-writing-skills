@@ -7,10 +7,12 @@ from accidental editing does not prove that the citation exists or supports the 
 
 ## Activation Gate
 
-Use only for academic, formal, news, legal, or technical material when factual source files
-are explicitly supplied. Do not activate for fiction, webnovels, casual answers,
-self-media, or style references. Keep `--source` facts separate from `--reference`
-style material.
+Use for factual academic, formal, news, legal, technical, argumentative, or self-media
+material when factual source files are explicitly supplied. Personal experiences,
+reviews, and tutorials also need evidence for their factual claims. Fiction and
+webnovels remain outside automatic activation. Keep `--source` facts separate from
+`--reference` style material. In automatic document routing, ask for an explicit
+factual document type if the draft's purpose cannot be established.
 
 ## Claim Source Map
 
@@ -27,6 +29,10 @@ technical specification, reasonable inference, contradiction, and no support fou
 
 - Do not invent a source, author, title, DOI, URL, quotation, case, standard, dataset,
   statistic, or page number.
+- Classify material as user-supplied fact, source-supported fact, inference, or missing
+  input. Do not replace a real observed event with a plausible stereotyped event.
+- For missing firsthand experience, request the author's material or omit the claim;
+  never fabricate a memory, client example, product test, or sensory observation.
 - Check that attribution, claim polarity, population, date, jurisdiction, version,
   and uncertainty match the source.
 - Distinguish a source that exists from a source that supports the sentence.

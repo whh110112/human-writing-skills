@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from .compiler import compile_audit_prompt, read_optional
+from .compiler import FACTUAL_SOURCE_STYLES, compile_audit_prompt, read_optional
 from .detection import PIPELINE_PROFILES, ProfileDecision, detect_audit_profiles
 from .linter import format_lint_report, lint_file
 from .original import build_original_pack
@@ -31,7 +31,9 @@ def select_pipeline_profiles(
     source_active: bool = False,
     serious_document: bool = False,
     context: str = "",
+    source_eligible: bool | None = None,
 ) -> tuple[list[str], list[ProfileDecision]]:
+    factual_sources_enabled = serious_document if source_eligible is None else source_eligible
     if stages:
         selected = list(dict.fromkeys(stages))
         unknown = set(selected) - set(PIPELINE_PROFILES)
@@ -47,8 +49,8 @@ def select_pipeline_profiles(
             raise ValueError("The capability stage requires --context with prior state or a continuity ledger.")
         if "sources" in selected and not source_active:
             raise ValueError("The sources stage requires one or more --source files.")
-        if "sources" in selected and not serious_document:
-            raise ValueError("The sources stage is limited to serious academic, formal, news, legal, or technical documents.")
+        if "sources" in selected and not factual_sources_enabled:
+            raise ValueError("The sources stage requires a serious or explicitly factual self-media/argumentative document type.")
         decisions = []
         for profile in PIPELINE_PROFILES:
             is_selected = profile in selected
@@ -67,8 +69,8 @@ def select_pipeline_profiles(
                 reason = "No prior-state --context file was supplied."
             if profile == "sources" and not source_active:
                 reason = "No factual --source files were supplied."
-            elif profile == "sources" and not serious_document:
-                reason = "The draft is not a serious factual document."
+            elif profile == "sources" and not factual_sources_enabled:
+                reason = "No eligible factual document type was established."
             decisions.append(ProfileDecision(profile, is_selected, reason))
         return selected, decisions
     if auto:
@@ -79,6 +81,7 @@ def select_pipeline_profiles(
             context_active=context_active,
             source_active=source_active,
             serious_document=serious_document,
+            source_eligible=factual_sources_enabled,
             context=context,
         )
         return [decision.profile for decision in decisions if decision.selected], decisions
@@ -107,7 +110,7 @@ def select_pipeline_profiles(
         if profile == "fidelity":
             include = original_active
         if profile == "sources":
-            include = source_active and serious_document
+            include = source_active and factual_sources_enabled
         if include:
             reason = "Included in the established broad pipeline."
         elif profile == "style-match":
@@ -119,7 +122,7 @@ def select_pipeline_profiles(
         elif profile == "sources" and not source_active:
             reason = "No factual --source files were supplied."
         elif profile == "sources":
-            reason = "The draft is not a serious factual document."
+            reason = "No eligible factual document type was established."
         elif profile == "repetition":
             reason = "Optional narrative-only repetition and exposition pass; use --auto or select it explicitly."
         else:
@@ -156,6 +159,7 @@ def build_audit_pipeline(
     source_pack = build_source_pack(source_paths, source_budget)
     original_pack = build_original_pack(original_path)
     serious_document, _ = detect_serious_document(draft, document_type=document_type)
+    source_eligible = serious_document or document_type in FACTUAL_SOURCE_STYLES
     selected, decisions = select_pipeline_profiles(
         draft,
         stages=stages,
@@ -165,6 +169,7 @@ def build_audit_pipeline(
         context_active=context_active,
         source_active=source_pack.active,
         serious_document=serious_document,
+        source_eligible=source_eligible,
         context=context,
     )
     reason_by_profile = {decision.profile: decision.reason for decision in decisions}
