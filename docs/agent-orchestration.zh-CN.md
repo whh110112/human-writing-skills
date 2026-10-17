@@ -54,6 +54,10 @@ args: ["-m", "humanwriting.mcp_server", "--root", "C:/writing-project"]
 human-writing-mcp --root C:\writing-project --http --host 127.0.0.1 --port 8765 --auth-token <long-random-token>
 ```
 
+可选 HTTP 接口面向原生 MCP 客户端，要求 `application/json`，请求体上限为
+1 MiB；拒绝携带浏览器 `Origin` 的请求，不提供 CORS 或 SSE 流。
+通知返回 202，GET 返回 405。DSH 使用 stdio，无须启动 HTTP 接口。
+
 仅通过 HTTPS 暴露 `POST /mcp`，并保留 `Authorization: Bearer` 请求头。非本机地址未提供
 `--auth-token` 时会被拒绝。不要为了连接远程 Agent 而把小说或资料目录裸露在公网。
 

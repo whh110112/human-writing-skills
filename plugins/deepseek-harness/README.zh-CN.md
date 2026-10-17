@@ -12,7 +12,7 @@
 安装包自带本项目 Python 核心和写作模块，不需要额外 pip 安装 human-writing-skills。
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
 ```
 
 桌面版把 `web` 换成 `desktop`，安装后重启对应 profile。如果解释器不叫 `python`，
@@ -20,7 +20,7 @@ dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/r
 也可安装仓库根目录的固定标签：
 
 ```powershell
-dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.2.0
+dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.2.1
 ```
 
 真正可分发的 package.json 在仓库根目录；本适配子目录为 private，不单独发布。

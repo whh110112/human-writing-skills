@@ -16,7 +16,7 @@ writing style unification, and character consistency review.
 quality guidance and local review tools. Install the complete bundled runtime:
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
 ```
 
 Use `desktop` for the desktop profile. Python 3.9+ required; no separate core pip

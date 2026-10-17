@@ -62,6 +62,11 @@ own TLS reverse proxy:
 human-writing-mcp --root C:\writing-project --http --host 127.0.0.1 --port 8765 --auth-token <long-random-token>
 ```
 
+The optional HTTP endpoint accepts native MCP clients using `application/json`,
+with a maximum request body of 1 MiB. Browser `Origin` requests are rejected; there
+is no browser CORS access or SSE stream. Notifications return 202 and GET returns
+405. DSH uses stdio and does not need this endpoint.
+
 Expose `POST /mcp` only through HTTPS and preserve the `Authorization: Bearer`
 header. A non-loopback bind is refused without `--auth-token`. Do not expose a
 manuscript workspace to the public internet merely to connect an agent.

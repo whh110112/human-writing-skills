@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   publish:
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -40,6 +41,7 @@ jobs:
         run: |
           version="${RELEASE_TAG:-$INPUT_VERSION}"
           version="${version#v}"
+          python scripts/check_release_version.py "$version"
           changelog="${RELEASE_BODY:-$INPUT_CHANGELOG}"
           if [[ -z "$version" ]]; then
             echo "A release tag or manual version is required." >&2
