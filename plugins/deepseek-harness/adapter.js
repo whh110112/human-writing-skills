@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -16,6 +16,7 @@ export function resolveServerConfig(config = {}) {
   const timeout = config.toolCallTimeoutMs ?? 60000
   if (!Number.isSafeInteger(timeout) || timeout < 1000) throw new Error('toolCallTimeoutMs must be an integer of at least 1000.')
   if (!existsSync(root)) throw new Error('Writing workspace does not exist.')
+  if (!statSync(root).isDirectory()) throw new Error('Writing workspace must be a directory.')
   return {
     transport: 'stdio', serverName, command,
     // -I ignores user-site and PYTHONPATH. Import only the bundled runtime before

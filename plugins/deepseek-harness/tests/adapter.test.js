@@ -39,6 +39,7 @@ test('bundled Python server negotiates, compiles genres, verifies facts, and blo
   const root = mkdtempSync(join(tmpdir(), 'human-writing-dsh-'))
   writeFileSync(join(root, 'humanwriting.py'), 'raise RuntimeError("workspace shadowed runtime")')
   writeFileSync(join(root, 'sources.md'), 'Observed test: the device lasted six hours.', 'utf8')
+  assert.throws(() => resolveServerConfig({root: join(root, 'sources.md')}), /must be a directory/)
   const config = resolveServerConfig({root})
   const child = spawn(config.command, config.args, {cwd: config.cwd, stdio: ['pipe', 'pipe', 'pipe']})
   const responses = new Map()
@@ -60,7 +61,7 @@ test('bundled Python server negotiates, compiles genres, verifies facts, and blo
   const call = (name, args) => request('tools/call', {name, arguments: args})
   try {
     const initialized = await request('initialize', {protocolVersion: '2025-03-26', capabilities: {}, clientInfo: {name: 'dsh-test', version: '1'}})
-    assert.equal(initialized.result.serverInfo.version, '0.16.0')
+    assert.equal(initialized.result.serverInfo.version, '0.16.1')
     const listed = await request('tools/list')
     assert.ok(listed.result.tools.some(tool => tool.name === 'compile_generation_prompt'))
     for (const style of ['fiction', 'academic-paper', 'formal-document']) {

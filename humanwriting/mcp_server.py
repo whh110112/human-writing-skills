@@ -11,10 +11,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import socket
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from . import __version__
 
 from .audit_queue import (
     claim_audit_task,
@@ -33,10 +35,11 @@ from .skills import list_style_skills
 from .statistics import analyze_style_statistics
 
 
-SERVER_INFO = {"name": "advanced-human-writing", "version": "0.16.0"}
+SERVER_INFO = {"name": "advanced-human-writing", "version": __version__}
 PROTOCOL_VERSION = "2025-03-26"
 MAX_CONTEXT_CHARACTERS = 20000
 MAX_TEXT_CHARACTERS = 80000
+MAX_HTTP_BODY_BYTES = 1024 * 1024
 
 PROMPTS = [
     ("humanize-quick", "Compile a compact rewrite prompt for one supplied passage."),
@@ -319,7 +322,7 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
         context_value = arguments.get("context_path")
         context = _safe_path(root, context_value) if isinstance(context_value, str) else None
         chunk_size = arguments.get("chunk_size", 8000)
-        if not isinstance(chunk_size, int):
+        if type(chunk_size) is not int:
             raise ValueError("chunk_size must be an integer.")
         mode = arguments.get("agent_mode", "deep")
         if not isinstance(mode, str):
@@ -375,11 +378,12 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
     if name == "read_project_context":
         path = _safe_path(root, _string(arguments, "path"))
         limit = arguments.get("max_characters", 8000)
-        if not isinstance(limit, int) or not 1 <= limit <= MAX_CONTEXT_CHARACTERS:
+        if type(limit) is not int or not 1 <= limit <= MAX_CONTEXT_CHARACTERS:
             raise ValueError(f"max_characters must be between 1 and {MAX_CONTEXT_CHARACTERS}.")
         if not path.is_file():
             raise ValueError("Context path is not a file.")
-        text = path.read_text(encoding="utf-8")
+        with path.open(encoding="utf-8") as stream:
+            text = stream.read(limit + 1)
         return _text_result(
             {
                 "path": str(path),
@@ -445,6 +449,8 @@ def _prompt_descriptors() -> list[dict[str, Any]]:
 
 
 def get_prompt(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(arguments, dict):
+        raise ValueError("Prompt arguments must be an object.")
     draft = _bounded_string(arguments, "draft", MAX_TEXT_CHARACTERS)
     context = _optional_nullable_string(arguments, "context", MAX_CONTEXT_CHARACTERS)
     requested_style = _optional_string(arguments, "style", "fiction")
@@ -491,15 +497,29 @@ def get_prompt(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def handle_message(message: dict[str, Any], root: Path) -> dict[str, Any] | None:
+def handle_message(message: Any, root: Path) -> Any:
     """Handle the MCP methods needed by current Agent hosts."""
 
+    if isinstance(message, list):
+        if not message:
+            return _error(None, -32600, "Invalid Request: empty batch")
+        responses = [handle_message(item, root) if isinstance(item, dict) else
+                     _error(None, -32600, "Invalid Request") for item in message]
+        return [response for response in responses if response is not None] or None
+    if not isinstance(message, dict) or message.get("jsonrpc") != "2.0":
+        return _error(None, -32600, "Invalid Request: expected JSON-RPC 2.0")
     request_id = message.get("id")
+    if "id" in message and (request_id is None or type(request_id) not in (str, int)):
+        return _error(None, -32600, "Invalid Request: invalid request ID")
     method = message.get("method")
+    if method is None and "id" in message and ("result" in message or "error" in message):
+        return None
     if not isinstance(method, str):
         return _error(request_id, -32600, "Invalid Request: method is required")
-    if method == "notifications/initialized":
+    if "id" not in message:
         return None
+    if "params" in message and not isinstance(message["params"], dict):
+        return _error(request_id, -32602, "Parameters must be an object")
     if method == "initialize":
         return _result(
             request_id,
@@ -523,7 +543,7 @@ def handle_message(message: dict[str, Any], root: Path) -> dict[str, Any] | None
         try:
             return _result(request_id, get_prompt(params["name"], params.get("arguments", {})))
         except (OSError, ValueError, json.JSONDecodeError) as exc:
-            return _result(request_id, _text_result(f"{type(exc).__name__}: {exc}", is_error=True))
+            return _error(request_id, -32602, f"{type(exc).__name__}: {exc}")
     if method == "tools/call":
         params = message.get("params", {})
         if not isinstance(params, dict) or not isinstance(params.get("name"), str):
@@ -547,8 +567,6 @@ def run_stdio(root: Path) -> None:
     for line in sys.stdin:
         try:
             message = json.loads(line)
-            if not isinstance(message, dict):
-                raise ValueError("JSON-RPC messages must be objects.")
             response = handle_message(message, root)
         except (ValueError, json.JSONDecodeError) as exc:
             response = _error(None, -32700, f"Parse error: {exc}")
@@ -558,22 +576,58 @@ def run_stdio(root: Path) -> None:
 
 def _http_handler(root: Path, auth_token: str | None):
     class Handler(BaseHTTPRequestHandler):
-        def do_POST(self) -> None:  # noqa: N802 - HTTP method name is defined by BaseHTTPRequestHandler.
+        def setup(self):
+            super().setup()
+            self.connection.settimeout(10)
+
+        def _check_request(self):
             if self.path != "/mcp":
                 self.send_error(HTTPStatus.NOT_FOUND)
-                return
+                return False
+            # This local transport serves native MCP clients, with no browser origins allowed.
+            if self.headers.get("Origin") is not None:
+                self.send_error(HTTPStatus.FORBIDDEN, "Browser origins are not allowed")
+                return False
             if auth_token and self.headers.get("Authorization") != f"Bearer {auth_token}":
                 self.send_error(HTTPStatus.UNAUTHORIZED)
+                return False
+            return True
+
+        def do_GET(self) -> None:  # noqa: N802
+            if self._check_request():
+                self.send_response(HTTPStatus.METHOD_NOT_ALLOWED)
+                self.send_header("Allow", "POST")
+                self.end_headers()
+
+        do_DELETE = do_GET
+
+        def do_POST(self) -> None:  # noqa: N802 - HTTP method name is defined by BaseHTTPRequestHandler.
+            if not self._check_request():
+                return
+            if self.headers.get("Transfer-Encoding"):
+                self.send_error(HTTPStatus.BAD_REQUEST, "Transfer-Encoding is unsupported")
+                return
+            if self.headers.get_content_type() != "application/json":
+                self.send_error(HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
                 return
             length = self.headers.get("Content-Length")
             try:
                 body_length = int(length) if length else 0
+            except ValueError:
+                self.send_error(HTTPStatus.BAD_REQUEST, "Invalid Content-Length")
+                return
+            if not 0 < body_length <= MAX_HTTP_BODY_BYTES:
+                self.send_error(HTTPStatus.REQUEST_ENTITY_TOO_LARGE if body_length > MAX_HTTP_BODY_BYTES
+                                else HTTPStatus.BAD_REQUEST, "Invalid Content-Length")
+                return
+            try:
                 message = json.loads(self.rfile.read(body_length))
-                if not isinstance(message, dict):
-                    raise ValueError("JSON-RPC messages must be objects.")
                 response = handle_message(message, root)
             except (ValueError, json.JSONDecodeError) as exc:
                 response = _error(None, -32700, f"Parse error: {exc}")
+            except TimeoutError:
+                self.send_error(HTTPStatus.REQUEST_TIMEOUT)
+                return
             if response is None:
                 self.send_response(HTTPStatus.ACCEPTED)
                 self.end_headers()
@@ -594,7 +648,10 @@ def _http_handler(root: Path, auth_token: str | None):
 def run_http(root: Path, host: str, port: int, auth_token: str | None) -> None:
     if host not in {"127.0.0.1", "::1", "localhost"} and not auth_token:
         raise ValueError("A non-loopback HTTP server requires --auth-token.")
-    server = ThreadingHTTPServer((host, port), _http_handler(root, auth_token))
+    class Server(ThreadingHTTPServer):
+        address_family = socket.AF_INET6 if ":" in host else socket.AF_INET
+
+    server = Server((host, port), _http_handler(root, auth_token))
     print(f"Human Writing MCP listening on http://{host}:{port}/mcp", file=sys.stderr)
     server.serve_forever()
 

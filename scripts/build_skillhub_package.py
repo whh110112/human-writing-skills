@@ -35,7 +35,8 @@ SKILLHUB_OVERVIEW_PATH = Path("marketplaces/skillhub-overview.zh-CN.md")
 EXCLUDED_PATHS = {
     ".gitattributes",
     ".gitignore",
-    "LICENSE",
+    "package.json",
+    "pnpm-lock.yaml",
     SKILLHUB_OVERVIEW_PATH.as_posix(),
 }
 EXCLUDED_PREFIXES = ("plugins/", ".cursor/")

@@ -260,14 +260,9 @@ def validate_long_form_report(task: dict, report: str) -> str | None:
 def verify_long_form_package(package_dir: str) -> dict:
     """Check that external reviewers returned a non-empty receipt for every planned task."""
 
-    package = Path(package_dir)
-    plan_path = package / "agent-plan.json"
-    if not plan_path.is_file():
-        raise ValueError("Chunk audit package is missing agent-plan.json.")
-    plan = json.loads(plan_path.read_text(encoding="utf-8"))
-    tasks = plan.get("tasks")
-    if not isinstance(tasks, list) or not tasks:
-        raise ValueError("Chunk audit agent plan contains no tasks.")
+    from .audit_storage import load_plan, package_path
+
+    package, plan, tasks = load_plan(package_dir)
 
     complete: list[str] = []
     missing: list[str] = []
@@ -279,7 +274,7 @@ def verify_long_form_package(package_dir: str) -> dict:
         if not isinstance(report_value, str):
             invalid.append(f"{task_id}: no report path")
             continue
-        report_path = package / report_value
+        report_path = package_path(package, report_value, "report path")
         if not report_path.is_file():
             missing.append(f"{task_id}: {report_value}")
             continue

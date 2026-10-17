@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .longform import validate_long_form_report, verify_long_form_package
+from .audit_storage import atomic_write, load_plan as _load_plan, package_path as _package_path, serialized
 
 
 STATE_FILENAME = "agent-state.json"
@@ -21,18 +22,6 @@ STATE_FILENAME = "agent-state.json"
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-
-
-def _load_plan(package_dir: str | Path) -> tuple[Path, dict[str, Any], list[dict[str, Any]]]:
-    package = Path(package_dir).resolve()
-    plan_path = package / "agent-plan.json"
-    if not plan_path.is_file():
-        raise ValueError("Chunk audit package is missing agent-plan.json.")
-    plan = json.loads(plan_path.read_text(encoding="utf-8"))
-    tasks = plan.get("tasks")
-    if not isinstance(tasks, list) or not all(isinstance(task, dict) for task in tasks):
-        raise ValueError("Chunk audit agent plan contains no valid tasks.")
-    return package, plan, tasks
 
 
 def _find_task(tasks: list[dict[str, Any]], task_id: str) -> dict[str, Any]:
@@ -43,16 +32,7 @@ def _find_task(tasks: list[dict[str, Any]], task_id: str) -> dict[str, Any]:
 
 
 def _state_path(package: Path) -> Path:
-    return package / STATE_FILENAME
-
-
-def _package_path(package: Path, value: str, label: str) -> Path:
-    candidate = (package / value).resolve()
-    try:
-        candidate.relative_to(package)
-    except ValueError as exc:
-        raise ValueError(f"Task {label} must stay within the audit package.") from exc
-    return candidate
+    return _package_path(package, STATE_FILENAME, "state path")
 
 
 def _load_state(package: Path) -> dict[str, Any]:
@@ -62,14 +42,14 @@ def _load_state(package: Path) -> dict[str, Any]:
     state = json.loads(state_path.read_text(encoding="utf-8"))
     if not isinstance(state, dict) or not isinstance(state.get("tasks"), dict):
         raise ValueError("Agent state file is malformed.")
+    if not all(isinstance(entry, dict) for entry in state["tasks"].values()):
+        raise ValueError("Agent state entries are malformed.")
     return state
 
 
 def _write_state(package: Path, state: dict[str, Any]) -> None:
     state_path = _state_path(package)
-    temporary = state_path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    temporary.replace(state_path)
+    atomic_write(state_path, json.dumps(state, ensure_ascii=False, indent=2) + "\n")
 
 
 def _report_error(package: Path, task: dict[str, Any]) -> str | None:
@@ -127,6 +107,7 @@ def list_audit_tasks(package_dir: str | Path) -> dict[str, Any]:
     }
 
 
+@serialized
 def claim_audit_task(package_dir: str | Path, task_id: str, agent_id: str = "anonymous") -> dict[str, Any]:
     """Claim a ready task so parallel reviewers do not duplicate one another."""
 
@@ -137,6 +118,10 @@ def claim_audit_task(package_dir: str | Path, task_id: str, agent_id: str = "ano
         raise ValueError(f"Task {task_id} is not ready: {dependency_error}")
     if _report_error(package, task) is None:
         raise ValueError(f"Task {task_id} already has a valid completed report.")
+    prompt_value = task.get("prompt")
+    if not isinstance(prompt_value, str):
+        raise ValueError(f"Task {task_id} has no prompt path.")
+    prompt_content = _package_path(package, prompt_value, "prompt path").read_text(encoding="utf-8")
 
     state = _load_state(package)
     current = state["tasks"].get(task_id, {})
@@ -153,11 +138,13 @@ def claim_audit_task(package_dir: str | Path, task_id: str, agent_id: str = "ano
         "task_id": task_id,
         "agent_id": agent_id,
         "prompt": task.get("prompt"),
+        "content": prompt_content,
         "report": task.get("report"),
         "instructions": "Write the full reviewer report, including a complete Coverage Receipt, then submit it with submit_audit_report.",
     }
 
 
+@serialized
 def submit_audit_report(
     package_dir: str | Path,
     task_id: str,
@@ -178,7 +165,7 @@ def submit_audit_report(
     state = _load_state(package)
     current = state["tasks"].get(task_id, {})
     current_agent = current.get("agent_id")
-    if current.get("status") == "claimed" and current_agent != agent_id:
+    if current.get("status") in {"claimed", "submitted"} and current_agent != agent_id:
         raise ValueError(f"Task {task_id} is claimed by {current_agent}; {agent_id} cannot submit it.")
 
     report_value = task.get("report")
@@ -186,8 +173,9 @@ def submit_audit_report(
         raise ValueError(f"Task {task_id} has no report path.")
     report_path = _package_path(package, report_value, "report path")
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(report_markdown.rstrip() + "\n", encoding="utf-8")
-    digest = hashlib.sha256(report_markdown.encode("utf-8")).hexdigest()
+    stored_report = report_markdown.rstrip() + "\n"
+    atomic_write(report_path, stored_report)
+    digest = hashlib.sha256(stored_report.encode("utf-8")).hexdigest()
     state["tasks"][task_id] = {
         "status": "submitted",
         "agent_id": agent_id,

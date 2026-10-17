@@ -1,6 +1,6 @@
 {
   "name": "dsh-advanced-human-writing",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Source adapter for the repository-root DSH writing bundle; publish the root package to include its Python runtime.",
   "license": "MIT",
