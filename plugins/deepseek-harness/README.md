@@ -1,5 +1,9 @@
 # Human Writing for DeepSeek Harness
 
+<p align="center"><img src="../../assets/logo.png" width="280" alt="Human Writing: fountain-pen handwriting and terminal code"></p>
+
+> Make AI-assisted writing more natural with multilingual editing, chunked long-form collaboration, and continuity review.
+
 A DSH/Cordis plugin for novels, papers, reports, essays, and supplied-draft cleanup.
 It contributes a compact writing protocol before generation and mounts local tools
 for genre-aware prompt compilation, lint, factual fidelity, voice preservation,
