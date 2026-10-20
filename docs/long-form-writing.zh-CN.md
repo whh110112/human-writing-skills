@@ -78,7 +78,8 @@ human-writing-skills assemble-writing --package-dir book-writing --output manusc
 主 Agent 分页读取 `continuity-index.json`，其中包含各块当前摘要值、状态、待承接事项和
 首尾摘录。使用 `read_project_context` 的 `offset` / `next_offset`，直到后者为 null；
 摘录不足以支持判断时，再读其中引用的完整草稿结果。无需每个 Agent 都携带整本小说。
-普通角色提示有 60,000 字符上限，提交也有传输大小限制，超限会明确报错。
+角色提示有 60,000 字符上限；逐块审稿材料超限时保存为完整分页文件，审查者须读完全部页面并
+提交每段回执。其他角色上下文超限会明确报错，提交结果仍有传输大小限制。
 使用精简、已确认的公共账本；特别大的工程按卷拆分。事实来源和风格参考只装载本块被分配的部分。
 
 ## Skill 与 DSH 插件

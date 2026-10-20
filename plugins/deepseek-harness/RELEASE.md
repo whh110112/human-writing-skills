@@ -25,5 +25,5 @@ pythonCommand) and Node ^22.19.0 or >=24. Tested with official DSH 0.2.1-alpha.2
 Cordis/MCP packages. Actual native delegation requires the host's subagent service,
 provider, tool and model driver. Live-model child execution has not been exercised.
 
-Validation: 229 Python tests completed successfully with one environment-dependent
+Validation: 230 Python tests completed successfully with one environment-dependent
 skip locally; seven DSH integration tests and isolated tarball verification passed.

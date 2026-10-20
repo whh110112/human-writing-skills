@@ -97,9 +97,11 @@ The final reviewer reads `continuity-index.json`, containing block digests, entr
 exit contracts, actual state, pending threads and boundary excerpts. Use
 `read_project_context` with `offset` and `next_offset` until `next_offset` is null;
 read the referenced draft-result files for claims not supported by the excerpts.
-This keeps the full manuscript out of each prompt. Ordinary role prompts have a
-60,000-character limit and results have transport limits; oversized context fails
-explicitly. Use compact canonical ledgers and split a very large work into volumes
+This keeps the full manuscript out of each prompt. Role prompts have a
+60,000-character limit. A block review exceeding that limit is saved as a complete
+paged assignment; the reviewer must read all pages and return every paragraph receipt.
+Other oversized context fails explicitly, and results retain transport limits.
+Use compact canonical ledgers and split a very large work into volumes
 when a role's context or result exceeds the limit. Sources and references are only
 loaded for the blocks to which the planner assigns their IDs.
 

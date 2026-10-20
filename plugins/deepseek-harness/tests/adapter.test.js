@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
@@ -89,7 +89,9 @@ test('bundled Python server negotiates, compiles genres, verifies facts, and blo
   const call = (name, args) => request('tools/call', {name, arguments: args})
   try {
     const initialized = await request('initialize', {protocolVersion: '2025-03-26', capabilities: {}, clientInfo: {name: 'dsh-test', version: '1'}})
-    assert.equal(initialized.result.serverInfo.version, '0.16.1')
+    const runtimeVersion = readFileSync(new URL('../../../humanwriting/__init__.py', import.meta.url), 'utf8')
+      .match(/__version__\s*=\s*"([^"]+)"/)[1]
+    assert.equal(initialized.result.serverInfo.version, runtimeVersion)
     const listed = await request('tools/list')
     assert.ok(listed.result.tools.some(tool => tool.name === 'compile_generation_prompt'))
     for (const style of ['fiction', 'academic-paper', 'formal-document']) {

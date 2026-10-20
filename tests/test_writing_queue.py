@@ -365,6 +365,26 @@ class WritingQueueTests(unittest.TestCase):
         self.assertIn("continuity-v1.json", revised["content"])
         self.assertNotIn("A" * 2000, revised["content"])
 
+    def test_large_accepted_word_block_uses_paged_complete_review(self):
+        plan_long_form_writing(self.outline, self.package, style="fiction",
+            target_length=12000, chunk_size=12000, length_unit="words")
+        self.submit("outline-check", self.outline_check())
+        planning = self.chunk_plan()
+        planning["chunks"] = [{**planning["chunks"][0], "outline_ids": ["O0001", "O0002"]}]
+        self.submit("chunk-plan", planning)
+        draft = {**self.draft(1), "text": ("trees " * 9600).strip(),
+            "covered_outline_ids": ["O0001", "O0002"]}
+        self.submit("write-0001", draft)
+        claim = claim_writing_task(self.package, "review-0001", "editor")
+        self.assertLessEqual(len(claim["content"]), 60000)
+        self.assertIn("Paged review assignment", claim["content"])
+        stored = self.package / f"review-input-0001-{claim['claim_token']}.md"
+        material = stored.read_text(encoding="utf-8")
+        self.assertGreater(len(material), 60000)
+        self.assertIn(digest(draft["text"]), material)
+        self.assertIn(draft["text"], material)
+        self.submit("review-0001", self.review(draft), "editor")
+
 
 if __name__ == "__main__":
     unittest.main()

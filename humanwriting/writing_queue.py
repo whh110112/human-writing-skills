@@ -362,7 +362,36 @@ def _prompt(package: Path, plan: dict, state: dict, task: str, claim_token: str)
         leads = lint_text(draft["text"], style=plan["style"]).to_dict()
         leads["total_findings"] = len(leads["findings"])
         leads["findings"] = leads["findings"][:20]
-        return header + f"Independently review the complete {plan['style']} block. Cover every paragraph, use exact quotes, check outline adherence, voice, continuity and specific AI-like repetition/filler. Preserve useful ambiguity and voice. Do not flag a pattern solely because a detector might. pass requires no unresolved issues and all checks pass; otherwise request bounded local revision.\n" + schema_note + "\nContract:\n" + _json(_chunk(package, state, index)) + "\nStyle contract:\n" + _result(package, state, "chunk-plan")["style_contract"] + "\nCanonical context:\n" + context + "\nOutline:\n" + _input_text(package, plan, "outline", _chunk(package, state, index)["outline_ids"]) + "\nObserved incoming state and pending exchanges:\n" + _json([{"state": r["state"], "pending_threads": r["pending_threads"]} for _, r in _effective_incoming(package, plan, state, _write_id(index))]) + "\nWriter state:\n" + _json({k: v for k, v in draft.items() if k not in {"text", "claim_token"}}) + "\ntext_sha256: " + _hash(draft["text"]) + "\nParagraphs:\n" + _json(_paragraphs(draft["text"])) + "\nDeterministic leads (first 20, not automatic defects):\n" + _json(leads) + "\nAssigned factual sources:\n" + _input_text(package, plan, "sources", _chunk(package, state, index).get("source_ids", [])) + "\nSupplied voice references:\n" + _input_text(package, plan, "references", _chunk(package, state, index).get("reference_ids", []))
+        chunk = _chunk(package, state, index)
+        review_prompt = "\n\n".join([
+            header,
+            f"Independently review the complete {plan['style']} block. Cover every paragraph, use exact quotes, check outline adherence, voice, continuity and specific AI-like repetition/filler. Preserve useful ambiguity and voice. Do not flag a pattern solely because a detector might. pass requires no unresolved issues and all checks pass; otherwise request bounded local revision.",
+            schema_note,
+            "Contract:\n" + _json(chunk),
+            "Style contract:\n" + _result(package, state, "chunk-plan")["style_contract"],
+            "Canonical context:\n" + context,
+            "Outline:\n" + _input_text(package, plan, "outline", chunk["outline_ids"]),
+            "Observed incoming state and pending exchanges:\n" + _json([
+                {"state": r["state"], "pending_threads": r["pending_threads"]}
+                for _, r in _effective_incoming(package, plan, state, _write_id(index))]),
+            "Writer state:\n" + _json({k: v for k, v in draft.items() if k not in {"text", "claim_token"}}),
+            "text_sha256: " + _hash(draft["text"]),
+            "Paragraphs:\n" + _json(_paragraphs(draft["text"])),
+            "Deterministic leads (first 20, not automatic defects):\n" + _json(leads),
+            "Assigned factual sources:\n" + _input_text(package, plan, "sources", chunk.get("source_ids", [])),
+            "Supplied voice references:\n" + _input_text(package, plan, "references", chunk.get("reference_ids", [])),
+        ])
+        if len(review_prompt) <= MAX_PROMPT:
+            return review_prompt
+        review_path = package / f"review-input-{index:04d}-{claim_token}.md"
+        atomic_write(review_path, review_prompt)
+        return header + (
+            f"\nPaged review assignment: {review_path}\n"
+            f"Total characters: {len(review_prompt)}. Read the entire assignment with "
+            "read_project_context, following offset/next_offset until next_offset is null. "
+            "It contains the full prose, numbered paragraphs, outline, state and sources. "
+            "Keep per-paragraph notes while reading; do not treat this pointer or the first page as full coverage. "
+            "Submit the same current claim_token and all paragraph receipts.\n")
     summaries = []
     for i in range(1, plan["chunk_count"] + 1):
         draft = _result(package, state, _write_id(i))
