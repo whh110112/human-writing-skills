@@ -4,6 +4,58 @@ import { fileURLToPath } from 'node:url'
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
+export const longFormGuidanceTool = serverName => `writing__${serverName}__longform_guidance`
+
+export function longFormWritingGuidance(serverName = 'human-writing') {
+  const tool = name => `mcp__${serverName}__${name}`
+  return `# Long-form writing orchestration
+Use for requested output >=10,000 characters or words, or explicit multi-agent long-form writing,
+not merely a long input or an ordinary long-form audit. Preserve the requested length unit.
+Save the agreed outline through normal workspace tools; do not invent missing user facts.
+Call ${tool('plan_long_form_writing')}(outline_path, output_dir, style, target_length,
+chunk_size=5000, length_unit='characters'|'words', execution_mode='sequential', max_parallel=4,
+context_paths?, source_paths?, reference_paths?). Context is project truth, sources are factual
+evidence, references are voice only. All paths stay inside the configured writing root.
+
+Order: outline checker -> chunk planner -> writer per chunk -> separate editor per chunk ->
+final continuity reviewer -> assemble. IDs: outline-check -> chunk-plan -> write-0001 /
+review-0001 pairs -> continuity. Call ${tool('list_writing_tasks')}(package_dir);
+claim only ready tasks via ${tool('claim_writing_task')}(package_dir, task_id, agent_id).
+The claim returns content (complete role-specific prompt) and result_schema: forward both
+unchanged, never substitute a generic role prompt. Keep the claim's agent_id through
+${tool('submit_writing_result')}(package_dir, task_id, result: object, agent_id).
+Forward the full content, result_schema, and claim_token unchanged to the assigned role.
+The submitted result.claim_token must copy the current claim_token, also supplied in
+result_schema.claim_token. Track child ID, task ID, agent_id, and claim_token together.
+An active same-agent resume keeps its token; a reclaim or revision attempt gets a new token.
+Reject stale child results from an earlier attempt; never relabel them with a new token.
+Use distinct writer/editor identities; retain each identity on bounded revision attempts.
+The final reviewer must differ from all chunk writers.
+
+If the host exposes a native delegation tool, use its advertised schema (DSH normally uses
+subagent with description and prompt; toolName is configurable). DSH requires dsh-subagent,
+a configured provider such as dsh-subagent-spawn-in-process, and dsh-tool-subagent; the service
+or MCP alone is not an agent runner. A native start returns a child ID, NOT completed prose.
+Map that child ID to the claimed agent_id, wait for its completion notice, then submit the
+actual structured result unchanged. Never fabricate receipts or count a start as approval.
+Do not assume a fresh child inherits conversation; forward the full claim and schema.
+If delegation is absent, denied, or fails, disclose the limitation. Use honest sequential
+distinct role passes, with role-pass identities rather than invented child IDs; explicitly
+say they are not independent agents. Do not silently reassign an already claimed task.
+
+After each submission, re-list readiness. Fix requests permit only the bounded revisions
+allowed by the returned protocol. Stop and report exhausted or blocked work; do not bypass
+approval or edit package state. Later tasks stay blocked until their predecessor is approved.
+Parallel work is permitted ONLY in execution_mode='contract' with approved explicit independent
+block entry/exit contracts, and only for ready tasks up to max_parallel and host capacity.
+max_parallel bounds simultaneous claims, not guaranteed agent processes. 60000/5000 means
+12 writing jobs plus their review jobs, not 12 guaranteed concurrent agents.
+Otherwise run sequentially, even if the host suggests parallel independent delegation.
+After all required approvals, call ${tool('verify_writing_project')}(package_dir), then
+${tool('assemble_writing_project')}(package_dir, output_path). Never claim completion on
+failed verification or assembly, and never publish externally without user instruction.`
+}
+
 export function resolveServerConfig(config = {}) {
   const root = resolve(config.root ?? process.cwd())
   if (!existsSync(resolve(packageRoot, 'humanwriting/mcp_server.py'))) {
@@ -33,6 +85,9 @@ export function writingGuidance(serverName = 'human-writing') {
   return `# Human Writing for DSH\n\nApply only to requested authored prose, rewriting, or editorial review, not code or ordinary answers.
 For novels use fiction/webnovel; for papers academic-paper; for reports formal-document;
 for news news-report; for essays argumentative; for posts self-media. Respect the user's language.
+For requested output >=10,000 characters or words, or explicit multi-agent long-form writing,
+first call ${longFormGuidanceTool(serverName)} and follow its plan/claim/submit workflow.
+This threshold concerns requested output, not input length. Load that protocol only on demand.
 Before substantive writing, call ${tool('compile_generation_prompt')} with the task, style,
 supplied context, and source_paths/reference_paths when available. Apply its instructions
 while composing. For supplied-draft cleanup use ${tool('compile_humanize_prompt')}.
@@ -53,6 +108,13 @@ tools when requested; publishing to an external destination needs that user's in
 export async function mountWritingPlugin(ctx, config, mountMcp) {
   const serverConfig = resolveServerConfig(config)
   await mountMcp(ctx, serverConfig)
+  ctx.tools.register({
+    name: longFormGuidanceTool(serverConfig.serverName),
+    description: 'Load the long-form drafting protocol only for >=10,000 requested output characters/words or explicit multi-agent long-form writing. Does not start agents.',
+    parameters: {type: 'object', properties: {}, additionalProperties: false},
+    output: {schema: {type: 'string'}, render: (_args, value) => [{type: 'text', text: value}]},
+    async execute() { return longFormWritingGuidance(serverConfig.serverName) },
+  })
   if (config.generationGuidance !== false) {
     ctx.systemPrompt.section({
       name: `human-writing:${serverConfig.serverName}`, order: 7500,

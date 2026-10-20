@@ -12,6 +12,10 @@ single-text analysis, and compiled editorial instructions:
 
 | Tool | Purpose |
 | --- | --- |
+| `plan_long_form_writing` | Allocate new long prose from an outline with writer/editor dependencies. |
+| `list_writing_tasks` / `claim_writing_task` | Find ready drafting roles and receive their prompts and result schemas. |
+| `submit_writing_result` | Store structured results, evidence and revision requests. |
+| `verify_writing_project` / `assemble_writing_project` | Gate final assembly on every block and boundary review. |
 | `plan_long_form_audit` | Build the bounded package and task graph. |
 | `list_audit_tasks` | Show dependencies, claims, receipt validity, and readiness. |
 | `claim_audit_task` | Give one agent one complete, focused prompt. |
@@ -71,7 +75,15 @@ Expose `POST /mcp` only through HTTPS and preserve the `Authorization: Bearer`
 header. A non-loopback bind is refused without `--auth-token`. Do not expose a
 manuscript workspace to the public internet merely to connect an agent.
 
-## Reliable Long-Form Run
+## Writing From An Outline
+
+For new prose, use the [five-role long-form writing workflow](long-form-writing.md).
+It distinguishes sequential scenes from explicitly independent parallel blocks,
+carries factual state and unresolved threads, and requires separate writer/editor
+identities. `read_project_context` supports `offset` / `next_offset` pagination for
+large final-review indexes. Native subagents come from the host, not the MCP service.
+
+## Reliable Long-Form Audit Run
 
 1. Call `plan_long_form_audit` with `agent_mode: "deep"`.
 2. Have one agent claim and submit `baseline`.

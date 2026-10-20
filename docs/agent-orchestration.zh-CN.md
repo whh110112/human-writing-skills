@@ -10,6 +10,10 @@
 
 | 工具 | 作用 |
 | --- | --- |
+| `plan_long_form_writing` | 从大纲规划长文写作和逐块审稿依赖。 |
+| `list_writing_tasks` / `claim_writing_task` | 查看就绪角色，领取提示和结果 schema。 |
+| `submit_writing_result` | 保存结构化结果、证据与返修请求。 |
+| `verify_writing_project` / `assemble_writing_project` | 全部块与相邻衔接通过后组装正文。 |
 | `plan_long_form_audit` | 生成分块审查包与任务图。 |
 | `list_audit_tasks` | 查看依赖、领取状态、回执有效性与可执行状态。 |
 | `claim_audit_task` | 把一个完整且有边界的任务交给一名 Agent。 |
@@ -25,6 +29,12 @@
 
 所有越出根目录的路径都会被拒绝。回执必须带任务 ID、`Coverage: complete`、检查单元、发现
 项以及 `Unchecked or blocked material: none`。漏审、阻塞或只审了一部分，均不能进入统稿。
+
+## 从大纲开始写作
+
+新稿使用[五角色长篇写作流程](long-form-writing.zh-CN.md)，区分连续剧情与显式独立并行块，
+交接累计事实状态和待承接事项，并要求作者、逐块编辑与统稿具有相应的独立身份。
+`read_project_context` 支持 `offset` / `next_offset` 分页读取大型索引；实际子 Agent 由宿主提供。
 
 ## 原生 Prompt 菜单
 

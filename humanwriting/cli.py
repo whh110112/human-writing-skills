@@ -79,6 +79,27 @@ def build_parser() -> argparse.ArgumentParser:
         description="Compile writing SKILLS and continuity context into AI-ready instructions.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+    writing = subparsers.add_parser("plan-writing", help="Plan a verified multi-agent drafting project.")
+    writing.add_argument("--outline", required=True)
+    writing.add_argument("--output-dir", required=True)
+    writing.add_argument("--style", choices=list_style_skills(), default="fiction")
+    writing.add_argument("--target-length", type=int, required=True)
+    writing.add_argument("--chunk-size", type=int, default=5000)
+    writing.add_argument("--length-unit", choices=["characters", "words"], default="characters")
+    writing.add_argument("--execution-mode", choices=["sequential", "contract"], default="sequential")
+    writing.add_argument("--max-parallel", type=int, default=4)
+    for option in ("context", "source", "reference"):
+        writing.add_argument(f"--{option}", action="append", default=[])
+    for command in ("writing-tasks", "claim-writing", "submit-writing", "verify-writing", "assemble-writing"):
+        operation = subparsers.add_parser(command, help="Coordinate a long-form drafting project.")
+        operation.add_argument("--package-dir", required=True)
+        if command in {"claim-writing", "submit-writing"}:
+            operation.add_argument("--task-id", required=True)
+            operation.add_argument("--agent-id", required=True)
+        if command == "submit-writing":
+            operation.add_argument("--result", required=True, help="JSON result file matching the claimed task schema.")
+        if command == "assemble-writing":
+            operation.add_argument("--output", required=True)
     editorial = subparsers.add_parser("evaluate-editorial", help="Aggregate recorded blind-review ballots; never generate scores.")
     editorial.add_argument("--cases", required=True)
     editorial.add_argument("--format", choices=["markdown", "json"], default="markdown")
@@ -576,6 +597,39 @@ def main(argv: list[str] | None = None) -> int:
             skills = list_skills()
         for skill in skills:
             print(skill)
+        return 0
+
+    if args.command in {"plan-writing", "writing-tasks", "claim-writing", "submit-writing", "verify-writing", "assemble-writing"}:
+        from . import writing_queue
+
+        try:
+            if args.command == "plan-writing":
+                report = writing_queue.plan_long_form_writing(
+                    args.outline, args.output_dir, style=args.style,
+                    target_length=args.target_length, chunk_size=args.chunk_size,
+                    length_unit=args.length_unit, execution_mode=args.execution_mode,
+                    max_parallel=args.max_parallel, context_paths=args.context,
+                    source_paths=args.source, reference_paths=args.reference,
+                )
+            elif args.command == "writing-tasks":
+                report = writing_queue.list_writing_tasks(args.package_dir)
+            elif args.command == "claim-writing":
+                report = writing_queue.claim_writing_task(args.package_dir, args.task_id, args.agent_id)
+            elif args.command == "submit-writing":
+                result = json.loads(Path(args.result).read_text(encoding="utf-8"))
+                if not isinstance(result, dict):
+                    raise ValueError("Result JSON must be an object.")
+                report = writing_queue.submit_writing_result(args.package_dir, args.task_id, result, args.agent_id)
+            elif args.command == "verify-writing":
+                report = writing_queue.verify_writing_project(args.package_dir)
+            else:
+                report = writing_queue.assemble_writing_project(args.package_dir, args.output)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            print(json.dumps({"error": str(exc)}, ensure_ascii=False))
+            return 1
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        if args.command == "verify-writing":
+            return 0 if report.get("ready_for_assembly", report.get("ok", False)) else 1
         return 0
 
     if args.command == "evaluate-editorial":

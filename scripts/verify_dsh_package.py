@@ -29,6 +29,7 @@ def verify_package(path: str) -> None:
             "package/plugins/deepseek-harness/cordis.patch.yml",
             "package/humanwriting/mcp_server.py", "package/humanwriting/compiler.py",
             "package/humanwriting/audit_storage.py",
+            "package/humanwriting/writing_queue.py", "package/skills/long-form-writing.md",
             "package/humanwriting/review.py", "package/skills/generation-quality.md",
             "package/skills/fiction.md", "package/skills/academic-paper.md",
             "package/skills/formal-document.md",
@@ -48,9 +49,13 @@ def verify_package(path: str) -> None:
                 "import sys; sys.path.insert(0, sys.argv[1]); "
                 "from humanwriting.mcp_server import handle_message; "
                 "from humanwriting.compiler import compile_prompt; "
+                "from humanwriting.writing_queue import plan_long_form_writing, list_writing_tasks; "
                 "from pathlib import Path; "
                 "assert handle_message({'jsonrpc':'2.0','id':1,'method':'ping'}, Path.cwd())['result'] == {}; "
-                "[compile_prompt(style=s, task='Write a passage.') for s in ('fiction','academic-paper','formal-document')]"
+                "[compile_prompt(style=s, task='Write a passage.') for s in ('fiction','academic-paper','formal-document')]; "
+                "Path('outline.md').write_text('A courier returns the borrowed key.', encoding='utf-8'); "
+                "assert plan_long_form_writing('outline.md', 'writing', style='fiction', target_length=60000)['chunk_count'] == 12; "
+                "assert [t['task_id'] for t in list_writing_tasks('writing')['tasks'] if t['ready']] == ['outline-check']"
             )
             subprocess.run([sys.executable, "-I", "-X", "utf8", "-c", probe, str(Path(directory) / "package")],
                            cwd=directory, check=True, timeout=30)

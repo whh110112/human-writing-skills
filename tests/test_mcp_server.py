@@ -1,13 +1,15 @@
+import hashlib
 import json
 import threading
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 from urllib.request import Request, urlopen
 
 from http.server import ThreadingHTTPServer
 
-from humanwriting.mcp_server import TOOLS, _http_handler, call_tool, get_prompt, handle_message
+from humanwriting.mcp_server import MAX_TEXT_CHARACTERS, TOOLS, _http_handler, call_tool, get_prompt, handle_message
 
 
 def complete_report(task_id: str) -> str:
@@ -25,6 +27,162 @@ def complete_report(task_id: str) -> str:
 
 
 class McpServerTests(unittest.TestCase):
+    def test_mcp_rejects_stale_claim_token_after_same_agent_reclaims(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "outline.md").write_text("Mara keeps the key.", encoding="utf-8")
+            call_tool("plan_long_form_writing", {"outline_path": "outline.md", "output_dir": "writing",
+                      "style": "fiction", "target_length": 200, "chunk_size": 200}, root)
+            args = {"package_dir": "writing", "task_id": "outline-check", "agent_id": "worker"}
+            first = json.loads(call_tool("claim_writing_task", args, root)["content"][0]["text"])
+            with patch("humanwriting.writing_queue.LEASE_SECONDS", 0):
+                current = json.loads(call_tool("claim_writing_task", args, root)["content"][0]["text"])
+            self.assertIsInstance(current["claim_token"], str)
+            self.assertTrue(current["claim_token"])
+            self.assertNotEqual(first["claim_token"], current["claim_token"])
+            self.assertEqual(current["result_schema"]["claim_token"], current["claim_token"])
+            result = {"decision": "pass", "coverage": [{"id": "O0001", "quote": "Mara keeps",
+                      "note": "The key's owner is explicit."}], "issues": [], "claim_token": first["claim_token"]}
+            request = {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+                "name": "submit_writing_result", "arguments": {**args, "result": result}}}
+            rejected = handle_message(request, root)["result"]
+            self.assertTrue(rejected["isError"])
+            self.assertIn("token", rejected["content"][0]["text"].lower())
+            result["claim_token"] = current["claim_token"]
+            accepted = handle_message(request, root)["result"]
+            self.assertNotIn("isError", accepted)
+
+    def test_writing_workflow_claims_structured_roles_and_assembles_verified_prose(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "outline.md").write_text("Mara waits at the station with a key.", encoding="utf-8")
+            for name, text in (("context", "Mara owns the key."), ("source", "The station closes at dusk."),
+                               ("reference", "Use a plain, close third-person voice.")):
+                (root / f"{name}.md").write_text(text, encoding="utf-8")
+            text = ('Mara held the key against her palm. "Wait," she said. The platform clock stopped. '
+                    'She looked along the empty tracks and listened for a train. No one answered from the ticket office. '
+                    'She moved toward the door, keeping the key hidden in her fist. The sign said the station closed at dusk.')
+            target = len("".join(text.split()))
+            def invoke(name, **arguments):
+                return json.loads(call_tool(name, arguments, root)["content"][0]["text"])
+            planned = invoke("plan_long_form_writing", outline_path="outline.md", output_dir="writing", style="fiction",
+                             target_length=target, chunk_size=500, context_paths=["context.md"],
+                             source_paths=["source.md"], reference_paths=["reference.md"])
+            self.assertEqual(planned["chunk_count"], 1)
+            listed = invoke("list_writing_tasks", package_dir="writing")
+            self.assertEqual([task["task_id"] for task in listed["tasks"] if task["ready"]], ["outline-check"])
+            self.assertFalse(invoke("verify_writing_project", package_dir="writing")["ready_for_assembly"])
+            with self.assertRaisesRegex(ValueError, "before assembly"):
+                invoke("assemble_writing_project", package_dir="writing", output_path="final.md")
+            with self.assertRaisesRegex(ValueError, "not ready"):
+                invoke("claim_writing_task", package_dir="writing", task_id="continuity", agent_id="final-editor")
+            digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+            results = [
+                ("outline-check", "planner", {"decision": "pass", "coverage": [
+                    {"id": "O0001", "quote": "Mara waits", "note": "Starting action and location are explicit."}], "issues": []}),
+                ("chunk-plan", "planner", {"style_contract": "Plain, close third-person fiction.", "chunks": [{
+                    "id": "chunk-0001", "title": "The station", "brief": "Mara waits, then approaches the door.",
+                    "outline_ids": ["O0001"], "entry_state": "Mara has the key.", "exit_state": "Mara keeps the key.",
+                    "source_ids": ["S0001"], "reference_ids": ["R0001"], "depends_on": [], "independent": False}]}),
+                ("write-0001", "writer", {"text": text, "covered_outline_ids": ["O0001"],
+                    "state": {"Mara.key": "held"}, "state_changes": [], "pending_threads": [], "handoff": "Mara approaches the station door."}),
+                ("review-0001", "editor", {"decision": "pass", "text_sha256": digest,
+                    "coverage": [{"id": "P0001", "quote": "Mara held the key", "note": "The key remains in her possession."}],
+                    "checks": {key: {"status": "pass", "note": "The scene matches the bounded assignment."}
+                               for key in ("outline", "continuity", "voice", "naturalness")}, "issues": []}),
+                ("continuity", "final-editor", {"decision": "pass", "chunks": [{"id": "chunk-0001", "text_sha256": digest,
+                    "note": "The location, key and voice remain consistent."}], "boundaries": [], "revision_chunks": [], "issues": []}),
+            ]
+            for task_id, agent_id, result in results:
+                claim = invoke("claim_writing_task", package_dir="writing", task_id=task_id, agent_id=agent_id)
+                self.assertTrue(claim["content"])
+                self.assertIsInstance(claim["result_schema"], dict)
+                result["claim_token"] = claim["claim_token"]
+                invoke("submit_writing_result", package_dir="writing", task_id=task_id, agent_id=agent_id, result=result)
+            self.assertTrue(invoke("verify_writing_project", package_dir="writing")["ready_for_assembly"])
+            assembled = invoke("assemble_writing_project", package_dir="writing", output_path="final.md")
+            self.assertEqual(Path(assembled["output_path"]).read_text(encoding="utf-8"), text + "\n")
+
+    def test_context_pagination_reads_full_json_and_validates_offsets(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            value = {"text": ('A "quoted" line.\n' + "\u96e8") * 4000, "tail": "Final state must not disappear."}
+            text = json.dumps(value, ensure_ascii=False)
+            (root / "result.json").write_text(text, encoding="utf-8")
+            offset = 0
+            pages = []
+            while offset is not None:
+                page = json.loads(call_tool("read_project_context", {
+                    "path": "result.json", "offset": offset, "max_characters": 20000,
+                }, root)["content"][0]["text"])
+                pages.append(page["content"])
+                self.assertEqual(page["truncated"], page["next_offset"] is not None)
+                if page["next_offset"] is not None:
+                    self.assertEqual(page["next_offset"], offset + 20000)
+                offset = page["next_offset"]
+            self.assertGreater(len(pages), 1)
+            self.assertEqual(json.loads("".join(pages)), value)
+            for offset in (len(text), len(text) + 100):
+                page = json.loads(call_tool("read_project_context", {"path": "result.json", "offset": offset}, root)["content"][0]["text"])
+                self.assertEqual(page["content"], "")
+                self.assertFalse(page["truncated"])
+                self.assertIsNone(page["next_offset"])
+            for offset in (-1, True, 1.5, "0", None):
+                with self.subTest(offset=offset), self.assertRaisesRegex(ValueError, "offset"):
+                    call_tool("read_project_context", {"path": "result.json", "offset": offset}, root)
+
+    def test_writing_tool_schemas_are_typed_and_closed(self):
+        tools = {tool["name"]: tool["inputSchema"] for tool in TOOLS}
+        names = {"plan_long_form_writing", "list_writing_tasks", "claim_writing_task",
+                 "submit_writing_result", "verify_writing_project", "assemble_writing_project"}
+        self.assertTrue(names <= tools.keys())
+        for name in names:
+            schema = tools[name]
+            self.assertEqual(schema["type"], "object")
+            self.assertFalse(schema["additionalProperties"])
+            self.assertTrue(set(schema["required"]) <= schema["properties"].keys())
+            self.assertTrue(all("type" in prop for prop in schema["properties"].values()))
+        self.assertEqual(tools["submit_writing_result"]["properties"]["result"]["type"], "object")
+        self.assertEqual(tools["plan_long_form_writing"]["properties"]["execution_mode"]["enum"],
+                         ["sequential", "contract"])
+
+    def test_writing_paths_and_arguments_are_validated_before_dispatch(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = {"outline_path": "outline.md", "output_dir": "writing", "style": "fiction", "target_length": 1000}
+            for field in ("outline_path", "output_dir", "context_paths", "source_paths", "reference_paths"):
+                with self.subTest(field=field):
+                    value = ["../outside.md"] if field.endswith("_paths") else "../outside"
+                    with self.assertRaisesRegex(ValueError, "within the configured"):
+                        call_tool("plan_long_form_writing", {**base, field: value}, root)
+            for field, value in (("target_length", True), ("target_length", 0), ("target_length", 5000001),
+                                 ("chunk_size", "5000"), ("chunk_size", 199), ("chunk_size", 12001),
+                                 ("max_parallel", 0), ("max_parallel", 33), ("execution_mode", "parallel"),
+                                 ("length_unit", "bytes"), ("style", "unknown"), ("context_paths", [None]),
+                                 ("reference_paths", [""]), ("source_paths", "source.md"), ("extra", 1)):
+                with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                    call_tool("plan_long_form_writing", {**base, field: value}, root)
+            for name in ("list_writing_tasks", "claim_writing_task", "submit_writing_result",
+                         "verify_writing_project", "assemble_writing_project"):
+                args = {"package_dir": "../escape"}
+                if name in {"claim_writing_task", "submit_writing_result"}:
+                    args.update(task_id="outline-check", agent_id="worker")
+                if name == "submit_writing_result":
+                    args["result"] = {}
+                if name == "assemble_writing_project":
+                    args["output_path"] = "final.md"
+                with self.subTest(name=name), self.assertRaisesRegex(ValueError, "within the configured"):
+                    call_tool(name, args, root)
+            with self.assertRaisesRegex(ValueError, "within the configured"):
+                call_tool("assemble_writing_project", {"package_dir": "writing", "output_path": "../final.md"}, root)
+
+    def test_writing_result_objects_are_bounded_and_strict_json(self):
+        with TemporaryDirectory() as directory:
+            args = {"package_dir": "writing", "task_id": "outline-check", "agent_id": "worker"}
+            for result in ([], "text", None, {"text": "x" * MAX_TEXT_CHARACTERS}, {"number": float("nan")}):
+                with self.subTest(result_type=type(result).__name__), self.assertRaises(ValueError):
+                    call_tool("submit_writing_result", {**args, "result": result}, Path(directory))
+
     def test_generation_sources_and_voice_references_are_root_bounded(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
