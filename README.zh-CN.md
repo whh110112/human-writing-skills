@@ -5,7 +5,7 @@
 **DSH 插件安装：**用于在 DSH 中生成小说、论文和报告，前置去 AI 味规则并挂载本地审查工具。
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
 ```
 
 桌面版把 web 换成 desktop；需要 Python 3.9+，无须另行 pip 安装核心。

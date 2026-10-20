@@ -1,6 +1,6 @@
 {
   "name": "dsh-advanced-human-writing",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Genre-aware writing and rewriting for DeepSeek Harness, with generation-time quality guards, factual fidelity, and long-form continuity.",
   "type": "module",
   "main": "plugins/deepseek-harness/index.js",

@@ -16,7 +16,7 @@ Integration-tested with official DSH 0.2.1-alpha.2 packages. Peer ranges also ad
 0.2.0-rc.2 and the 0.2.1 alpha line; those other versions have not been tested here.
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
 ```
 
 For the desktop profile, replace `web` with `desktop`. Restart the affected profile.
@@ -24,7 +24,7 @@ If Python is not named `python`, set `PYTHON` to its executable path before star
 Alternatively, install the complete repository root at a pinned tag:
 
 ```powershell
-dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.2.1
+dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.0
 ```
 
 The npm package manifest lives at the repository root. The adapter subfolder is
