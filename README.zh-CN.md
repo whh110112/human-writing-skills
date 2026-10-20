@@ -1,6 +1,8 @@
 # Advanced Human Writing & AI Humanizer
 
-> 让 AI 写作代理读取可复用的多语言 `SKILLS`，写出更自然、更连贯、更有文体意识的文字。
+<p align="center"><img src="assets/logo.png" width="320" alt="Human Writing：奶白底色上的钢笔手写笔迹与终端代码"></p>
+
+> 让 AI 写作更自然：以 Skills 和 DSH 插件提供多语言润色、长文分块协作与上下文一致性审查。
 
 **DSH 插件安装：**用于在 DSH 中生成小说、论文和报告，前置去 AI 味规则并挂载本地审查工具。
 

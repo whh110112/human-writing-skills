@@ -1,7 +1,7 @@
 {
   "name": "dsh-advanced-human-writing",
   "version": "0.3.0",
-  "description": "Genre-aware writing and rewriting for DeepSeek Harness, with generation-time quality guards, factual fidelity, and long-form continuity.",
+  "description": "Natural AI-assisted writing for DeepSeek Harness, with multilingual editing, chunked long-form collaboration, and continuity review.",
   "type": "module",
   "main": "plugins/deepseek-harness/index.js",
   "exports": {
@@ -19,7 +19,7 @@
     "plugins/deepseek-harness/cordis.patch.yml", "plugins/deepseek-harness/README.md",
     "plugins/deepseek-harness/README.zh-CN.md", "plugins/deepseek-harness/examples/*.json",
     "plugins/deepseek-harness/DEMO.md", "plugins/deepseek-harness/RELEASE.md",
-    "humanwriting/*.py", "skills/*.md", "LICENSE", "SKILL.md", "README.md", "README.zh-CN.md"
+    "humanwriting/*.py", "skills/*.md", "assets/logo.png", "LICENSE", "SKILL.md", "README.md", "README.zh-CN.md"
   ],
   "scripts": {"test": "node --test plugins/deepseek-harness/tests/*.test.js"},
   "dsh": {"bundle": {"patch": "./plugins/deepseek-harness/cordis.patch.yml"}},

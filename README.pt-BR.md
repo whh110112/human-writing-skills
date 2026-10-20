@@ -1,6 +1,8 @@
 # Advanced Human Writing & AI Humanizer
 
-> Conjunto aberto e modular de `SKILLS` para escrever, revisar e continuar textos com voz, contexto, continuidade e adequação de gênero.
+<p align="center"><img src="assets/logo.png" width="320" alt="Human Writing: escrita com caneta-tinteiro e código de terminal sobre fundo branco quente"></p>
+
+> Escrita com IA mais natural: revisão multilíngue, colaboração por trechos e verificação de continuidade em textos longos, com Skills e um plugin para DSH.
 
 **Termos de busca:** humanizar texto de IA, remover tom de IA, tirar escrita robótica, revisão de romance, coerência narrativa, auditoria de capítulos, consistência de personagens, diálogos naturais, texto em português natural, evitar tradução literal, redação de notícias, revisão acadêmica.
 

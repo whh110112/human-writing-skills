@@ -1,6 +1,8 @@
 # Advanced Human Writing & AI Humanizer
 
-> Reusable multilingual writing `SKILLS` for natural prose, genre-aware style, and long-form continuity.
+<p align="center"><img src="assets/logo.png" width="320" alt="Human Writing: fountain-pen handwriting with terminal code on a milk-white background"></p>
+
+> Make AI-assisted writing more natural with multilingual editing, chunked long-form collaboration, and continuity review, available as Skills and a DSH plugin.
 
 **Advanced AI humanizer and de-AI writing toolkit** for natural rewriting,
 AI text cleanup, fiction editing, novel continuation, chunked long-form audit,
