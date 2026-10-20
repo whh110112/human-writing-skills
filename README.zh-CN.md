@@ -5,7 +5,7 @@
 **DSH 插件安装：**用于在 DSH 中生成小说、论文和报告，前置去 AI 味规则并挂载本地审查工具。
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
 ```
 
 桌面版把 web 换成 desktop；需要 Python 3.9+，无须另行 pip 安装核心。
@@ -58,6 +58,25 @@ Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI
 测试套件同时覆盖可执行工具和模块按需激活逻辑。
 
 ## Agent 编排、MCP 与 DeepSeek Harness 插件
+
+### 多 Agent 长篇写作、大纲驱动与逐块审稿
+
+新增从大纲生成长文的五角色流程：大纲检查 Agent、切块规划 Agent、各块写作 Agent、
+各块独立审查 Agent，以及负责上下文衔接的主 Agent。六万字符、每块五千字符会生成
+12 个写作任务及对应审稿任务。每位写作者只拿到本块大纲和已确认的前文状态，
+审稿必须覆盖每段，统稿必须核对每对相邻块；返修会使受影响的后续草稿和批准失效。
+
+```powershell
+human-writing-skills plan-writing --outline outline.md --context ledger.md --style fiction --target-length 60000 --chunk-size 5000 --output-dir book-writing
+human-writing-skills writing-tasks --package-dir book-writing
+```
+
+默认按依赖顺序写作；用户明确要求并行、各块有已约定的入口/出口状态时，使用
+`--execution-mode contract`，并用 `--max-parallel 4` 限制同时认领数。
+`--length-unit words` 可改为按单词规划。真正的子 Agent 由宿主提供；DSH 仅在请求长篇输出
+或明确多 Agent 写作时加载详细编排协议。[完整步骤、结果契约和恢复方式](docs/long-form-writing.zh-CN.md)。
+
+### 共用审查状态
 
 对于整本小说、系列报道或无法交给单一聊天窗口可靠审完的大型材料，可安装零额外依赖的
 `human-writing-mcp` 服务。它把长篇任务图变成可由 Codex、Claude Code、OpenCode、DeepSeek

@@ -16,7 +16,7 @@ writing style unification, and character consistency review.
 quality guidance and local review tools. Install the complete bundled runtime:
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
 ```
 
 Use `desktop` for the desktop profile. Python 3.9+ required; no separate core pip
@@ -39,6 +39,28 @@ different capability layers:
 The test suite exercises both the executable layer and module-selection gates.
 
 ## Agent Orchestration, MCP, And DeepSeek Harness Plugin
+
+### Outline-To-Manuscript Multi-Agent Writing
+
+New long prose can use five roles: outline checker, chunk planner, writers,
+independent editors for every block, and a final continuity editor. A 60,000-character
+target with 5,000-character blocks creates twelve writing jobs and their reviews.
+Each writer receives its assigned outline and approved incoming state; editorial
+receipts cover every paragraph, and final review covers every adjacent boundary.
+Revision requests reopen affected writers and invalidate dependent approvals.
+
+```powershell
+human-writing-skills plan-writing --outline outline.md --context ledger.md --style fiction --target-length 60000 --chunk-size 5000 --output-dir book-writing
+human-writing-skills writing-tasks --package-dir book-writing
+```
+
+Default dependencies are sequential. Explicit `--execution-mode contract` allows
+parallel independent blocks with agreed entry/exit states and `--max-parallel 4`.
+Use `--length-unit words` for word targets. The host supplies native subagents;
+DSH loads the detailed orchestration protocol only for long output or an explicit
+multi-agent request. [Workflow, result schemas and recovery](docs/long-form-writing.md).
+
+### Shared Review State
 
 For book-length novels, report series, or research coverage that cannot be
 trusted to one chat window, install the dependency-free `human-writing-mcp`

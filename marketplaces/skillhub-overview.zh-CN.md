@@ -32,6 +32,7 @@
 6. **可执行审查**：`lint`、`fix`、`verify`、`stats` 和 `pipeline` 可执行确定性检查与多阶段审稿，不把所有能力都伪装成程序算法。
 7. **分块文风统一**：`chunk-audit` 用已认可文风基准和大纲/账本拆分超长小说或报告，检查跨月、跨模型版本的文风、人物对白、术语和章节功能漂移。
 8. **结尾功能审查**：`earned-ending-audit` 区分小说、新闻、论文、公文的结尾职责，清理反思式尾句和公式化结论，又不把安静意象或正常总结当成禁词。
+9. **多 Agent 长篇写作**：`plan-writing` 从大纲分配写作、逐块审稿和最终衔接任务；六万字符可按五千字符规划为十二块，交接累计状态，返修使依赖结果失效。实际子 Agent 由宿主提供，DSH 按需加载编排协议；只有明确独立的块才按约定状态并行。
 
 ## 按需加载
 
@@ -60,6 +61,7 @@ human-writing-skills audit --draft chapter.md --profile voice
 human-writing-skills audit --draft chapter.md --document-type fiction --profile ending
 human-writing-skills pipeline --draft chapter.md --context ledger.md --auto --output-dir audit
 human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline novel-outline.md --output-dir novel-audit
+human-writing-skills plan-writing --outline outline.md --context ledger.md --style fiction --target-length 60000 --chunk-size 5000 --output-dir book-writing
 human-writing-skills lint --draft chapter.md --style fiction
 human-writing-skills fix --draft chapter.md --preview
 human-writing-skills verify --source original.md --candidate revised.md

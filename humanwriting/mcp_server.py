@@ -147,6 +147,7 @@ TOOLS = [
         "Read a bounded local outline, continuity ledger, source note, or approved style reference from the project root.",
         {
             "path": {"type": "string"},
+            "offset": {"type": "integer", "minimum": 0, "default": 0},
             "max_characters": {"type": "integer", "minimum": 1, "maximum": MAX_CONTEXT_CHARACTERS, "default": 8000},
         },
         ["path"],
@@ -226,6 +227,42 @@ TOOLS = [
 ]
 
 
+WRITING_TOOLS = [
+    _tool(
+        "plan_long_form_writing",
+        "Plan outline checking, planning, bounded writer/editor tasks, and final continuity verification. Does not call a model.",
+        {
+            "outline_path": {"type": "string", "minLength": 1},
+            "output_dir": {"type": "string", "minLength": 1},
+            "style": {"type": "string", "enum": list_style_skills()},
+            "target_length": {"type": "integer", "minimum": 1, "maximum": 5000000},
+            "chunk_size": {"type": "integer", "minimum": 200, "maximum": 12000, "default": 5000},
+            "length_unit": {"type": "string", "enum": ["characters", "words"], "default": "characters"},
+            "execution_mode": {"type": "string", "enum": ["sequential", "contract"], "default": "sequential"},
+            "max_parallel": {"type": "integer", "minimum": 1, "maximum": 32, "default": 4},
+            **{key: {"type": "array", "items": {"type": "string", "minLength": 1}}
+               for key in ("context_paths", "source_paths", "reference_paths")},
+        },
+        ["outline_path", "output_dir", "style", "target_length"],
+    ),
+    _tool("list_writing_tasks", "List drafting tasks and dependency readiness.",
+          {"package_dir": {"type": "string", "minLength": 1}}, ["package_dir"]),
+    _tool("claim_writing_task", "Claim a ready drafting task and receive its role prompt, result schema, and opaque claim_token. Copy claim_token unchanged into the submitted result; tokens from earlier claims are invalid after reclaim or revision.",
+          {key: {"type": "string", "minLength": 1} for key in ("package_dir", "task_id", "agent_id")},
+          ["package_dir", "task_id", "agent_id"]),
+    _tool("submit_writing_result", "Submit a structured result matching the claimed role schema, including the active claim_token returned by claim_writing_task.",
+          {**{key: {"type": "string", "minLength": 1} for key in ("package_dir", "task_id", "agent_id")},
+           "result": {"type": "object", "description": f"Claimed role result; at most {MAX_TEXT_CHARACTERS} serialized characters."}},
+          ["package_dir", "task_id", "agent_id", "result"]),
+    _tool("verify_writing_project", "Verify all required drafting results before assembly.",
+          {"package_dir": {"type": "string", "minLength": 1}}, ["package_dir"]),
+    _tool("assemble_writing_project", "Assemble verified edited chunks into a workspace-local manuscript.",
+          {key: {"type": "string", "minLength": 1} for key in ("package_dir", "output_path")},
+          ["package_dir", "output_path"]),
+]
+TOOLS.extend(WRITING_TOOLS)
+
+
 def _safe_path(root: Path, value: str) -> Path:
     candidate = Path(value)
     resolved = candidate.resolve() if candidate.is_absolute() else (root / candidate).resolve()
@@ -257,6 +294,8 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
 
     if not isinstance(arguments, dict):
         raise ValueError("Tool arguments must be an object.")
+    if name in {tool["name"] for tool in WRITING_TOOLS}:
+        return _call_writing_tool(name, arguments, root.resolve())
     if name == "compile_generation_prompt":
         return _text_result({"prompt": compile_prompt(
             style=_string(arguments, "style"),
@@ -380,18 +419,81 @@ def call_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any
         limit = arguments.get("max_characters", 8000)
         if type(limit) is not int or not 1 <= limit <= MAX_CONTEXT_CHARACTERS:
             raise ValueError(f"max_characters must be between 1 and {MAX_CONTEXT_CHARACTERS}.")
+        offset = arguments.get("offset", 0)
+        if type(offset) is not int or offset < 0:
+            raise ValueError("offset must be a nonnegative integer.")
         if not path.is_file():
             raise ValueError("Context path is not a file.")
         with path.open(encoding="utf-8") as stream:
+            remaining = offset
+            while remaining:
+                skipped = stream.read(min(remaining, MAX_CONTEXT_CHARACTERS))
+                if not skipped:
+                    break
+                remaining -= len(skipped)
             text = stream.read(limit + 1)
         return _text_result(
             {
                 "path": str(path),
                 "truncated": len(text) > limit,
                 "content": text[:limit],
+                "next_offset": offset + limit if len(text) > limit else None,
             }
         )
     raise ValueError(f"Unknown tool: {name}")
+
+
+def _call_writing_tool(name: str, arguments: dict[str, Any], root: Path) -> dict[str, Any]:
+    schema = next(tool["inputSchema"] for tool in WRITING_TOOLS if tool["name"] == name)
+    properties = schema["properties"]
+    if set(arguments) - set(properties):
+        raise ValueError("Unknown writing tool arguments.")
+    for key in schema["required"]:
+        if key not in arguments:
+            raise ValueError(f"{key} is required.")
+    values = dict(arguments)
+    for key, spec in properties.items():
+        if key not in values:
+            if "default" not in spec:
+                continue
+            values[key] = spec["default"]
+        value = values[key]
+        kind = spec["type"]
+        if kind == "integer":
+            if type(value) is not int or value < spec["minimum"] or value > spec.get("maximum", sys.maxsize):
+                raise ValueError(f"{key} must be an integer within the advertised limits.")
+        elif kind == "string":
+            _bounded_string(values, key, MAX_CONTEXT_CHARACTERS)
+        elif kind == "array":
+            _string_list(values, key)
+        elif kind == "object" and not isinstance(value, dict):
+            raise ValueError(f"{key} must be an object.")
+        if "enum" in spec and value not in spec["enum"]:
+            raise ValueError(f"Invalid {key}.")
+    for key in ("outline_path", "output_dir", "package_dir", "output_path"):
+        if key in values:
+            values[key] = _safe_path(root, values[key])
+    for key in ("context_paths", "source_paths", "reference_paths"):
+        if key in values:
+            values[key] = _path_list(root, values[key], key)
+    # Existing package entries may be symlinks even when the package itself is local.
+    package = values.get("package_dir", values.get("output_dir"))
+    if package is not None and package.is_dir():
+        for entry in package.rglob("*"):
+            _safe_path(root, str(entry))
+    if "result" in values:
+        try:
+            serialized = json.dumps(values["result"], ensure_ascii=False, allow_nan=False)
+        except (ValueError, TypeError) as exc:
+            raise ValueError("result must contain valid JSON values.") from exc
+        if len(serialized) > MAX_TEXT_CHARACTERS:
+            raise ValueError(f"result must be at most {MAX_TEXT_CHARACTERS} serialized characters.")
+    from . import writing_queue
+
+    try:
+        return _text_result(getattr(writing_queue, name)(**values))
+    except (KeyError, TypeError) as exc:
+        raise ValueError(f"Invalid writing task data: {exc}") from exc
 
 
 def _string(arguments: dict[str, Any], name: str) -> str:
@@ -527,7 +629,7 @@ def handle_message(message: Any, root: Path) -> Any:
                 "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {"tools": {"listChanged": False}, "prompts": {"listChanged": False}},
                 "serverInfo": SERVER_INFO,
-                "instructions": "For requested prose, compile_generation_prompt before drafting and apply the genre-aware quality constraints. For rewriting use compile_humanize_prompt, then verify meaning and protected literals. Keep factual source_paths separate from voice reference_paths and use project-local paths only. For long-form review, plan bounded tasks, submit complete receipts, verify coverage, then reconcile.",
+                "instructions": "For requested prose, compile_generation_prompt before drafting and apply the genre-aware quality constraints. For rewriting use compile_humanize_prompt, then verify meaning and protected literals. Keep factual source_paths separate from voice reference_paths and use project-local paths only. For long-form review, plan bounded tasks, submit complete receipts, verify coverage, then reconcile. For long-form drafting, plan_long_form_writing, claim ready tasks for role prompts and result schemas, submit structured results, verify_writing_project, then assemble_writing_project.",
             },
         )
     if method == "ping":

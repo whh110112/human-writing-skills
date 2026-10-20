@@ -12,7 +12,7 @@
 安装包自带本项目 Python 核心和写作模块，不需要额外 pip 安装 human-writing-skills。
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.2.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
 ```
 
 桌面版把 `web` 换成 `desktop`，安装后重启对应 profile。如果解释器不叫 `python`，
@@ -20,7 +20,7 @@ dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/r
 也可安装仓库根目录的固定标签：
 
 ```powershell
-dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.2.1
+dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.0
 ```
 
 真正可分发的 package.json 在仓库根目录；本适配子目录为 private，不单独发布。
@@ -43,6 +43,65 @@ dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.2.1
 事实材料用工作区相对路径 `source_paths`，文风样本用 `reference_paths`，两者不能混用。
 工具拒绝越出工作区的路径；小说不会自动开启事实文档来源审查。
 输入示例见 [examples](examples)，无 API 密钥的真实集成过程见 [DEMO.md](DEMO.md)。
+
+## 长文多角色写作
+
+当请求输出不少于 10,000 字符或单词，或明确要求多代理长文写作时，系统提示引导调用
+`writing__human-writing__longform_guidance`，按需加载详细协议。阈值针对输出量，
+不是输入材料长度；普通写作和长文审查不因此自动进入创作流程。工具名跟随 `serverName`。
+关闭 `generationGuidance` 仅移除系统提示，仍保留按需协议工具和 MCP 工具。
+
+例如：“根据 outline.md，用多代理写作完成 20,000 单词，审稿后保存为 manuscript.md。”
+先保存双方确认的大纲，再用 [longform.json](examples/longform.json) 的参数调用
+`mcp__human-writing__plan_long_form_writing`。`length_unit` 明确区分字符与单词。
+
+执行顺序为：大纲检查、分块规划、每块作者、每块独立编辑、最终连续性审查、组装。
+宿主通过 `list_writing_tasks` 查就绪任务，用 `claim_writing_task` 认领，必须原样传递
+返回的完整角色提示及提交 schema。用相同 `agent_id` 和实际结构化 `result` 对象调用
+`submit_writing_result`；作者与编辑使用不同身份，返修保留原身份。每次提交后重新查看
+就绪状态；返修有次数上限，前序未批准不能解锁后序，不能篡改状态或伪造批准。
+任务 ID 为 `outline-check`、`chunk-plan`、`write-0001` / `review-0001` 成对任务，
+最后为 `continuity`；认领返回 `content` 与 `result_schema`。编辑身份必须不同于
+对应作者，最终审查者必须不同于全部作者。顺序模式须上一块编辑批准后才能开始下一块作者任务。
+认领同时返回 `claim_token`，并填入 `result_schema.claim_token`。必须原样转发完整提示、
+完整结果 schema 和令牌，提交时把当前令牌复制到 `result.claim_token`；将令牌与子代理 ID、
+任务 ID 和 `agent_id` 一起记录。同一代理恢复有效认领时令牌不变，重新认领或返修的新尝试
+使用新令牌。旧尝试迟到的结果必须丢弃，不能换上新令牌后提交，也不能用于完成新尝试。
+只有 `execution_mode: "contract"` 且独立块有明确、已批准的入口和出口契约时，
+才能在 `max_parallel` 与宿主容量范围内并行就绪任务；默认顺序模式不能并行。
+`max_parallel` 限制同时认领数，不保证进程并发数。60,000 / 5,000 表示十二个写作任务
+及其编辑任务，不表示保证同时启动十二个代理进程；契约模式也必须遵守块间依赖。
+全部角色通过后，先成功调用 `verify_writing_project`，再调用 `assemble_writing_project`。
+
+### DSH 原生委派与降级
+
+已检查官方 `@deepseek-ai/dsh-subagent` 与 `@deepseek-ai/dsh-tool-subagent`
+0.2.1-alpha.2 发布包文档和实现。宿主原生委派需要同时加载服务、提供者和委派工具：
+
+```yaml
+- name: '@deepseek-ai/dsh-subagent'
+- name: '@deepseek-ai/dsh-subagent-spawn-in-process'
+- name: '@deepseek-ai/dsh-tool-subagent'
+  config:
+    provider: spawn
+    toolName: subagent
+```
+
+仍需宿主已有的代理驱动和模型配置。本插件不代装或配置提供者。默认 `subagent`
+工具接收 `description`、`prompt`，改名时以宿主实际 schema 为准。启动仅返回子代理 ID，
+不代表任务完成；宿主把子代理 ID 映射到认领身份，等待完成通知后原样提交结构化结果。
+不能假设新子代理继承父对话，必须提供完整认领提示及 schema；权限、深度和容量限制仍有效。
+
+底层 `ctx.agents.create()` 也需要已注册的代理驱动。仅有 MCP 或代理注册表不能启动子代理。
+若无可用执行器或委派被拒绝，必须说明限制，降级为顺序执行的不同角色轮次；明确其不是
+独立代理，不冒充并发。作者与编辑仍分开执行，不静默更换已认领身份，不伪造子代理 ID。
+
+无密钥测试使用真实 Cordis 与 MCP，但未加载代理驱动和子代理提供者。测试验证按需协议、
+六个真实写作工具的 schema、仅工具模式和卸载清理；不代表原生子代理执行或模型遵循已经实测。
+真实 MCP 冒烟测试还验证两块规划、大纲批准门槛、完整认领提示与 schema、提交身份检查，
+以及尚未完成时拒绝组装。
+还验证有效认领恢复时令牌不变、缺少或过期令牌被拒，以及编辑要求返修后产生新令牌，
+第一轮作者的迟到结果无法完成新的认领。
 
 ## 配置与权限
 

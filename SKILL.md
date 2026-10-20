@@ -1,6 +1,6 @@
 ---
 name: human-writing-skills
-description: Multilingual AI humanizer for genre-aware generation, humanize AI text, de-AI writing, natural rewriting, fiction and novels, novel writing assistant, story continuity, long-form audit, chunked audit, style consistency review, character consistency audit, scene ending audit, translationese review, and rewrite fidelity. Use for supplied-draft cleanup, sample-backed voice matching, novel continuation, and factual essays, news, academic, official, legal, or technical prose. Includes generation-time quality guards and independent editorial review. 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI文本润色、小说润色、小说续写、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、全书审查、文风统一、人物设定统一、人物一致性审查、人物对白审查、方言语域、翻译腔、战力设定、语义保真审查.
+description: Multilingual AI humanizer for genre-aware generation, humanize AI text, de-AI writing, natural rewriting, fiction and novels, novel writing assistant, story continuity, multi-agent long-form writing from outlines, long-form audit, chunked audit, style consistency review, character consistency audit, scene ending audit, translationese review, and rewrite fidelity. Use for supplied-draft cleanup, sample-backed voice matching, novel continuation, and factual essays, news, academic, official, legal, or technical prose. Includes generation-time quality guards and independent editorial review. 增强版去 AI 写作 Skill、高级 AI 写作工具、去AI味、去AI写作、消除AI腔、AI文本润色、小说润色、小说续写、多Agent长篇写作、大纲驱动写作、逐块审稿、AI式结尾、生硬结尾审查、无意义升华、长文一致性、长篇审查、分块审查、全书审查、文风统一、人物设定统一、人物一致性审查、人物对白审查、方言语域、翻译腔、战力设定、语义保真审查.
 ---
 
 # Advanced Human Writing & AI Humanizer
@@ -92,6 +92,14 @@ continuity ledgers separate from optional style references.
    Agents must claim a task, submit a complete receipt, and pass coverage
    verification before one final reconciliation task is released. Read
    `docs/agent-orchestration.md` only when an MCP-capable host is available.
+10. For requested long-form generation (typically 10,000+ output characters/words)
+    or explicit multi-agent writing, read `skills/long-form-writing.md` on demand.
+    Use `plan-writing` / `plan_long_form_writing` to check the outline, allocate
+    bounded writer/editor tasks, and gate assembly on cross-block continuity.
+    Dependent scenes run sequentially; explicit independent state contracts permit
+    bounded parallel work. The host supplies native subagents; disclose role-pass
+    fallback when no runner exists. An existing long input alone does not activate
+    long-form generation. For the detailed commands read `docs/long-form-writing.md`.
 
 ## Commands
 
@@ -115,6 +123,8 @@ human-writing-skills pipeline --draft chapter.md --context ledger.md --auto --wi
 human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline outline.md --output-dir novel-audit
 human-writing-skills chunk-audit --draft full-novel.md --style fiction --outline outline.md --agent-mode deep --output-dir novel-agent-audit
 human-writing-skills verify-chunk-audit --package-dir novel-agent-audit
+human-writing-skills plan-writing --outline outline.md --context ledger.md --style fiction --target-length 60000 --chunk-size 5000 --output-dir book-writing
+human-writing-skills writing-tasks --package-dir book-writing
 human-writing-skills chunk-audit --draft report-es.md --style news-report --source sources.md --translationese --agent-mode deep --output-dir report-audit
 human-writing-mcp --root C:\writing-project
 human-writing-skills lint --draft chapter.md --style fiction
