@@ -106,11 +106,18 @@ def build_package(root: Path, output: Path, version: str | None = None) -> Path:
     resolved_version = version or project_version(root)
     for relative in tracked_files(root):
         source = root.joinpath(relative)
-        destination = output.joinpath(relative)
+        # SkillHub rejects extensionless uploads; retain the full license under
+        # an accepted Markdown name without changing the source repository.
+        destination = output.joinpath("LICENSE.md" if relative.as_posix() == "LICENSE" else relative)
         destination.parent.mkdir(parents=True, exist_ok=True)
         if relative.as_posix() == "SKILL.md":
             with destination.open("w", encoding="utf-8", newline="\n") as skill_file:
                 skill_file.write(skillhub_skill(root, resolved_version))
+        elif relative.suffix.lower() == ".md":
+            text = source.read_text(encoding="utf-8")
+            text = re.sub(r"(\]\((?:\.\./)*)LICENSE(\))", r"\1LICENSE.md\2", text)
+            with destination.open("w", encoding="utf-8", newline="\n") as document:
+                document.write(text)
         else:
             destination.write_bytes(source.read_bytes())
     return output
