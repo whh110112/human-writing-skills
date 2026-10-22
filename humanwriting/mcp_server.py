@@ -482,12 +482,13 @@ def _call_writing_tool(name: str, arguments: dict[str, Any], root: Path) -> dict
         for entry in package.rglob("*"):
             _safe_path(root, str(entry))
     if "result" in values:
+        from .writing_queue import MAX_RESULT, _json
         try:
-            serialized = json.dumps(values["result"], ensure_ascii=False, allow_nan=False)
+            serialized = _json(values["result"])
         except (ValueError, TypeError) as exc:
             raise ValueError("result must contain valid JSON values.") from exc
-        if len(serialized) > MAX_TEXT_CHARACTERS:
-            raise ValueError(f"result must be at most {MAX_TEXT_CHARACTERS} serialized characters.")
+        if len(serialized) > MAX_RESULT:
+            raise ValueError(f"result must be at most {MAX_RESULT} serialized characters.")
     from . import writing_queue
 
     try:

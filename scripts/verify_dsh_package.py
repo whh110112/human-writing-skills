@@ -23,6 +23,7 @@ def verify_package(path: str) -> None:
             if not entry.isfile() and not entry.isdir():
                 raise ValueError(f"Unsupported package entry: {name}")
         required = {
+            "package/assets/logo.png",
             "package/package.json", "package/LICENSE",
             "package/plugins/deepseek-harness/index.js",
             "package/plugins/deepseek-harness/adapter.js",

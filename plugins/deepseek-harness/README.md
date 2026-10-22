@@ -16,11 +16,11 @@ with native delegation can assign writing roles to its own subagents.
 Requires Python 3.9+ on PATH and a DSH profile with tools and systemPrompt services.
 No pip installation of human-writing-skills is needed: the release bundles its Python
 core and Markdown modules. Use Node ^22.19.0 or >=24.0.0 as required by current DSH.
-Integration-tested with official DSH 0.2.1-alpha.2 packages. Peer ranges also admit
+Integration-tested with official DSH 0.2.1-rc.2 packages. Peer ranges also admit
 0.2.0-rc.2 and the 0.2.1 alpha line; those other versions have not been tested here.
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
 ```
 
 For the desktop profile, replace `web` with `desktop`. Restart the affected profile.
@@ -28,7 +28,7 @@ If Python is not named `python`, set `PYTHON` to its executable path before star
 Alternatively, install the complete repository root at a pinned tag:
 
 ```powershell
-dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.0
+dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.1
 ```
 
 The npm package manifest lives at the repository root. The adapter subfolder is
@@ -99,7 +99,7 @@ Call `verify_writing_project` successfully before `assemble_writing_project`.
 ### Native DSH Delegation
 
 The official `@deepseek-ai/dsh-subagent` and `@deepseek-ai/dsh-tool-subagent`
-0.2.1-alpha.2 package documentation and shipped implementation establish this
+0.2.1-rc.2 package documentation and shipped implementation establish this
 host composition (configure it in the host, not in this writing bundle):
 
 ```yaml
@@ -137,6 +137,15 @@ and a new token after a real editor-requested writer revision. Late output from
 the first writer attempt cannot complete the new claim.
 
 ## Configuration
+
+For agent mode, call `writing__human-writing__agent_capabilities` before delegation.
+It returns the configured tool's caller-scoped visibility and parameter schema.
+Set `delegationToolName` when the host uses a name other than `subagent`. Discovery
+is live on each call, including after provider reloads; it never starts an agent,
+installs a provider, bypasses a scope restriction, or changes models/presets.
+The full long-form protocol is still loaded only on demand. Claims expose their
+lease; oversized assignments are paginated and expired claims are clearly marked.
+Review schemas include source checks for serious prose, not fiction.
 
 The supplied patch mounts the plugin as `advanced-human-writing-mcp`.
 

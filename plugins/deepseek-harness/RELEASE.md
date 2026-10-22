@@ -1,4 +1,13 @@
-DSH Writing Plugin 0.3.0 bundles Human Writing core 0.17.0 and all writing modules.
+DSH Writing Plugin 0.3.1 bundles Human Writing core 0.17.1, writing modules and the approved logo.
+
+## Agent Mode And Reliability
+
+- On-demand caller-scoped delegation discovery and configurable `delegationToolName`.
+- Full paged assignments, visible claim leases and explicit expired-claim status.
+- Correct serious-document source-check schemas and consistent MCP/core result limits.
+- Official DSH 0.2.1-rc.2 Cordis/MCP integration tested; native live-model children
+  still require a host provider, driver, permissions and available capacity.
+- 按需检查智能体可见的委派工具，不代装驱动、不改变模型、不把启动当完成。
 
 ## 多 Agent 长篇写作
 
@@ -17,13 +26,13 @@ prevent stale workers or outdated approvals from entering final assembly.
 Install:
 
 ```sh
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
 ```
 
 Use `desktop` for a desktop profile. Requires Python 3.9+ on PATH (or an explicit
-pythonCommand) and Node ^22.19.0 or >=24. Tested with official DSH 0.2.1-alpha.2
+pythonCommand) and Node ^22.19.0 or >=24. Tested with official DSH 0.2.1-rc.2
 Cordis/MCP packages. Actual native delegation requires the host's subagent service,
 provider, tool and model driver. Live-model child execution has not been exercised.
 
-Validation: 230 Python tests completed successfully with one environment-dependent
-skip locally; seven DSH integration tests and isolated tarball verification passed.
+Validation: 234 Python tests completed successfully with one environment-dependent
+skip locally; eight DSH integration tests and isolated tarball verification passed.

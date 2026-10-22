@@ -98,6 +98,34 @@ class WritingQueueTests(unittest.TestCase):
         self.assertEqual(len([t for t in rows if t["task_id"].startswith("write-")]), 12)
         self.assertEqual([t["task_id"] for t in rows if t["ready"]], ["outline-check"])
 
+    def test_oversized_assignments_are_paginated_without_losing_current_schema(self):
+        from unittest.mock import patch
+        self.plan()
+        material = "Complete assignment material. " * 2500
+        with patch("humanwriting.writing_queue._prompt", return_value=material):
+            claim = claim_writing_task(self.package, "outline-check", "checker")
+        path = self.package / f"results/outline-check-{claim['claim_token']}-assignment.md"
+        self.assertEqual(path.read_text(encoding="utf-8"), material)
+        self.assertIn("offset/next_offset", claim["content"])
+        self.assertLess(len(claim["content"]), 60000)
+        self.assertEqual(claim["result_schema"]["claim_token"], claim["claim_token"])
+        self.assertEqual(claim["lease_seconds"], 3600)
+
+    def test_genre_schema_matches_mandatory_review_checks(self):
+        for style in ("formal-document", "academic-paper", "news-report", "fiction"):
+            from humanwriting.writing_queue import _schema
+            checks = _schema("review-0001", style)["checks"]
+            self.assertEqual("sources" in checks, style != "fiction")
+
+    def test_expired_claim_is_visible_as_reclaimable_not_active(self):
+        from unittest.mock import patch
+        self.plan()
+        claim_writing_task(self.package, "outline-check", "checker")
+        with patch("humanwriting.writing_queue.LEASE_SECONDS", 0):
+            row = list_writing_tasks(self.package)["tasks"][0]
+        self.assertEqual(row["status"], "expired")
+        self.assertTrue(row["ready"])
+
     def test_outline_and_planner_require_complete_evidence_and_coverage(self):
         self.plan()
         with self.assertRaisesRegex(ValueError, "Waiting for outline-check"):

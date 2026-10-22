@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build:
@@ -56,6 +57,19 @@ jobs:
               --title "Human Writing Skills $version" \
               "${notes[@]}"
           fi
+      - name: Dispatch marketplace publication for the immutable core tag
+        if: github.event_name != 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(python -c "from pathlib import Path; from scripts.build_skillhub_package import project_version; print(project_version(Path('.')))")
+          # GITHUB_TOKEN-created releases do not trigger release workflows.
+          # Explicit dispatch uses the tag so both marketplaces publish the same sources.
+          gh workflow run publish-clawhub.yml --ref "v$version" -f "version=$version" \
+            -f "changelog=Publish human-writing-skills v$version. See the GitHub Release for details."
+          gh workflow run publish-skillhub.yml --ref "v$version" -f "version=$version" \
+            -f "changelog=更新 human-writing-skills v$version；变更详情见 GitHub Release。"
       - uses: actions/upload-artifact@v4
         with:
           name: python-distribution

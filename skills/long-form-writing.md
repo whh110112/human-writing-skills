@@ -49,6 +49,16 @@ is not a completed result. Echo the current `claim_token` in the result so an ol
 worker cannot submit into a revised assignment. Writers and their editors must have distinct identities.
 The final editor must differ from every writer.
 
+In DSH, inspect the caller's delegation schema with the plugin's on-demand
+`writing__human-writing__agent_capabilities` tool (use the configured namespace).
+A visible tool is not proof of provider readiness. Respect its advertised
+parameters, permissions, depth and model/preset authorization; do not change the
+user's model route merely to run this workflow.
+If a claim returns a file pointer, read its entire assignment using paginated
+`read_project_context` calls, not a summary. Claims expose `lease_seconds`;
+renew with the same task and identity before expiry if its child is still running.
+After expiry or reissue, never retag old child output for a fresh attempt.
+
 The default `sequential` mode releases a writer after the previous block's editor
 approves it. Use `execution_mode: contract` only for explicitly approved parallel
 writing with declared independent entry/exit contracts and earlier-block dependencies.

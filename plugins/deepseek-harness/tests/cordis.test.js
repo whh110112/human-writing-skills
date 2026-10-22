@@ -8,7 +8,7 @@ import { Context } from '@deepseek-ai/cordis'
 import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import * as WritingPlugin from '../index.js'
-import { longFormGuidanceTool } from '../adapter.js'
+import { agentCapabilitiesTool, longFormGuidanceTool } from '../adapter.js'
 
 test('official Cordis + MCP mounts, assembles writing guidance, calls tools, and unloads', {timeout: 20000}, async () => {
   const ctx = new Context()
@@ -20,6 +20,11 @@ test('official Cordis + MCP mounts, assembles writing guidance, calls tools, and
     const name = 'mcp__writing-integration__compile_generation_prompt'
     const guidanceName = longFormGuidanceTool('writing-integration')
     assert.ok(ctx.tools.get(name), 'MCP tool is discovered through the official client')
+    const capabilitiesName = agentCapabilitiesTool('writing-integration')
+    const capabilities = await ctx.tools.execute({signal: new AbortController().signal,
+      callId: 'capabilities-test', name: capabilitiesName, arguments: {}})
+    assert.equal(capabilities.isError, false)
+    assert.equal(JSON.parse(capabilities.content[0].text).available, false)
     const prompt = renderPrompt(await ctx.systemPrompt.assemble({}))
     assert.match(prompt, /Human Writing for DSH/)
     assert.ok(prompt.includes(guidanceName))
@@ -51,6 +56,7 @@ test('official Cordis + MCP mounts, assembles writing guidance, calls tools, and
     await plugin.dispose()
     assert.equal(ctx.tools.get(name), undefined)
     assert.equal(ctx.tools.get(guidanceName), undefined)
+    assert.equal(ctx.tools.get(capabilitiesName), undefined)
     assert.doesNotMatch(renderPrompt(await ctx.systemPrompt.assemble({})), /Human Writing for DSH/)
   } finally {
     await ctx.fiber.dispose()

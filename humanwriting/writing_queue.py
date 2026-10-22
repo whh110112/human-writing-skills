@@ -24,7 +24,9 @@ PLAN_FILE = "writing-plan.json"
 STATE_FILE = "writing-state.json"
 MAX_REVISIONS = 2
 MAX_PROMPT = 60000
+MAX_RESULT = 160000
 LEASE_SECONDS = 3600
+SERIOUS_STYLES = {"academic-paper", "news-report", "formal-document"}
 
 
 def _hash(text: str) -> str:
@@ -32,7 +34,7 @@ def _hash(text: str) -> str:
 
 
 def _json(value: Any) -> str:
-    return json.dumps(value, ensure_ascii=False, indent=2) + "\n"
+    return json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
 
 
 def _nonempty(value: Any, label: str, maximum: int = 12000) -> str:
@@ -248,7 +250,7 @@ def list_writing_tasks(package_dir: str | Path) -> dict[str, Any]:
         claimed = _active(entry)
         rows.append({"task_id": task, "role": task.split("-")[0],
             "ready": error is None and not claimed and active_count < plan["max_parallel"],
-            "dependency_error": error, "status": "claimed" if claimed else entry.get("status", "pending"),
+            "dependency_error": error, "status": "claimed" if claimed else "expired" if entry.get("status") == "claimed" else entry.get("status", "pending"),
             "agent_id": entry.get("agent_id"),
             "depends_on": _dependencies(package, plan, state, task)})
     return {"package_dir": str(package), "mode": plan["mode"], "tasks": rows,
@@ -265,7 +267,7 @@ def _paragraphs(text: str) -> list[dict[str, str]]:
         enumerate(re.split(r"\n\s*\n", text.strip()), 1) if p.strip()]
 
 
-def _schema(task: str) -> dict:
+def _schema(task: str, style: str | None = None) -> dict:
     if task == "outline-check":
         return {"decision": "pass|revise", "coverage": [{"id": "O0001", "quote": "exact outline excerpt", "note": "check contradictions and missing prerequisites"}], "issues": []}
     if task == "chunk-plan":
@@ -283,7 +285,7 @@ def _schema(task: str) -> dict:
         return {"decision": "pass|revise", "text_sha256": "digest supplied in assignment",
             "coverage": [{"id": "P0001", "quote": "exact paragraph excerpt", "note": "specific editorial assessment"}],
             "checks": {key: {"status": "pass|issue", "note": "evidence-based assessment"}
-                for key in ("outline", "continuity", "voice", "naturalness")},
+                for key in ("outline", "continuity", "voice", "naturalness", *(["sources"] if style in SERIOUS_STYLES else []))},
             "issues": [{"paragraph_id": "P0001", "quote": "exact excerpt", "reason": "specific defect", "suggestion": "local fix"}]}
     return {"decision": "pass|revise", "chunks": [{"id": "chunk-0001", "text_sha256": "current digest", "note": "outline and voice assessment"}],
         "boundaries": [{"left": "chunk-0001", "right": "chunk-0002", "left_quote": "ending excerpt", "right_quote": "opening excerpt", "note": "state and transition assessment"}],
@@ -325,7 +327,7 @@ def _incoming_facts(package: Path, plan: dict, state: dict, task: str) -> dict:
 
 
 def _prompt(package: Path, plan: dict, state: dict, task: str, claim_token: str) -> str:
-    schema = _json({"claim_token": claim_token, **_schema(task)})
+    schema = _json({"claim_token": claim_token, **_schema(task, plan["style"])})
     header = f"Role assignment: {task}\nReturn one JSON object using this shape (examples are not facts):\n{schema}\n"
     context = _input_text(package, plan, "context")
     if task == "outline-check":
@@ -427,12 +429,20 @@ def claim_writing_task(package_dir: str | Path, task_id: str, agent_id: str) -> 
     claim_token = current["claim_token"] if _active(current) else uuid.uuid4().hex
     prompt = _prompt(package, plan, state, task_id, claim_token)
     if len(prompt) > MAX_PROMPT:
-        raise ValueError("Task context exceeds 60000 characters; use a smaller section/project or compact approved context.")
+        relative = f"results/{task_id}-{claim_token}-assignment.md"
+        path = package_path(package, relative, "assignment")
+        atomic_write(path, prompt)
+        prompt = (f"Role assignment: {task_id}\nFull assignment: {path}\n"
+            f"Assignment characters: {len(prompt)}\n"
+            "Read the complete assignment with read_project_context using offset/next_offset pagination, "
+            "then execute it. Do not use a preview or skip any assigned material. "
+            "Return the current claim_token and the exact result schema supplied with this claim.\n")
     state["entries"][task_id] = {**current, "status": "claimed", "agent_id": agent_id,
         "claimed_at": datetime.now(timezone.utc).timestamp(), "claim_token": claim_token}
     _save(package, state)
     return {"task_id": task_id, "agent_id": agent_id, "content": prompt,
-        "claim_token": claim_token, "result_schema": {"claim_token": claim_token, **_schema(task_id)},
+        "claim_token": claim_token, "lease_seconds": LEASE_SECONDS,
+        "result_schema": {"claim_token": claim_token, **_schema(task_id, plan["style"])},
         "next_action": "Host runs this assignment, then submits the actual result with this claim_token and the same agent_id."}
 
 
@@ -609,7 +619,7 @@ def submit_writing_result(package_dir: str | Path, task_id: str, result: dict, a
     package, plan, state = _load(package_dir)
     if not isinstance(result, dict):
         raise ValueError("result must be an object.")
-    if len(_json(result)) > 160000:
+    if len(_json(result)) > MAX_RESULT:
         raise ValueError("Writing result exceeds the per-task limit.")
     error = _ready_error(package, plan, state, task_id)
     if error:

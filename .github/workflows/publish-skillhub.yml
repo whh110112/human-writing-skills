@@ -75,8 +75,8 @@ jobs:
           CHANGELOG: ${{ steps.release.outputs.changelog }}
         run: |
           if [[ -z "$SKILLHUB_KEY" ]]; then
-            echo "SKILLHUB_KEY is not configured; skipping SkillHub publication."
-            exit 0
+            echo "SKILLHUB_KEY is not configured; SkillHub publication did not happen." >&2
+            exit 1
           fi
           skillhub publish .tmp-skillhub-package \
             --host https://api.skillhub.cn \
