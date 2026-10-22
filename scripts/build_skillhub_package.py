@@ -33,6 +33,8 @@ TAGS = [
 
 SKILLHUB_OVERVIEW_PATH = Path("marketplaces/skillhub-overview.zh-CN.md")
 EXCLUDED_PATHS = {
+    "MANIFEST.in",
+    "assets/icon.webp",
     ".gitattributes",
     ".gitignore",
     "package.json",
