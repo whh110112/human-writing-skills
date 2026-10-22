@@ -38,6 +38,7 @@ jobs:
       - run: python -m unittest discover -s tests -q
       - run: python -m build
       - name: Publish the versioned core GitHub Release
+        id: core_release
         if: github.event_name != 'release'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -56,9 +57,10 @@ jobs:
               --target "$GITHUB_SHA" --latest \
               --title "Human Writing Skills $version" \
               "${notes[@]}"
+            echo "created=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Dispatch marketplace publication for the immutable core tag
-        if: github.event_name != 'release'
+        if: github.event_name != 'release' && steps.core_release.outputs.created == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
