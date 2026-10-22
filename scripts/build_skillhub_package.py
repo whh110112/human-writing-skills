@@ -41,7 +41,7 @@ EXCLUDED_PATHS = {
     "pnpm-lock.yaml",
     SKILLHUB_OVERVIEW_PATH.as_posix(),
 }
-EXCLUDED_PREFIXES = ("plugins/", ".cursor/")
+EXCLUDED_PREFIXES = ("plugins/", ".cursor/", "assets/")
 
 
 def project_version(root: Path) -> str:
@@ -118,6 +118,9 @@ def build_package(root: Path, output: Path, version: str | None = None) -> Path:
         elif relative.suffix.lower() == ".md":
             text = source.read_text(encoding="utf-8")
             text = re.sub(r"(\]\((?:\.\./)*)LICENSE(\))", r"\1LICENSE.md\2", text)
+            # SkillHub accepts text uploads, not bundled image files.
+            text = text.replace('src="assets/',
+                'src="https://raw.githubusercontent.com/whh110112/human-writing-skills/main/assets/')
             with destination.open("w", encoding="utf-8", newline="\n") as document:
                 document.write(text)
         else:

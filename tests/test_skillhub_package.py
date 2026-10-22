@@ -48,6 +48,9 @@ class SkillHubPackageTests(unittest.TestCase):
             self.assertFalse(output.joinpath("package.json").exists())
             self.assertFalse(output.joinpath("MANIFEST.in").exists())
             self.assertFalse(output.joinpath("assets", "icon.webp").exists())
+            self.assertFalse(output.joinpath("assets").exists())
+            self.assertIn('src="https://raw.githubusercontent.com/whh110112/human-writing-skills/main/assets/logo.png"',
+                          output.joinpath("README.md").read_text(encoding="utf-8"))
             self.assertFalse(output.joinpath("pnpm-lock.yaml").exists())
             self.assertFalse(output.joinpath("marketplaces").exists())
             self.assertFalse(output.joinpath("plugins").exists())
