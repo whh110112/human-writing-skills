@@ -46,6 +46,8 @@ class SkillHubPackageTests(unittest.TestCase):
             self.assertIn("](LICENSE.md)", output.joinpath("README.md").read_text(encoding="utf-8"))
             self.assertTrue(all(path.suffix for path in output.rglob("*") if path.is_file()))
             self.assertFalse(output.joinpath("package.json").exists())
+            self.assertFalse(output.joinpath("MANIFEST.in").exists())
+            self.assertFalse(output.joinpath("assets", "icon.webp").exists())
             self.assertFalse(output.joinpath("pnpm-lock.yaml").exists())
             self.assertFalse(output.joinpath("marketplaces").exists())
             self.assertFalse(output.joinpath("plugins").exists())
