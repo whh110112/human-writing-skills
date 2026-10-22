@@ -24,6 +24,7 @@ def verify_package(path: str) -> None:
                 raise ValueError(f"Unsupported package entry: {name}")
         required = {
             "package/assets/logo.png",
+            "package/assets/icon.webp",
             "package/package.json", "package/LICENSE",
             "package/plugins/deepseek-harness/index.js",
             "package/plugins/deepseek-harness/adapter.js",
@@ -41,6 +42,8 @@ def verify_package(path: str) -> None:
         manifest = json.load(archive.extractfile("package/package.json"))
         assert manifest["name"] == "dsh-advanced-human-writing"
         assert manifest["version"] == expected["version"]
+        assert manifest["icon"] == "assets/icon.webp"
+        assert 0 < archive.getmember("package/assets/icon.webp").size <= 256 * 1024
         assert manifest["dsh"]["bundle"]["patch"] == "./plugins/deepseek-harness/cordis.patch.yml"
         assert not any(key in manifest.get("scripts", {}) for key in ("preinstall", "install", "postinstall", "prepare"))
         with TemporaryDirectory(prefix="dsh-package-check-") as directory:
