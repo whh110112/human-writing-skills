@@ -7,13 +7,19 @@
 **DSH 插件安装：**用于在 DSH 中生成小说、论文和报告，前置去 AI 味规则并挂载本地审查工具。
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
 ```
 
 桌面版把 web 换成 desktop；需要 Python 3.9+，无须另行 pip 安装核心。
 详见 [DSH 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
 
 ## 生成时前置去 AI 味与独立复核
+
+**DSH 智能体模式：**按需调用 `writing__human-writing__agent_capabilities`，
+检查当前智能体实际可见的委派工具及参数；自定义工具名可通过 `delegationToolName` 配置。
+工具可见不等于执行器可用，也不代表子代理已完成。完整任务按角色交接，超大任务分页读取；
+认领返回有效期，同一身份可在到期前续领。未配置子代理执行器时明确降级为顺序角色轮次。
+已验证官方 DSH `0.2.1-rc.2` 的 Cordis/MCP 集成，真实模型子代理仍依赖宿主驱动、权限与容量。
 
 `build`、`humanize` 和 MCP 的 `compile_generation_prompt` 默认加载精简的
 `generation-quality` 协议：写之前确认读者、目的和材料，写作中约束套话、

@@ -5,12 +5,29 @@ import { fileURLToPath } from 'node:url'
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 
 export const longFormGuidanceTool = serverName => `writing__${serverName}__longform_guidance`
+export const agentCapabilitiesTool = serverName => `writing__${serverName}__agent_capabilities`
+
+export function agentCapabilities(ctx, toolName, agent) {
+  const definition = ctx.tools.get(toolName, agent)
+  return {
+    delegation_tool: toolName,
+    available: Boolean(definition),
+    mode: definition ? 'native-tool-visible' : 'sequential-role-passes',
+    parameters: definition?.parameters ?? null,
+    runtime_verified: false,
+    note: definition
+      ? 'Tool is visible in the calling agent scope. Startup, provider, depth, permissions and completion still require runtime checks. Use only its advertised parameters; do not change model or preset without authorization.'
+      : 'No visible configured delegation tool. Recheck after provider changes; disclose sequential role passes, not independent agents.',
+  }
+}
 
 export function longFormWritingGuidance(serverName = 'human-writing') {
   const tool = name => `mcp__${serverName}__${name}`
   return `# Long-form writing orchestration
 Use for requested output >=10,000 characters or words, or explicit multi-agent long-form writing,
 not merely a long input or an ordinary long-form audit. Preserve the requested length unit.
+First call ${agentCapabilitiesTool(serverName)} to inspect the configured delegation tool in
+the current agent scope. Tool visibility is not proof of an operational provider or completed work.
 Save the agreed outline through normal workspace tools; do not invent missing user facts.
 Call ${tool('plan_long_form_writing')}(outline_path, output_dir, style, target_length,
 chunk_size=5000, length_unit='characters'|'words', execution_mode='sequential', max_parallel=4,
@@ -27,6 +44,10 @@ ${tool('submit_writing_result')}(package_dir, task_id, result: object, agent_id)
 Forward the full content, result_schema, and claim_token unchanged to the assigned role.
 The submitted result.claim_token must copy the current claim_token, also supplied in
 result_schema.claim_token. Track child ID, task ID, agent_id, and claim_token together.
+Claims include lease_seconds. Before expiry, the same coordinator may renew by claiming
+the same task with the same agent_id; an active renewal keeps the token. After expiry or
+reissue never reuse old child output: cancel/settle it before starting a new assignment.
+Large assignments may be file pointers: paginate the entire referenced material, not just previews.
 An active same-agent resume keeps its token; a reclaim or revision attempt gets a new token.
 Reject stale child results from an earlier attempt; never relabel them with a new token.
 Use distinct writer/editor identities; retain each identity on bounded revision attempts.
@@ -66,6 +87,10 @@ export function resolveServerConfig(config = {}) {
   const serverName = config.serverName ?? 'human-writing'
   if (!/^[A-Za-z0-9_-]{1,32}$/.test(serverName)) throw new Error('serverName must contain 1–32 letters, numbers, underscores, or hyphens.')
   const timeout = config.toolCallTimeoutMs ?? 60000
+  const delegationToolName = config.delegationToolName ?? 'subagent'
+  if (typeof delegationToolName !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(delegationToolName)) {
+    throw new Error('delegationToolName must be a tool identifier of at most 100 characters.')
+  }
   if (!Number.isSafeInteger(timeout) || timeout < 1000) throw new Error('toolCallTimeoutMs must be an integer of at least 1000.')
   if (!existsSync(root)) throw new Error('Writing workspace does not exist.')
   if (!statSync(root).isDirectory()) throw new Error('Writing workspace must be a directory.')
@@ -108,6 +133,13 @@ tools when requested; publishing to an external destination needs that user's in
 export async function mountWritingPlugin(ctx, config, mountMcp) {
   const serverConfig = resolveServerConfig(config)
   await mountMcp(ctx, serverConfig)
+  ctx.tools.register({
+    name: agentCapabilitiesTool(serverConfig.serverName),
+    description: 'Inspect the configured native delegation tool in the calling agent scope. Does not start agents or prove provider readiness.',
+    parameters: {type: 'object', properties: {}, additionalProperties: false},
+    output: {schema: {type: 'object'}, render: (_args, value) => [{type: 'text', text: JSON.stringify(value)}]},
+    async execute(_args, exec) { return agentCapabilities(ctx, config.delegationToolName ?? 'subagent', exec.agent) },
+  })
   ctx.tools.register({
     name: longFormGuidanceTool(serverConfig.serverName),
     description: 'Load the long-form drafting protocol only for >=10,000 requested output characters/words or explicit multi-agent long-form writing. Does not start agents.',

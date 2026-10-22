@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
 import { test } from 'node:test'
-import { longFormGuidanceTool, longFormWritingGuidance, mountWritingPlugin, resolveServerConfig, writingGuidance } from '../adapter.js'
+import { agentCapabilities, agentCapabilitiesTool, longFormGuidanceTool, longFormWritingGuidance, mountWritingPlugin, resolveServerConfig, writingGuidance } from '../adapter.js'
 
 test('mounts MCP before registering scoped literal generation guidance', async () => {
   const sections = [], events = []
@@ -16,10 +16,35 @@ test('mounts MCP before registering scoped literal generation guidance', async (
     assert.equal(config.failOnStartupError, true)
     events.push('ready')
   })
-  assert.deepEqual(events, ['ready', 'tool', 'section'])
+  assert.deepEqual(events, ['ready', 'tool', 'tool', 'section'])
   assert.equal(sections[0].interpolate, false)
   assert.match(sections[0].text, /mcp__custom-writing__compile_generation_prompt/)
   assert.match(sections[0].text, /not code or ordinary answers/)
+})
+
+test('delegation discovery respects caller scope, custom names, and reloads without starting agents', async () => {
+  const agent = {id: 'restricted-child'}, definitions = []
+  let visible = false
+  const parameters = {type: 'object', properties: {prompt: {type: 'string'}}}
+  const ctx = {tools: {
+    get(name, scope) {
+      assert.equal(name, 'delegate_writer')
+      assert.equal(scope, agent)
+      return visible ? {parameters} : undefined
+    },
+    register(definition) { definitions.push(definition) },
+  }}
+  await mountWritingPlugin(ctx, {generationGuidance: false, delegationToolName: 'delegate_writer'}, async () => {})
+  const tool = definitions.find(item => item.name === agentCapabilitiesTool('human-writing'))
+  assert.equal((await tool.execute({}, {agent})).available, false)
+  visible = true
+  const discovered = await tool.execute({}, {agent})
+  assert.equal(discovered.available, true)
+  assert.equal(discovered.runtime_verified, false)
+  assert.deepEqual(discovered.parameters, parameters)
+  visible = false
+  assert.equal(agentCapabilities(ctx, 'delegate_writer', agent).mode, 'sequential-role-passes')
+  assert.throws(() => resolveServerConfig({delegationToolName: 'bad tool name'}), /delegationToolName/)
 })
 
 test('disabled generation guidance retains tools, failed startup contributes no section', async () => {

@@ -27,6 +27,19 @@ def complete_report(task_id: str) -> str:
 
 
 class McpServerTests(unittest.TestCase):
+    def test_writing_results_share_core_budget_above_single_text_limit(self):
+        with TemporaryDirectory() as directory:
+            from humanwriting.writing_queue import MAX_RESULT
+            payload = {"text": "x" * (MAX_TEXT_CHARACTERS + 100)}
+            with patch("humanwriting.writing_queue.submit_writing_result", return_value={"accepted": True}) as submit:
+                result = call_tool("submit_writing_result", {"package_dir": ".", "task_id": "write-0001",
+                    "agent_id": "writer", "result": payload}, Path(directory))
+                self.assertTrue(json.loads(result["content"][0]["text"])["accepted"])
+                submit.assert_called_once()
+            with self.assertRaisesRegex(ValueError, str(MAX_RESULT)):
+                call_tool("submit_writing_result", {"package_dir": ".", "task_id": "write-0001",
+                    "agent_id": "writer", "result": {"text": "x" * MAX_RESULT}}, Path(directory))
+
     def test_mcp_rejects_stale_claim_token_after_same_agent_reclaims(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -177,9 +190,10 @@ class McpServerTests(unittest.TestCase):
                 call_tool("assemble_writing_project", {"package_dir": "writing", "output_path": "../final.md"}, root)
 
     def test_writing_result_objects_are_bounded_and_strict_json(self):
+        from humanwriting.writing_queue import MAX_RESULT
         with TemporaryDirectory() as directory:
             args = {"package_dir": "writing", "task_id": "outline-check", "agent_id": "worker"}
-            for result in ([], "text", None, {"text": "x" * MAX_TEXT_CHARACTERS}, {"number": float("nan")}):
+            for result in ([], "text", None, {"text": "x" * MAX_RESULT}, {"number": float("nan")}):
                 with self.subTest(result_type=type(result).__name__), self.assertRaises(ValueError):
                     call_tool("submit_writing_result", {**args, "result": result}, Path(directory))
 

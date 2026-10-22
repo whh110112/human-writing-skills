@@ -18,7 +18,7 @@ writing style unification, and character consistency review.
 quality guidance and local review tools. Install the complete bundled runtime:
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
 ```
 
 Use `desktop` for the desktop profile. Python 3.9+ required; no separate core pip
@@ -41,6 +41,14 @@ different capability layers:
 The test suite exercises both the executable layer and module-selection gates.
 
 ## Agent Orchestration, MCP, And DeepSeek Harness Plugin
+
+DSH agent mode can inspect its actual, scope-visible delegation schema through
+`writing__human-writing__agent_capabilities` (custom tool names are configurable).
+Discovery is on demand and does not start agents or override model/preset settings.
+Native children receive full role assignments; oversized assignments use paged files.
+Claims expose their lease and can be renewed by the same identity before expiry.
+Official DSH `0.2.1-rc.2` Cordis/MCP integration is tested; live-model child execution
+still depends on the host's provider, driver, permissions and available capacity.
 
 ### Outline-To-Manuscript Multi-Agent Writing
 

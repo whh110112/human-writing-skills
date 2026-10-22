@@ -11,12 +11,12 @@
 ## 安装
 
 需要 Python 3.9+，以及有 tools / systemPrompt 服务的 DSH profile。
-已用官方 0.2.1-alpha.2 包完成集成测试；声明的兼容范围还包括 0.2.0-rc.2 和
+已用官方 0.2.1-rc.2 包完成集成测试；声明的兼容范围还包括 0.2.0-rc.2 和
 0.2.1 alpha 系列，其他版本尚未实测。Node 要求 ^22.19.0 或 >=24.0.0。
 安装包自带本项目 Python 核心和写作模块，不需要额外 pip 安装 human-writing-skills。
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.0/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
 ```
 
 桌面版把 `web` 换成 `desktop`，安装后重启对应 profile。如果解释器不叫 `python`，
@@ -24,7 +24,7 @@ dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/r
 也可安装仓库根目录的固定标签：
 
 ```powershell
-dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.0
+dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.1
 ```
 
 真正可分发的 package.json 在仓库根目录；本适配子目录为 private，不单独发布。
@@ -80,7 +80,7 @@ dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.0
 ### DSH 原生委派与降级
 
 已检查官方 `@deepseek-ai/dsh-subagent` 与 `@deepseek-ai/dsh-tool-subagent`
-0.2.1-alpha.2 发布包文档和实现。宿主原生委派需要同时加载服务、提供者和委派工具：
+0.2.1-rc.2 发布包文档和实现。宿主原生委派需要同时加载服务、提供者和委派工具：
 
 ```yaml
 - name: '@deepseek-ai/dsh-subagent'
@@ -108,6 +108,12 @@ dsh plugin --profile web add github:whh110112/human-writing-skills#dsh-v0.3.0
 第一轮作者的迟到结果无法完成新的认领。
 
 ## 配置与权限
+
+智能体模式先调用 `writing__human-writing__agent_capabilities`，获得当前调用智能体
+可见的委派工具及参数。宿主使用其他工具名时设置 `delegationToolName`。
+每次调用重新检查，支持提供者重载；不会启动代理、代装驱动、绕过工具限制或更改模型。
+完整编排协议仍按需加载。认领返回有效期，超大材料分页读取，过期认领明确标识；
+严肃文体审稿 schema 包含来源检查，小说不自动加载。
 
 `root` 默认 DSH 启动工作目录，建议设置为写作项目目录；`pythonCommand` 默认
 PYTHON 或 python；`serverName` 默认 human-writing；`generationGuidance: false`

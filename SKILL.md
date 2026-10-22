@@ -24,6 +24,9 @@ continuity ledgers separate from optional style references.
 - `human-writing-mcp` is an optional project-local coordination layer. It gives
   separate agents bounded long-form assignments, stores receipts, and refuses
   reconciliation until coverage verification passes. It does not call a model.
+- In DSH agent mode, inspect `writing__human-writing__agent_capabilities` on demand
+  before native delegation. Use the configured namespace and advertised schema;
+  a visible tool or child-start receipt is not a completed assignment.
 
 ## Quick Humanize Route
 
