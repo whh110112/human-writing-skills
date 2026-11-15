@@ -95,8 +95,9 @@ COMPARISON_NONMARKER_SUFFIXES = (
 )
 INFLATED_CLUSTER_PATTERN = re.compile(
     r"赋能|助力|深耕|打造|构建|全方位|多维度|新篇章|新征程|持续推进|"
-    r"\b(?:delve|tapestry|vibrant|crucial|robust|seamless|transformative|"
-    r"multifaceted|pivotal|showcasing|underscores?|testament|evolving landscape)\b",
+    r"\b(?:delve|delving|tapestry|vibrant|crucial|robust|seamless|transformative|"
+    r"multifaceted|pivotal|showcasing|underscores?|testament|evolving landscape|"
+    r"beacon|foster|unleash|nuanced|intertwined|bolster)\b",
     re.IGNORECASE,
 )
 DOUBLE_EDGED_PATTERN = re.compile(
@@ -281,8 +282,9 @@ RULES = [
         "inflated-vocabulary",
         "medium",
         re.compile(
-            r"\b(?:delve|tapestry|realm|pivotal|groundbreaking|transformative|"
-            r"seamless|game[- ]changer|ever[- ]evolving|testament to)\b",
+            r"\b(?:delve|delving|tapestry|realm|pivotal|groundbreaking|transformative|"
+            r"seamless|game[- ]changer|ever[- ]evolving|testament to|a testament to|"
+            r"beacon|foster|unleash|nuanced|intertwined|bolster)\b",
             re.IGNORECASE,
         ),
         "Replace abstract prestige language with a specific fact, action, or consequence.",
@@ -300,6 +302,57 @@ RULES = [
         "medium",
         re.compile(r"嘴角微微(?:上扬|勾起)|眼中闪过一丝|深邃的眼眸|眸光微闪|眉头微皱"),
         "Generic body language should be replaced with character- and situation-specific behavior.",
+    ),
+    PatternRule(
+        "BODY002",
+        "melodramatic-reaction",
+        "medium",
+        re.compile(
+            r"倒吸一(?:口|声)凉气|瞳孔(?:骤然|猛地|剧烈)?(?:紧缩|缩小|放大|地震)|"
+            r"眼底翻涌着|嘴角勾起一抹(?:玩味|冷笑|嘲弄|弧度)|"
+            r"周身散发出.{0,8}?(?:威压|寒意|杀气)|身形(?:猛地|骤然)?一震|"
+            r"\b(?:gasp(?:ed)? in disbelief|eyes widened in shock|smirk played on (?:his|her) lips)\b",
+            re.IGNORECASE,
+        ),
+        "Replace stock physiological cliches with concrete physical movement, focal shifts, or tactile reactions.",
+        excluded_styles=frozenset({"academic-paper", "formal-document"}),
+    ),
+    PatternRule(
+        "COT001",
+        "reasoning-bleed",
+        "medium",
+        re.compile(
+            r"究其原因|归根结底|从本质上(?:说|剖析|看|来讲)|这背后(?:所)?折射出的|"
+            r"深层逻辑在于|如果深入探究不难发现|"
+            r"\b(?:at its core|fundamentally speaking|the underlying rationale is)\b",
+            re.IGNORECASE,
+        ),
+        "Avoid exposing explicit chain-of-thought analysis; weave insights naturally into observations, scenes, or actions.",
+    ),
+    PatternRule(
+        "PSEUDO001",
+        "pseudo-literary-cliche",
+        "medium",
+        re.compile(
+            r"(?:最真实的|时代(?:的)?)底色|写下了?(?:最好的)?注脚|激起微弱的?回响|"
+            r"在时间的?褶皱(?:里|中)|构成了?.{0,10}肌理|命运的?锚点|在记忆的?回廊|"
+            r"\b(?:tapestry of life|rich tapestry of|etched into the fabric of|echoes of the past)\b",
+            re.IGNORECASE,
+        ),
+        "Replace abstract pseudo-intellectual metaphors with grounded sensory details or factual proof.",
+    ),
+    PatternRule(
+        "MEDIA001",
+        "manufactured-hype",
+        "medium",
+        re.compile(
+            r"谁懂啊(?:家人们)?|狠狠(?:共情|住了)|治愈内耗|直接封神|闭眼入|"
+            r"答应我，?一定要|不允许还有人不知道|绝绝子|"
+            r"\b(?:let that sink in|you won['’]t believe|obsessed with this)\b",
+            re.IGNORECASE,
+        ),
+        "Remove manufactured social-media hype; convey authentic value through honest, grounded experience.",
+        excluded_styles=frozenset({"academic-paper", "formal-document", "news-report"}),
     ),
     PatternRule(
         "EMO001",

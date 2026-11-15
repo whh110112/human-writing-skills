@@ -67,8 +67,11 @@ def package_lock(package: Path):
             import msvcrt
 
             if path.stat().st_size == 0:
-                stream.write(b"\0")
-                stream.flush()
+                try:
+                    stream.write(b"\0")
+                    stream.flush()
+                except OSError:
+                    pass
             stream.seek(0)
             msvcrt.locking(stream.fileno(), msvcrt.LK_LOCK, 1)
             try:

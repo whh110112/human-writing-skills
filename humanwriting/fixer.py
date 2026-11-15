@@ -59,6 +59,12 @@ SAFE_REPLACEMENTS = (
         "State the following claim directly.",
     ),
     (
+        "FIX_FILLER003",
+        re.compile(r"(?:不可否认(?:的是)?|毋庸置疑(?:的是)?)[，,：:]?\s*"),
+        "",
+        "Remove pseudo-objective throat-clearing while preserving the following claim.",
+    ),
+    (
         "FIX_WORDY001",
         re.compile(r"\bin order to\b", re.IGNORECASE),
         "to",
@@ -69,6 +75,12 @@ SAFE_REPLACEMENTS = (
         re.compile(r"\bdue to the fact that\b", re.IGNORECASE),
         "because",
         "Use the direct causal connector.",
+    ),
+    (
+        "FIX_WORDY003",
+        re.compile(r"\b(?:it is undeniable that|it is obvious that)\s+", re.IGNORECASE),
+        "",
+        "State the following claim directly.",
     ),
 )
 

@@ -16,7 +16,8 @@ Write posts that feel direct, useful, and personal without empty hype.
 
 - "must read" pressure
 - stacked rhetorical questions
-- fake intimacy
+- fake intimacy and manufactured hype ("谁懂啊家人们", "狠狠共情", "治愈内耗", "直接封神", "闭眼入")
+- preachy coaching ("听我一句劝", "我们要深刻认识到")
 - over-polished motivational endings
 - repeating the same sentence shape across bullets
 

@@ -44,7 +44,10 @@ Write serialized genre fiction with momentum, continuity, and memorable scene tu
 ## Avoid
 
 - forgetting injuries or costs
-- repeated awe reactions
+- repeated awe reactions and stock melodrama kits: gasping cold air ("倒吸一口凉气"),
+  pupil constrictions ("瞳孔骤缩"), smirks ("嘴角勾起一抹玩味"), and aura waves ("周身散发威压")
+- internal reasoning bleed-through: characters pausing visceral danger to conduct
+  multi-step logical deductions like a debate solver
 - explaining the whole system in one block
 - resetting relationships after major scenes
 - rebuilding every chapter from weather, lighting, clothes, and summarized feeling

@@ -16,7 +16,7 @@ with native delegation can assign writing roles to its own subagents.
 Requires Python 3.9+ on PATH and a DSH profile with tools and systemPrompt services.
 No pip installation of human-writing-skills is needed: the release bundles its Python
 core and Markdown modules. Use Node ^22.19.0 or >=24.0.0 as required by current DSH.
-Integration-tested with official DSH 0.2.1-rc.2 packages. Peer ranges also admit
+Integration-tested with official DSH 0.2.1-rc.2 and 0.2.2-rc.3 packages. Peer ranges also admit
 0.2.0-rc.2 and the 0.2.1 alpha line; those other versions have not been tested here.
 
 ```powershell

@@ -13,9 +13,12 @@ without earned context, repeats across outputs, or substitutes for observation.
 ### Chinese narrative and web fiction
 
 - Fate inflation: "命运的齿轮", "一场风暴即将来临", "无人知道的是"
-- Generic body cues: "深邃的眼眸", "嘴角微微上扬", "眼中闪过一丝"
+- Generic body cues & melodrama: "深邃的眼眸", "嘴角微微上扬", "眼中闪过一丝", "倒吸一口凉气", "瞳孔骤缩", "嘴角勾起一抹玩味", "周身散发威压"
 - Emotion labels: "不禁感到一阵愤怒", "心中涌起复杂情绪"
 - Empty atmosphere: "空气仿佛凝固", "时间在这一刻静止"
+- Pseudo-intellectual flourishes: "最真实的底色", "写下最好的注脚", "激起微弱的回响", "在时间的褶皱里", "肌理", "锚点"
+- Reasoning bleed-through: "究其原因", "归根结底", "从本质上剖析", "这背后折射出", "深层逻辑在于"
+- Manufactured social media hype: "谁懂啊家人们", "狠狠共情", "治愈内耗", "直接封神", "闭眼入", "答应我"
 - Cinematic setup bundles: exact clock + named place + colored light/weather + full
   outfit + generalized feeling before the first consequential action
 - Vague self-interpretation: repeated "不知道为什么", "莫名", or "像是……又像是……"
@@ -24,10 +27,10 @@ without earned context, repeats across outputs, or substitutes for observation.
 
 ### English and general prose
 
-- Inflated importance: "game-changing", "groundbreaking", "transformative"
-- Stock abstractions: "realm", "tapestry", "journey", "landscape", "ecosystem"
-- Dead transitions: "moreover", "furthermore", "it is important to note"
-- Polished filler: "in today's fast-paced world", "unlock the potential"
+- Inflated importance: "game-changing", "groundbreaking", "transformative", "beacon", "unleash", "foster"
+- Stock abstractions: "realm", "tapestry", "journey", "landscape", "ecosystem", "nuanced", "intertwined", "bolster"
+- Dead transitions: "moreover", "furthermore", "it is important to note", "a testament to the power of"
+- Polished filler: "in today's fast-paced world", "unlock the potential", "let that sink in"
 
 ## Audit Steps
 

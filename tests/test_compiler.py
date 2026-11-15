@@ -520,7 +520,7 @@ class CompilerTests(unittest.TestCase):
             strict_continuity=True,
         )
         # Includes the default generation protocol and genre brief, not full audits.
-        self.assertLess(len(prompt), 25000)
+        self.assertLess(len(prompt), 26000)
 
     def test_duplicate_modules_are_loaded_once(self):
         prompt = compile_prompt(

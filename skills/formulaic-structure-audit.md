@@ -18,6 +18,14 @@ or argued into existence.
 - Transitions are complete but bloodless: each connection is explained, yet no
   object, pressure, action, or voice carries the reader across.
 - Sentences make the same move repeatedly: setup, contrast, abstract conclusion.
+- Reasoning bleed-through / Debater deductions: Characters or narrators pause action
+  to lay out an explicit multi-step causal deduction ("若是……则必然……，深层逻辑在于……"),
+  mimicking an AI reasoning scratchpad rather than situated human perception.
+- Mandatory fence-sitting / Neutrality addiction: Compulsively balancing every claim
+  with a counter-claim ("既要……又要……", "在两者张力中寻找平衡") when the evidence or
+  voice demands a clear stance.
+- Preachy condescension: Sentences slip into mentor/lecture rhetoric ("我们要深刻认识到",
+  "笔者认为") rather than peer communication.
 - Headings, bullets, and bold text do rhetorical work that the prose has not earned.
 
 ## Audit Steps

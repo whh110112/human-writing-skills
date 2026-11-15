@@ -54,7 +54,8 @@ Use distinct writer/editor identities; retain each identity on bounded revision 
 The final reviewer must differ from all chunk writers.
 
 If the host exposes a native delegation tool, use its advertised schema (DSH normally uses
-subagent with description and prompt; toolName is configurable). DSH requires dsh-subagent,
+subagent with description and prompt; toolName is configurable, and DSH 0.2.2+ supports
+optional provider/model/reasoning_effort and agent_preset routing). DSH requires dsh-subagent,
 a configured provider such as dsh-subagent-spawn-in-process, and dsh-tool-subagent; the service
 or MCP alone is not an agent runner. A native start returns a child ID, NOT completed prose.
 Map that child ID to the claimed agent_id, wait for its completion notice, then submit the
@@ -77,13 +78,40 @@ ${tool('assemble_writing_project')}(package_dir, output_path). Never claim compl
 failed verification or assembly, and never publish externally without user instruction.`
 }
 
+export function probePython(configured) {
+  if (configured !== undefined) {
+    if (typeof configured !== 'string' || !configured.trim()) {
+      throw new Error('pythonCommand must be an executable path.')
+    }
+    return configured.trim()
+  }
+  if (process.env.PYTHON && process.env.PYTHON.trim()) return process.env.PYTHON.trim()
+  if (process.env.VIRTUAL_ENV) {
+    const venvPy = process.platform === 'win32'
+      ? resolve(process.env.VIRTUAL_ENV, 'Scripts/python.exe')
+      : resolve(process.env.VIRTUAL_ENV, 'bin/python')
+    if (existsSync(venvPy)) return venvPy
+  }
+  if (process.platform === 'win32') {
+    const userProfile = process.env.USERPROFILE || ''
+    const cwdCandidates = [
+      resolve(process.cwd(), '.venv/Scripts/python.exe'),
+      resolve(process.cwd(), 'venv/Scripts/python.exe'),
+      resolve(userProfile, '.venv-html-to-docx/Scripts/python.exe'),
+    ]
+    for (const cand of cwdCandidates) {
+      if (cand && existsSync(cand)) return cand
+    }
+  }
+  return 'python'
+}
+
 export function resolveServerConfig(config = {}) {
   const root = resolve(config.root ?? process.cwd())
   if (!existsSync(resolve(packageRoot, 'humanwriting/mcp_server.py'))) {
     throw new Error('Writing runtime is missing. Install the repository-root bundle or the published release tarball.')
   }
-  const command = config.pythonCommand ?? process.env.PYTHON ?? 'python'
-  if (typeof command !== 'string' || !command.trim()) throw new Error('pythonCommand must be an executable path.')
+  const command = probePython(config.pythonCommand)
   const serverName = config.serverName ?? 'human-writing'
   if (!/^[A-Za-z0-9_-]{1,32}$/.test(serverName)) throw new Error('serverName must contain 1–32 letters, numbers, underscores, or hyphens.')
   const timeout = config.toolCallTimeoutMs ?? 60000

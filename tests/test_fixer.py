@@ -16,6 +16,12 @@ class FixerTests(unittest.TestCase):
         self.assertEqual(len(report.edits), 2)
         self.assertEqual(report.candidate, "数据仍不完整。")
 
+    def test_preview_removes_pseudo_objective_fillers(self):
+        text = "不可否认的是，方案仍需完善。It is undeniable that results improved."
+        report = build_fix_report(text)
+        self.assertEqual(len(report.edits), 2)
+        self.assertEqual(report.candidate, "方案仍需完善。results improved.")
+
     def test_preview_does_not_rewrite_comparisons_or_claims(self):
         text = "走廊比昨夜更窄，比记忆里更长。约有一半人不确定。"
         report = build_fix_report(text)

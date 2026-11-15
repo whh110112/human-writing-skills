@@ -393,6 +393,31 @@ class LinterTests(unittest.TestCase):
         self.assertNotIn("NAT005", {item.rule_id for item in serious.findings})
         self.assertNotIn("NAT005", {item.rule_id for item in allowed.findings})
 
+    def test_reports_new_ai_style_patterns_and_genre_boundaries(self):
+        cot_text = "究其原因，深层逻辑在于供需关系的失衡。如果深入探究不难发现，归根结底是一场制度博弈。"
+        cot_report = lint_text(cot_text, style="argumentative")
+        self.assertIn("COT001", {f.rule_id for f in cot_report.findings})
+
+        body_text = "众人倒吸一口凉气，他的瞳孔骤然紧缩，嘴角勾起一抹玩味的冷笑。"
+        body_fiction = lint_text(body_text, style="fiction")
+        body_paper = lint_text(body_text, style="academic-paper")
+        self.assertIn("BODY002", {f.rule_id for f in body_fiction.findings})
+        self.assertNotIn("BODY002", {f.rule_id for f in body_paper.findings})
+
+        pseudo_text = "这构成了最真实的底色，为时代写下了最好的注脚，在时间的褶皱里激起微弱的回响。"
+        pseudo_report = lint_text(pseudo_text, style="fiction")
+        self.assertIn("PSEUDO001", {f.rule_id for f in pseudo_report.findings})
+
+        media_text = "谁懂啊家人们，真的狠狠共情了，治愈内耗直接封神，闭眼入绝绝子！"
+        media_report = lint_text(media_text, style="self-media")
+        media_news = lint_text(media_text, style="news-report")
+        self.assertIn("MEDIA001", {f.rule_id for f in media_report.findings})
+        self.assertNotIn("MEDIA001", {f.rule_id for f in media_news.findings})
+
+        slop_text = "This serves as a beacon of innovation to foster and unleash a nuanced ecosystem, bolstered by data."
+        slop_report = lint_text(slop_text, style="argumentative")
+        self.assertIn("LEX001", {f.rule_id for f in slop_report.findings})
+
 
 if __name__ == "__main__":
     unittest.main()
