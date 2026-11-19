@@ -264,10 +264,11 @@ TOOLS.extend(WRITING_TOOLS)
 
 
 def _safe_path(root: Path, value: str) -> Path:
+    resolved_root = root.resolve()
     candidate = Path(value)
-    resolved = candidate.resolve() if candidate.is_absolute() else (root / candidate).resolve()
+    resolved = candidate.resolve() if candidate.is_absolute() else (resolved_root / candidate).resolve()
     try:
-        resolved.relative_to(root)
+        resolved.relative_to(resolved_root)
     except ValueError as exc:
         raise ValueError("Path must stay within the configured project root.") from exc
     return resolved

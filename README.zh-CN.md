@@ -2,16 +2,41 @@
 
 <p align="center"><img src="assets/logo.png" width="320" alt="Human Writing：奶白底色上的钢笔手写笔迹与终端代码"></p>
 
-> 让 AI 写作更自然：以 Skills 和 DSH 插件提供多语言润色、长文分块协作与上下文一致性审查。
+> 让 AI 写作更自然：以 Skills、零依赖 Python CLI/MCP 和 DSH 插件，提供多语言润色、长文分块协作与上下文一致性审查。
 
-**DSH 插件安装：**用于在 DSH 中生成小说、论文和报告，前置去 AI 味规则并挂载本地审查工具。
+[![Test](https://github.com/whh110112/human-writing-skills/actions/workflows/test.yml/badge.svg)](https://github.com/whh110112/human-writing-skills/actions/workflows/test.yml)
+[![Test DSH Plugin](https://github.com/whh110112/human-writing-skills/actions/workflows/test-dsh.yml/badge.svg)](https://github.com/whh110112/human-writing-skills/actions/workflows/test-dsh.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
+
+中文说明 | [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Français](README.fr.md)
+
+**增强版去 AI 写作 Skill / 高级 AI 写作工具**：支持去AI味、去AI写作、消除AI腔、AI 人性化改写、AI 文本润色、小说润色、小说续写、长篇分块审查、文风统一和人物设定统一。
+
+Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个零依赖命令行与 MCP 工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
+
+### 30 秒快速开始
+
+- **DeepSeek Harness 插件（推荐，免单独 pip 安装，已验证 DSH `0.2.2-rc.5` / Cordis `4.1.0`）：**
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.3/dsh-advanced-human-writing.tgz
 ```
 
-桌面版把 web 换成 desktop；需要 Python 3.9+，无须另行 pip 安装核心。
-详见 [DSH 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
+  桌面版把 `web` 换成 `desktop`；需要 Python 3.9+。详见 [DSH 插件说明](plugins/deepseek-harness/README.zh-CN.md)。
+
+- **Python CLI（单篇润色 / 扫描 / 长篇分块）：**
+
+```powershell
+pip install -e .
+human-writing-skills lint --draft chapter.md --style fiction
+human-writing-skills humanize --draft chapter.md --style fiction --mode quick
+```
+
+- **两层刻意分开的能力：**
+  - **可执行的 Python 工具层：** `humanwriting/` 提供可安装的 `human-writing-skills` CLI 与 `human-writing-mcp` 服务，可确定性地定位文本模式并给出证据位置、统计文本、预览保守修复、校验不可误改内容、编译提示词以及生成分阶段审稿文件。
+  - **由模型执行的编辑模块层：** `skills/*.md` 保存按需选择的文体与审稿规则，由写作模型执行；不会冒充“一键自动写好小说”的确定性算法。
 
 ## 生成时前置去 AI 味与独立复核
 
@@ -19,7 +44,7 @@ dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/r
 检查当前智能体实际可见的委派工具及参数；自定义工具名可通过 `delegationToolName` 配置。
 工具可见不等于执行器可用，也不代表子代理已完成。完整任务按角色交接，超大任务分页读取；
 认领返回有效期，同一身份可在到期前续领。未配置子代理执行器时明确降级为顺序角色轮次。
-已验证官方 DSH `0.2.1-rc.2` 的 Cordis/MCP 集成，真实模型子代理仍依赖宿主驱动、权限与容量。
+已验证官方 DSH `0.2.2-rc.5` 与 Cordis `4.1.0` 的集成，真实模型子代理仍依赖宿主驱动、权限与容量。
 
 `build`、`humanize` 和 MCP 的 `compile_generation_prompt` 默认加载精简的
 `generation-quality` 协议：写之前确认读者、目的和材料，写作中约束套话、
@@ -42,28 +67,6 @@ human-writing-skills evaluate-editorial --cases ballots.json --format json
 修改历史的评审，另存 `version-key.json`；允许原稿胜出、平局或证据不足。
 这些工具不会调用模型，人工评分也不会自动生成。参见[质量评测](docs/evaluation.zh-CN.md)。
 单元测试验证程序行为，真实自然度仍需独立母语评审。
-
-**增强版去 AI 写作 Skill / 高级 AI 写作工具**：支持去AI味、去AI写作、消除AI腔、
-AI 人性化改写、AI 文本润色、小说润色、小说续写、长篇分块审查、文风统一和人物设定统一。
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
-[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
-
-中文说明 | [English](README.md) | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Français](README.fr.md)
-
-Advanced Human Writing & AI Humanizer 是一个开源、模块化的多语言 AI 写作技能包，也带有一个轻量级命令行工具。它把“写得自然一点”“不要有 AI 味”“长文不要忘设定”这些模糊要求，拆成 AI 能执行、能检查、能复用的 Markdown `SKILLS`。它既可以作为去 AI 味工具和 AI 文章润色工具，也可以用于小说创作、长文续写与严肃文本审校。为兼容已有安装和链接，Python 包名、GitHub 仓库名与 ClawHub slug 继续使用 `human-writing-skills`。
-
-这不是只有说明文档的空提示词仓库。项目有两层刻意分开的能力：
-
-- **可执行的 Python 工具层：** `humanwriting/` 提供可安装的
-  `human-writing-skills` 命令行，可确定性地定位文本模式并给出证据位置、统计文本、
-  预览保守修复、校验不可误改内容、编译提示词以及生成分阶段审稿文件。
-- **由模型执行的编辑模块层：** `skills/*.md` 保存按需选择的文体与审稿规则，
-  由写作模型执行。文学判断本来就不能完全靠固定算法，因此这些模块不会冒充
-  “一键自动写好小说”的确定性程序。
-
-测试套件同时覆盖可执行工具和模块按需激活逻辑。
 
 ## Agent 编排、MCP 与 DeepSeek Harness 插件
 

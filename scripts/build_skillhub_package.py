@@ -39,6 +39,7 @@ EXCLUDED_PATHS = {
     ".gitignore",
     "package.json",
     "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
     SKILLHUB_OVERVIEW_PATH.as_posix(),
 }
 EXCLUDED_PREFIXES = ("plugins/", ".cursor/", "assets/")

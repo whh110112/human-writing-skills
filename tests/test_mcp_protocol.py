@@ -59,7 +59,7 @@ class McpProtocolTests(unittest.TestCase):
             with patch("sys.stdin", io.StringIO("\n".join(map(json.dumps, messages)))), redirect_stdout(output):
                 run_stdio(Path(directory))
             queue.submit_writing_result.assert_called_once_with(
-                package_dir=Path(directory) / "writing", task_id="writer-001", agent_id="worker", result=role_result,
+                package_dir=Path(directory).resolve() / "writing", task_id="writer-001", agent_id="worker", result=role_result,
             )
         responses = list(map(json.loads, output.getvalue().splitlines()))
         claimed = json.loads(responses[0]["result"]["content"][0]["text"])

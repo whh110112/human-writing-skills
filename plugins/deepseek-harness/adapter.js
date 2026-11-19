@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { delimiter, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -78,30 +78,49 @@ ${tool('assemble_writing_project')}(package_dir, output_path). Never claim compl
 failed verification or assembly, and never publish externally without user instruction.`
 }
 
-export function probePython(configured) {
+function findOnPath(names, envPath) {
+  const dirs = (envPath || '').split(delimiter).filter(Boolean)
+  for (const name of names) {
+    for (const dir of dirs) {
+      const candidate = resolve(dir, name)
+      if (existsSync(candidate)) return candidate
+    }
+  }
+  return null
+}
+
+export function probePython(configured, options = {}) {
+  const platform = options.platform ?? process.platform
+  const env = options.env ?? process.env
+  const cwd = options.cwd ?? process.cwd()
   if (configured !== undefined) {
     if (typeof configured !== 'string' || !configured.trim()) {
       throw new Error('pythonCommand must be an executable path.')
     }
     return configured.trim()
   }
-  if (process.env.PYTHON && process.env.PYTHON.trim()) return process.env.PYTHON.trim()
-  if (process.env.VIRTUAL_ENV) {
-    const venvPy = process.platform === 'win32'
-      ? resolve(process.env.VIRTUAL_ENV, 'Scripts/python.exe')
-      : resolve(process.env.VIRTUAL_ENV, 'bin/python')
-    if (existsSync(venvPy)) return venvPy
-  }
-  if (process.platform === 'win32') {
-    const userProfile = process.env.USERPROFILE || ''
-    const cwdCandidates = [
-      resolve(process.cwd(), '.venv/Scripts/python.exe'),
-      resolve(process.cwd(), 'venv/Scripts/python.exe'),
-      resolve(userProfile, '.venv-html-to-docx/Scripts/python.exe'),
-    ]
-    for (const cand of cwdCandidates) {
-      if (cand && existsSync(cand)) return cand
+  if (env.PYTHON && env.PYTHON.trim()) return env.PYTHON.trim()
+  if (env.VIRTUAL_ENV) {
+    const venvCandidates = platform === 'win32'
+      ? [resolve(env.VIRTUAL_ENV, 'Scripts/python.exe')]
+      : [resolve(env.VIRTUAL_ENV, 'bin/python3'), resolve(env.VIRTUAL_ENV, 'bin/python')]
+    for (const cand of venvCandidates) {
+      if (existsSync(cand)) return cand
     }
+  }
+  const cwdCandidates = platform === 'win32'
+    ? [resolve(cwd, '.venv/Scripts/python.exe'), resolve(cwd, 'venv/Scripts/python.exe')]
+    : [
+        resolve(cwd, '.venv/bin/python3'),
+        resolve(cwd, '.venv/bin/python'),
+        resolve(cwd, 'venv/bin/python3'),
+        resolve(cwd, 'venv/bin/python'),
+      ]
+  for (const cand of cwdCandidates) {
+    if (existsSync(cand)) return cand
+  }
+  if (platform !== 'win32') {
+    return findOnPath(['python3', 'python'], env.PATH) ?? 'python3'
   }
   return 'python'
 }
@@ -129,7 +148,7 @@ export function resolveServerConfig(config = {}) {
     args: ['-I', '-X', 'utf8', '-c',
       'import runpy,sys; sys.path.insert(0,sys.argv.pop(1)); runpy.run_module("humanwriting.mcp_server",run_name="__main__")',
       packageRoot, '--root', root],
-    env: {}, cwd: root, toolCallTimeoutMs: timeout, failOnStartupError: true,
+    env: {}, cwd: root, toolCallTimeoutMs: timeout, closeTimeoutMs: 5000, failOnStartupError: true,
   }
 }
 

@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
 import { test } from 'node:test'
-import { agentCapabilities, agentCapabilitiesTool, longFormGuidanceTool, longFormWritingGuidance, mountWritingPlugin, resolveServerConfig, writingGuidance } from '../adapter.js'
+import { agentCapabilities, agentCapabilitiesTool, longFormGuidanceTool, longFormWritingGuidance, mountWritingPlugin, probePython, resolveServerConfig, writingGuidance } from '../adapter.js'
 
 test('mounts MCP before registering scoped literal generation guidance', async () => {
   const sections = [], events = []
@@ -139,5 +139,30 @@ test('bundled Python server negotiates, compiles genres, verifies facts, and blo
     assert.equal(dirname(resolve(root)), resolve(tmpdir()))
     assert.ok(basename(root).startsWith('human-writing-dsh-'))
     rmSync(root, {recursive: true, force: true})
+  }
+})
+
+test('probePython respects explicit config, VIRTUAL_ENV, workspace venvs, and POSIX python3 fallback', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'human-writing-probe-'))
+  try {
+    assert.equal(probePython(' /custom/python3 ', {env: {}, cwd: dir, platform: 'linux'}), '/custom/python3')
+    assert.throws(() => probePython('   ', {env: {}, cwd: dir, platform: 'linux'}), /pythonCommand/)
+    assert.equal(probePython(undefined, {env: {PYTHON: '/env/python3'}, cwd: dir, platform: 'linux'}), '/env/python3')
+
+    const posixVenv = join(dir, '.venv', 'bin')
+    mkdirSync(posixVenv, {recursive: true})
+    const posixPy = join(posixVenv, 'python3')
+    writeFileSync(posixPy, '', 'utf8')
+    assert.equal(probePython(undefined, {env: {}, cwd: dir, platform: 'linux'}), resolve(posixPy))
+
+    const emptyDir = mkdtempSync(join(tmpdir(), 'human-writing-probe-empty-'))
+    try {
+      assert.equal(probePython(undefined, {env: {PATH: ''}, cwd: emptyDir, platform: 'linux'}), 'python3')
+      assert.equal(probePython(undefined, {env: {PATH: ''}, cwd: emptyDir, platform: 'win32'}), 'python')
+    } finally {
+      rmSync(emptyDir, {recursive: true, force: true})
+    }
+  } finally {
+    rmSync(dir, {recursive: true, force: true})
   }
 })

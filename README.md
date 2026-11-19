@@ -8,8 +8,10 @@
 AI text cleanup, fiction editing, novel continuation, chunked long-form audit,
 writing style unification, and character consistency review.
 
+[![Test](https://github.com/whh110112/human-writing-skills/actions/workflows/test.yml/badge.svg)](https://github.com/whh110112/human-writing-skills/actions/workflows/test.yml)
+[![Test DSH Plugin](https://github.com/whh110112/human-writing-skills/actions/workflows/test-dsh.yml/badge.svg)](https://github.com/whh110112/human-writing-skills/actions/workflows/test-dsh.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg)](pyproject.toml)
 
 [中文说明](README.zh-CN.md) | English | [Español](README.es.md) | [Português (Brasil)](README.pt-BR.md) | [Français](README.fr.md)
@@ -18,7 +20,7 @@ writing style unification, and character consistency review.
 quality guidance and local review tools. Install the complete bundled runtime:
 
 ```powershell
-dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.1/dsh-advanced-human-writing.tgz
+dsh plugin --profile web add https://github.com/whh110112/human-writing-skills/releases/download/dsh-v0.3.3/dsh-advanced-human-writing.tgz
 ```
 
 Use `desktop` for the desktop profile. Python 3.9+ required; no separate core pip
@@ -47,7 +49,7 @@ DSH agent mode can inspect its actual, scope-visible delegation schema through
 Discovery is on demand and does not start agents or override model/preset settings.
 Native children receive full role assignments; oversized assignments use paged files.
 Claims expose their lease and can be renewed by the same identity before expiry.
-Official DSH `0.2.1-rc.2` Cordis/MCP integration is tested; live-model child execution
+Official DSH `0.2.2-rc.5` and Cordis `4.1.0` integration is tested; live-model child execution
 still depends on the host's provider, driver, permissions and available capacity.
 
 ### Outline-To-Manuscript Multi-Agent Writing
