@@ -7,31 +7,38 @@ import { basename, dirname, join, resolve } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
 import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
+import * as NativeToolExecutor from '@deepseek-ai/dsh-tool-executor-native'
 import * as WritingPlugin from '../index.js'
 import { agentCapabilitiesTool, longFormGuidanceTool } from '../adapter.js'
+
+async function executeTool(ctx, callId, name, args) {
+  const batch = await ctx.tools.execute({
+    signal: new AbortController().signal,
+    calls: [{id: callId, name, arguments: JSON.stringify(args)}],
+  })
+  return batch.results[0].result
+}
 
 test('official Cordis + MCP mounts, assembles writing guidance, calls tools, and unloads', {timeout: 20000}, async () => {
   const ctx = new Context()
   try {
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
+    await ctx.plugin(NativeToolExecutor)
     const plugin = ctx.plugin(WritingPlugin, {serverName: 'writing-integration'})
     await plugin
     const name = 'mcp__writing-integration__compile_generation_prompt'
     const guidanceName = longFormGuidanceTool('writing-integration')
     assert.ok(ctx.tools.get(name), 'MCP tool is discovered through the official client')
     const capabilitiesName = agentCapabilitiesTool('writing-integration')
-    const capabilities = await ctx.tools.execute({signal: new AbortController().signal,
-      callId: 'capabilities-test', name: capabilitiesName, arguments: {}})
+    const capabilities = await executeTool(ctx, 'capabilities-test', capabilitiesName, {})
     assert.equal(capabilities.isError, false)
     assert.equal(JSON.parse(capabilities.content[0].text).available, false)
     const prompt = renderPrompt(await ctx.systemPrompt.assemble({}))
     assert.match(prompt, /Human Writing for DSH/)
     assert.ok(prompt.includes(guidanceName))
     assert.doesNotMatch(prompt, /Map that child ID/)
-    const guidance = await ctx.tools.execute({
-      signal: new AbortController().signal, callId: 'writing-guidance', name: guidanceName, arguments: {},
-    })
+    const guidance = await executeTool(ctx, 'writing-guidance', guidanceName, {})
     assert.equal(guidance.isError, false)
     assert.match(guidance.content[0].text, /subagent with description and prompt/)
     assert.match(guidance.content[0].text, /not independent agents/)
@@ -47,9 +54,8 @@ test('official Cordis + MCP mounts, assembles writing guidance, calls tools, and
     const submission = ctx.tools.get('mcp__writing-integration__submit_writing_result')
     assert.equal(submission.parameters.properties.result.type, 'object')
     assert.ok(submission.parameters.required.includes('agent_id'))
-    const result = await ctx.tools.execute({
-      signal: new AbortController().signal, callId: 'writing-test-1', name,
-      arguments: {style: 'academic-paper', task: 'Describe the supplied results without inventing citations.'},
+    const result = await executeTool(ctx, 'writing-test-1', name, {
+      style: 'academic-paper', task: 'Describe the supplied results without inventing citations.',
     })
     assert.equal(result.isError, false)
     assert.match(result.content[0].text, /generation-quality/)
@@ -68,6 +74,7 @@ test('tools-only mode retains on-demand guidance without a prompt section', {tim
   try {
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
+    await ctx.plugin(NativeToolExecutor)
     const plugin = ctx.plugin(WritingPlugin, {serverName: 'tools-only', generationGuidance: false})
     await plugin
     assert.ok(ctx.tools.get(longFormGuidanceTool('tools-only')))
@@ -84,10 +91,7 @@ test('real Cordis/MCP plans, claims, submits, and enforces writing approval gate
   writeFileSync(join(root, 'outline.md'), 'A courier arrives.', 'utf8')
   const ctx = new Context()
   let callId = 0
-  const call = (name, args) => ctx.tools.execute({
-    signal: new AbortController().signal, callId: `workflow-${++callId}`,
-    name: `mcp__writing-workflow__${name}`, arguments: args,
-  })
+  const call = (name, args) => executeTool(ctx, `workflow-${++callId}`, `mcp__writing-workflow__${name}`, args)
   const value = result => {
     assert.equal(result.isError, false, JSON.stringify(result.content))
     return JSON.parse(result.content[0].text)
@@ -95,6 +99,7 @@ test('real Cordis/MCP plans, claims, submits, and enforces writing approval gate
   try {
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
+    await ctx.plugin(NativeToolExecutor)
     await ctx.plugin(WritingPlugin, {root, serverName: 'writing-workflow'})
     const plan = value(await call('plan_long_form_writing', {
       outline_path: 'outline.md', output_dir: 'project', style: 'fiction',

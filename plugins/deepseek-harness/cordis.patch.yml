@@ -4,7 +4,6 @@
       name: 'dsh-advanced-human-writing'
       config:
         root: !!js process.cwd()
-        pythonCommand: !!js process.env.PYTHON ?? 'python'
         serverName: 'human-writing'
         toolCallTimeoutMs: 60000
         generationGuidance: true
